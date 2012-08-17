@@ -1,0 +1,22 @@
+<component name="ProjectDictionaryState">
+  <dictionary name="develar">
+    <words>
+      <w>builtins</w>
+      <w>ecmascript</w>
+      <w>ident</w>
+      <w>inlined</w>
+      <w>intrinsics</w>
+      <w>nomen</w>
+      <w>obfuscatable</w>
+      <w>overridable</w>
+      <w>paren</w>
+      <w>parentless</w>
+      <w>prefilled</w>
+      <w>recurse</w>
+      <w>unmangled</w>
+      <w>unnormalized</w>
+      <w>unobfuscatable</w>
+      <w>unsupplied</w>
+    </words>
+  </dictionary>
+</component>
