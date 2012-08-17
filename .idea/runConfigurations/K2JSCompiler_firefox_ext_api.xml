@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="K2JSCompiler firefox-ext-api" type="Application" factoryName="Application">
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+    <option name="MAIN_CLASS_NAME" value="org.jetbrains.jet.cli.js.K2JSCompiler" />
+    <option name="VM_PARAMETERS" value="-ea" />
+    <option name="PROGRAM_PARAMETERS" value="-verbose -sourceFiles ../idea/plugins/LiveEdit/extensions/firefox-ext-api/src -output ../idea/plugins/JavaScriptDebugger/FirefoxConnector/extension/chrome/chromeFiles/content/kotlin/firefox-ext-api.js -libraryFiles @browser-ext-platform,../idea/plugins/LiveEdit/extensions/platform/src/timer.kt,../idea/plugins/LiveEdit/extensions/platform/src/browser.kt,../idea/plugins/LiveEdit/extensions/platform/src/dom.kt,../idea/plugins/LiveEdit/extensions/platform/src/js.kt,../idea/plugins/LiveEdit/extensions/platform/src/jsonRpc.kt,../idea/plugins/LiveEdit/extensions/platform/src/platform.kt,../idea/plugins/LiveEdit/extensions/platform/src/socket.kt,../idea/plugins/LiveEdit/extensions/platform/src/extensions.kt,../idea/plugins/LiveEdit/extensions/platform/src/logging.kt,dist/kotlinc/lib/kotlin-jslib.jar -target v5" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ALTERNATIVE_JRE_PATH" value="" />
+    <option name="ENABLE_SWING_INSPECTOR" value="false" />
+    <option name="ENV_VARIABLES" />
+    <option name="PASS_PARENT_ENVS" value="true" />
+    <module name="cli" />
+    <envs />
+    <RunnerSettings RunnerId="Debug">
+      <option name="DEBUG_PORT" value="" />
+      <option name="TRANSPORT" value="0" />
+      <option name="LOCAL" value="true" />
+    </RunnerSettings>
+    <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Debug" />
+    <ConfigurationWrapper RunnerId="Run" />
+    <method />
+  </configuration>
+</component>

@@ -1,23 +1,17 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Js-backend tests" type="JUnit" factoryName="JUnit">
+  <configuration default="false" name="K2JSCompiler browser-ext-platform" type="Application" factoryName="Application">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-    <module name="js.tests" />
+    <option name="MAIN_CLASS_NAME" value="org.jetbrains.jet.cli.js.K2JSCompiler" />
+    <option name="VM_PARAMETERS" value="-ea" />
+    <option name="PROGRAM_PARAMETERS" value="-verbose -sourceFiles ../idea/plugins/LiveEdit/extensions/platform/src -output ../idea/plugins/JavaScriptDebugger/FirefoxConnector/extension/chrome/chromeFiles/content/kotlin/browser-ext-platform.js -libraryFiles dist/kotlinc/lib/kotlin-jslib.jar -target v5" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" value="" />
-    <option name="PACKAGE_NAME" value="org.jetbrains.k2js.test" />
-    <option name="MAIN_CLASS_NAME" value="" />
-    <option name="METHOD_NAME" value="" />
-    <option name="TEST_OBJECT" value="package" />
-    <option name="VM_PARAMETERS" value="-ea -Dtest.lint.skip=true" />
-    <option name="PARAMETERS" value="" />
-    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <option name="ENABLE_SWING_INSPECTOR" value="false" />
     <option name="ENV_VARIABLES" />
     <option name="PASS_PARENT_ENVS" value="true" />
-    <option name="TEST_SEARCH_SCOPE">
-      <value defaultName="moduleWithDependencies" />
-    </option>
+    <module name="cli" />
     <envs />
-    <patterns />
     <RunnerSettings RunnerId="Debug">
       <option name="DEBUG_PORT" value="" />
       <option name="TRANSPORT" value="0" />

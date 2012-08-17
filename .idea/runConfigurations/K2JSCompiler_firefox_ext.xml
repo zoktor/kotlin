@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="K2JSCompiler firefox-ext" type="Application" factoryName="Application">
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+    <option name="MAIN_CLASS_NAME" value="org.jetbrains.jet.cli.js.K2JSCompiler" />
+    <option name="VM_PARAMETERS" value="-ea" />
+    <option name="PROGRAM_PARAMETERS" value="-verbose -sourceFiles ../idea/plugins/html-instant-editing/extensions/firefox-ext/src -output ../idea/plugins/JavaScriptDebugger/FirefoxConnector/extension/chrome/chromeFiles/content/kotlin/firefox-ext.js -libraryFiles @browser-ext-platform,../idea/plugins/html-instant-editing/extensions/platform/src/util.kt,../idea/plugins/html-instant-editing/extensions/platform/src/dom.kt,../idea/plugins/html-instant-editing/extensions/platform/src/js.kt,../idea/plugins/html-instant-editing/extensions/platform/src/jsonRpc.kt,../idea/plugins/html-instant-editing/extensions/platform/src/main.kt,../idea/plugins/html-instant-editing/extensions/platform/src/socket.kt,../idea/plugins/html-instant-editing/extensions/platform/src/extensions.kt,../idea/plugins/html-instant-editing/extensions/platform/src/logging.kt,@firefox-ext-api,../idea/plugins/html-instant-editing/extensions/firefox-ext-api/src/firefox.kt,dist/kotlinc/lib/kotlin-jslib.jar -target v5" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ALTERNATIVE_JRE_PATH" value="" />
+    <option name="ENABLE_SWING_INSPECTOR" value="false" />
+    <option name="ENV_VARIABLES" />
+    <option name="PASS_PARENT_ENVS" value="true" />
+    <module name="cli" />
+    <envs />
+    <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Run" />
+    <method />
+  </configuration>
+</component>
