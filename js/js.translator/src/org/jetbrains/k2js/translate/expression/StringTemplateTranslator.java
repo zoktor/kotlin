@@ -27,14 +27,15 @@ import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
 import org.jetbrains.k2js.translate.general.Translation;
+import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 
 import static org.jetbrains.k2js.translate.utils.JsAstUtils.sum;
-import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getNameIfStandardType;
 
 
 /**
  * @author Pavel Talanov
  */
+//TODO: add toString call for non-primitive object
 public final class StringTemplateTranslator extends AbstractTranslator {
 
     @NotNull
@@ -84,28 +85,16 @@ public final class StringTemplateTranslator extends AbstractTranslator {
             JsExpression translatedExpression = Translation.translateAsExpression(entryExpression, context());
             if (translatedExpression instanceof JsNumberLiteral) {
                 append(context().program().getStringLiteral(translatedExpression.toString()));
-                return;
             }
-            if (mustCallToString(entryExpression)) {
-                append(new JsInvocation(new JsNameRef("toString", translatedExpression)));
-            } else {
-                append(translatedExpression);
-            }
-        }
+            else {
+                Name typeName = JsDescriptorUtils.getNameIfStandardType(entryExpression, context());
+                if (typeName != null && typeName.getName().equals("String")) {
+                    append(translatedExpression);
+                    return;
+                }
 
-        private boolean mustCallToString(@NotNull JetExpression entryExpression) {
-            Name typeName = getNameIfStandardType(entryExpression, context());
-            if (typeName == null) {
-                return true;
+                append(new JsInvocation(new JsNameRef("toString", translatedExpression)));
             }
-            //TODO: this is a hacky optimization, should use some generic approach
-            if (typeName.getName().equals("String")) {
-                return false;
-            }
-            if (typeName.getName().equals("Int") && resultingExpression != null) {
-                return false;
-            }
-            return true;
         }
 
         @Override
