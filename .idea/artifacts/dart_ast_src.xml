@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="dart-ast-src">
+    <output-path>$PROJECT_DIR$/js/js.translator/libs/src</output-path>
+    <root id="archive" name="dart-ast-src.jar">
+      <element id="dir-copy" path="$PROJECT_DIR$/js/dart-ast" />
+    </root>
+  </artifact>
+</component>

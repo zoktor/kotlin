@@ -10,6 +10,7 @@
       <module fileurl="file://$PROJECT_DIR$/compiler/cli/cli-common/cli-common.iml" filepath="$PROJECT_DIR$/compiler/cli/cli-common/cli-common.iml" />
       <module fileurl="file://$PROJECT_DIR$/compiler/integration-tests/compiler-integration-tests.iml" filepath="$PROJECT_DIR$/compiler/integration-tests/compiler-integration-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/compiler/tests/compiler-tests.iml" filepath="$PROJECT_DIR$/compiler/tests/compiler-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/js/dart-ast/dart-ast.iml" filepath="$PROJECT_DIR$/js/dart-ast/dart-ast.iml" group="js" />
       <module fileurl="file://$PROJECT_DIR$/compiler/frontend/frontend.iml" filepath="$PROJECT_DIR$/compiler/frontend/frontend.iml" />
       <module fileurl="file://$PROJECT_DIR$/compiler/frontend.java/frontend.java.iml" filepath="$PROJECT_DIR$/compiler/frontend.java/frontend.java.iml" />
       <module fileurl="file://$PROJECT_DIR$/generators/generators.iml" filepath="$PROJECT_DIR$/generators/generators.iml" />
