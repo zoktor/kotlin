@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="dart-ast">
-    <output-path>$PROJECT_DIR$/js/js.translator/libs</output-path>
+    <output-path>$PROJECT_DIR$/js/js.translator/lib</output-path>
     <root id="archive" name="dart-ast.jar">
       <element id="module-output" name="dart-ast" />
     </root>
