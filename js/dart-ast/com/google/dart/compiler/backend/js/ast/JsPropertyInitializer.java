@@ -4,6 +4,8 @@
 
 package com.google.dart.compiler.backend.js.ast;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Used in object literals to specify property values by name.
  */
@@ -11,11 +13,11 @@ public class JsPropertyInitializer extends JsNodeImpl {
     private JsExpression labelExpr;
     private JsExpression valueExpr;
 
-    public JsPropertyInitializer(JsExpression labelExpr) {
+    public JsPropertyInitializer(@NotNull JsExpression labelExpr) {
         this.labelExpr = labelExpr;
     }
 
-    public JsPropertyInitializer(JsExpression labelExpr, JsExpression valueExpr) {
+    public JsPropertyInitializer(@NotNull JsExpression labelExpr, @NotNull JsExpression valueExpr) {
         this(labelExpr);
         this.valueExpr = valueExpr;
     }
@@ -32,7 +34,7 @@ public class JsPropertyInitializer extends JsNodeImpl {
         return labelExpr.hasSideEffects() || valueExpr.hasSideEffects();
     }
 
-    public void setValueExpr(JsExpression valueExpr) {
+    public void setValueExpr(@NotNull JsExpression valueExpr) {
         this.valueExpr = valueExpr;
     }
 
