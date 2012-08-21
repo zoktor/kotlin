@@ -64,7 +64,7 @@ public final class NamespaceDeclarationTranslator extends AbstractTranslator {
                 if (rootNamespaceDefinition == null) {
                     rootNamespaceDefinition = getRootPackage(descriptorToDefineInvocation, descriptor);
                 }
-                translator = new NamespaceTranslator(descriptor, classDeclarationTranslator, context());
+                translator = new NamespaceTranslator(descriptor, classDeclarationTranslator, descriptorToDefineInvocation, context());
                 descriptorToTranslator.put(descriptor, translator);
             }
 
@@ -90,7 +90,6 @@ public final class NamespaceDeclarationTranslator extends AbstractTranslator {
             translator.add(descriptorToDefineInvocation, result);
         }
 
-        vars.addIfHasInitializer(context().literalFunctionTranslator().getDeclaration());
         vars.addIfHasInitializer(classDeclarationTranslator.getDeclaration());
         vars.addIfHasInitializer(getDeclaration(rootNamespaceDefinition));
         return result;

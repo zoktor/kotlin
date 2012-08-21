@@ -17,7 +17,10 @@
 package org.jetbrains.k2js.translate.reference;
 
 import com.google.common.collect.Maps;
-import com.google.dart.compiler.backend.js.ast.*;
+import com.google.dart.compiler.backend.js.ast.JsExpression;
+import com.google.dart.compiler.backend.js.ast.JsLiteral;
+import com.google.dart.compiler.backend.js.ast.JsNode;
+import com.google.dart.compiler.backend.js.ast.JsReturn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
@@ -103,10 +106,10 @@ public final class InlinedCallExpressionTranslator extends AbstractCallExpressio
 
     @NotNull
     private TranslationContext createContextWithAliasesForParameters(@NotNull TranslationContext contextForInlining) {
-        Map<DeclarationDescriptor, JsName> aliases = Maps.newHashMap();
+        Map<DeclarationDescriptor, JsExpression> aliases = Maps.newHashMap();
         for (ValueParameterDescriptor parameterDescriptor : resolvedCall.getResultingDescriptor().getValueParameters()) {
             TemporaryVariable aliasForArgument = createAliasForArgument(parameterDescriptor);
-            aliases.put(parameterDescriptor, aliasForArgument.name());
+            aliases.put(parameterDescriptor, aliasForArgument.name().makeRef());
         }
         return contextForInlining.innerContextWithDescriptorsAliased(aliases);
     }

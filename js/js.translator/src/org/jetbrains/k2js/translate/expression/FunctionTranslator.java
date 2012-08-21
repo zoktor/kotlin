@@ -66,8 +66,7 @@ public final class FunctionTranslator extends AbstractTranslator {
     @NotNull
     private final FunctionDescriptor descriptor;
 
-    private FunctionTranslator(@NotNull JetDeclarationWithBody functionDeclaration,
-            @NotNull TranslationContext context) {
+    private FunctionTranslator(@NotNull JetDeclarationWithBody functionDeclaration, @NotNull TranslationContext context) {
         super(context);
         this.descriptor = getFunctionDescriptor(context.bindingContext(), functionDeclaration);
         this.functionDeclaration = functionDeclaration;
@@ -97,15 +96,7 @@ public final class FunctionTranslator extends AbstractTranslator {
 
     @NotNull
     private TranslationContext getContextWithFunctionBodyBlock() {
-        return context().newDeclaration(functionDeclaration).innerBlock(functionObject.getBody());
-    }
-
-    @NotNull
-    public JsFunction translateAsLocalFunction() {
-        JsName functionName = context().getNameForElement(functionDeclaration);
-        generateFunctionObject();
-        functionObject.setName(functionName);
-        return functionObject;
+        return context().contextWithScope(functionObject);
     }
 
     @NotNull
@@ -116,7 +107,7 @@ public final class FunctionTranslator extends AbstractTranslator {
 
     @NotNull
     public JsPropertyInitializer translateAsMethod() {
-        JsName functionName = context().getNameForElement(functionDeclaration);
+        JsName functionName = context().getNameForDescriptor(descriptor);
         generateFunctionObject();
         return new JsPropertyInitializer(functionName.makeRef(), functionObject);
     }

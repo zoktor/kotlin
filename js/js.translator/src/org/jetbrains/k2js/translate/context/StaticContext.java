@@ -445,7 +445,7 @@ public final class StaticContext {
                         }
                         else if (result == qualifier && result.getIdent().equals("kotlin")) {
                             // todo WebDemoExamples2Test#testBuilder, package "kotlin" from kotlin/js/js.libraries/src/stdlib/JUMaps.kt must be inlined
-                          //  return qualifier;
+                            return qualifier;
                         }
                     }
 
