@@ -16,12 +16,10 @@
 
 package org.jetbrains.k2js.translate.operation;
 
-import com.google.dart.compiler.backend.js.ast.JsConditional;
 import com.google.dart.compiler.backend.js.ast.JsExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.psi.JetUnaryExpression;
 import org.jetbrains.jet.lexer.JetTokens;
-import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.reference.CallBuilder;
 import org.jetbrains.k2js.translate.reference.CallType;
@@ -29,12 +27,9 @@ import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.Collections;
 
-import static org.jetbrains.k2js.translate.general.Translation.translateAsExpression;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getResolvedCall;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getBaseExpression;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getOperationToken;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.isNullCheck;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.notNullConditionalTestExpression;
 
 /**
  * @author Pavel Talanov
@@ -62,20 +57,7 @@ public final class UnaryOperationTranslator {
 
     @NotNull
     private static JsExpression translateExclExclOperator(@NotNull JetUnaryExpression expression, @NotNull TranslationContext context) {
-        JsExpression baseExpression = translateAsExpression(getBaseExpression(expression), context);
-        JsExpression testExpression;
-        JsExpression thenExpression;
-        if (TranslationUtils.isCacheNeeded(baseExpression)) {
-            TemporaryVariable cachedValue = context.declareTemporary(baseExpression);
-            testExpression = notNullConditionalTestExpression(cachedValue);
-            thenExpression = cachedValue.reference();
-        }
-        else {
-            testExpression = isNullCheck(baseExpression);
-            thenExpression = baseExpression;
-        }
-
-        return new JsConditional(testExpression, thenExpression, context.namer().throwNPEFunctionCall());
+        return TranslationUtils.notNullConditional(getBaseExpression(expression), context.namer().throwNPEFunctionCall(), context);
     }
 
     @NotNull

@@ -104,16 +104,20 @@ public final class TranslationUtils {
                                      new JsBinaryOperation(operator, expressionToCheck, JsLiteral.UNDEFINED));
     }
 
-    //@NotNull
-    //public static JsExpression nullConditional(@NotNull JetExpression expression, @NotNull TranslationContext context, @NotNull JsExpression elseExpression, boolean isNegated) {
-    //    return nullConditional(testExpression, context, elseExpression, isNegated);
-    //}
-
     @NotNull
     public static JsExpression notNullConditional(
+            @NotNull JetExpression expression,
+            @NotNull JsExpression elseExpression,
+            @NotNull TranslationContext context
+    ) {
+        return notNullConditional(Translation.translateAsExpression(expression, context), elseExpression, context);
+    }
+
+    @NotNull
+    public static JsConditional notNullConditional(
             @NotNull JsExpression expression,
-            @NotNull TranslationContext context,
-            @NotNull JsExpression elseExpression
+            @NotNull JsExpression elseExpression,
+            @NotNull TranslationContext context
     ) {
         JsExpression testExpression;
         JsExpression thenExpression;
