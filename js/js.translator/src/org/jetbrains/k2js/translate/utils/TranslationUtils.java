@@ -44,11 +44,15 @@ public final class TranslationUtils {
     private TranslationUtils() {
     }
 
+    public static boolean isCacheNeeded(@NotNull JsExpression expression) {
+        return !(expression instanceof JsNameRef) || ((JsNameRef) expression).getQualifier() != null;
+    }
+
     @NotNull
     public static Pair<JsVars.JsVar, JsNameRef> createTemporaryIfNeed(@NotNull JsExpression expression,
             @NotNull TranslationContext context) {
         // don't create temp variable for simple expression
-        if (!(expression instanceof JsNameRef) || ((JsNameRef) expression).getQualifier() != null) {
+        if (isCacheNeeded(expression)) {
             return context.dynamicContext().createTemporary(expression);
         }
         else {
@@ -82,6 +86,11 @@ public final class TranslationUtils {
     }
 
     @NotNull
+    public static JsBinaryOperation isNotNullCheck(@NotNull JsExpression expressionToCheck) {
+        return nullCheck(expressionToCheck, true);
+    }
+
+    @NotNull
     public static JsBinaryOperation notNullConditionalTestExpression(@NotNull TemporaryVariable cachedValue) {
         return and(inequality(cachedValue.assignmentExpression(), JsLiteral.NULL),
                    inequality(cachedValue.reference(), JsLiteral.UNDEFINED));
@@ -93,6 +102,36 @@ public final class TranslationUtils {
         return new JsBinaryOperation(isNegated ? JsBinaryOperator.AND : JsBinaryOperator.OR,
                                      new JsBinaryOperation(operator, expressionToCheck, JsLiteral.NULL),
                                      new JsBinaryOperation(operator, expressionToCheck, JsLiteral.UNDEFINED));
+    }
+
+    @NotNull
+    public static JsExpression notNullConditional(
+            @NotNull JetExpression expression,
+            @NotNull JsExpression elseExpression,
+            @NotNull TranslationContext context
+    ) {
+        return notNullConditional(Translation.translateAsExpression(expression, context), elseExpression, context);
+    }
+
+    @NotNull
+    public static JsConditional notNullConditional(
+            @NotNull JsExpression expression,
+            @NotNull JsExpression elseExpression,
+            @NotNull TranslationContext context
+    ) {
+        JsExpression testExpression;
+        JsExpression thenExpression;
+        if (isCacheNeeded(expression)) {
+            TemporaryVariable cachedValue = context.declareTemporary(expression);
+            testExpression = notNullConditionalTestExpression(cachedValue);
+            thenExpression = cachedValue.reference();
+        }
+        else {
+            testExpression = isNotNullCheck(expression);
+            thenExpression = expression;
+        }
+
+        return new JsConditional(testExpression, thenExpression, elseExpression);
     }
 
     @NotNull
