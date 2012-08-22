@@ -27,9 +27,11 @@ import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.Collections;
 
+import static org.jetbrains.k2js.translate.general.Translation.translateAsExpression;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getResolvedCall;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getBaseExpression;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getOperationToken;
+import static org.jetbrains.k2js.translate.utils.TranslationUtils.notNullConditional;
 
 /**
  * @author Pavel Talanov
@@ -57,7 +59,8 @@ public final class UnaryOperationTranslator {
 
     @NotNull
     private static JsExpression translateExclExclOperator(@NotNull JetUnaryExpression expression, @NotNull TranslationContext context) {
-        return TranslationUtils.notNullConditional(getBaseExpression(expression), context.namer().throwNPEFunctionCall(), context);
+        return notNullConditional(translateAsExpression(getBaseExpression(expression), context), context,
+                                  context.namer().throwNPEFunctionCall());
     }
 
     @NotNull

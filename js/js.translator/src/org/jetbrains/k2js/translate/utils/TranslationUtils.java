@@ -104,6 +104,32 @@ public final class TranslationUtils {
                                      new JsBinaryOperation(operator, expressionToCheck, JsLiteral.UNDEFINED));
     }
 
+    //@NotNull
+    //public static JsExpression nullConditional(@NotNull JetExpression expression, @NotNull TranslationContext context, @NotNull JsExpression elseExpression, boolean isNegated) {
+    //    return nullConditional(testExpression, context, elseExpression, isNegated);
+    //}
+
+    @NotNull
+    public static JsExpression notNullConditional(
+            @NotNull JsExpression expression,
+            @NotNull TranslationContext context,
+            @NotNull JsExpression elseExpression
+    ) {
+        JsExpression testExpression;
+        JsExpression thenExpression;
+        if (isCacheNeeded(expression)) {
+            TemporaryVariable cachedValue = context.declareTemporary(expression);
+            testExpression = notNullConditionalTestExpression(cachedValue);
+            thenExpression = cachedValue.reference();
+        }
+        else {
+            testExpression = isNotNullCheck(expression);
+            thenExpression = expression;
+        }
+
+        return new JsConditional(testExpression, thenExpression, elseExpression);
+    }
+
     @NotNull
     public static JsExpression notNullConditional(
             @NotNull JetExpression expression,
