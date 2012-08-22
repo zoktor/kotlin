@@ -17,7 +17,6 @@
 
 package org.jetbrains.k2js.translate.reference;
 
-import com.google.dart.compiler.backend.js.ast.JsConditional;
 import com.google.dart.compiler.backend.js.ast.JsExpression;
 import com.google.dart.compiler.backend.js.ast.JsLiteral;
 import org.jetbrains.annotations.NotNull;
@@ -38,9 +37,7 @@ public enum CallType {
         JsExpression constructCall(@Nullable JsExpression receiver, @NotNull CallConstructor constructor,
                                    @NotNull TranslationContext context) {
             assert receiver != null;
-            JsConditional expression = TranslationUtils.notNullConditional(receiver, JsLiteral.NULL, context);
-            expression.setThenExpression(constructor.construct(expression.getThenExpression()));
-            return expression;
+            return TranslationUtils.notNullConditional(receiver, context, JsLiteral.NULL);
         }
     },
     //TODO: bang qualifier is not implemented in frontend for now
