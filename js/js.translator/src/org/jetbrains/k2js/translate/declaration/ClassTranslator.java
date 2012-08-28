@@ -136,7 +136,7 @@ public final class ClassTranslator extends AbstractTranslator {
         if (!isTopLevelDeclaration) {
             staticProperties = null;
         }
-        else if (isObject(descriptor)) {
+        else if (descriptor.getKind().isObject()) {
             staticProperties = null;
             declarationContext.literalFunctionTranslator()
                     .setDefinitionPlace(new NotNullLazyValue<Trinity<List<JsPropertyInitializer>, LabelGenerator, JsExpression>>() {
