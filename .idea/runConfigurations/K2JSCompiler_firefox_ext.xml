@@ -3,7 +3,7 @@
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="MAIN_CLASS_NAME" value="org.jetbrains.jet.cli.js.K2JSCompiler" />
     <option name="VM_PARAMETERS" value="-ea" />
-    <option name="PROGRAM_PARAMETERS" value="-verbose -sourceFiles ../idea/plugins/LiveEdit/extensions/firefox-ext/src -output ../idea/plugins/JavaScriptDebugger/FirefoxConnector/extension/chrome/chromeFiles/content/kotlin/firefox-ext.js -libraryFiles @browser-ext-platform,../idea/plugins/LiveEdit/extensions/platform/src/timer.kt,../idea/plugins/LiveEdit/extensions/platform/src/browser.kt,../idea/plugins/LiveEdit/extensions/platform/src/dom.kt,../idea/plugins/LiveEdit/extensions/platform/src/js.kt,../idea/plugins/LiveEdit/extensions/platform/src/jsonRpc.kt,../idea/plugins/LiveEdit/extensions/platform/src/platform.kt,../idea/plugins/LiveEdit/extensions/platform/src/socket.kt,../idea/plugins/LiveEdit/extensions/platform/src/extensions.kt,../idea/plugins/LiveEdit/extensions/platform/src/logging.kt,@firefox-ext-api,../idea/plugins/LiveEdit/extensions/firefox-ext-api/src/firefox.kt,dist/kotlinc/lib/kotlin-jslib.jar -target v5" />
+    <option name="PROGRAM_PARAMETERS" value="-verbose -sourceFiles ../idea/plugins/LiveEdit/extensions/firefox-ext/src -output ../idea/plugins/JavaScriptDebugger/FirefoxConnector/extension/chrome/chromeFiles/content/kotlin/firefox-ext.js -libraryFiles @browser-ext-platform,../idea/plugins/LiveEdit/extensions/platform/src/timer.kt,../idea/plugins/LiveEdit/extensions/platform/src/browser.kt,../idea/plugins/LiveEdit/extensions/platform/src/dom.kt,../idea/plugins/LiveEdit/extensions/platform/src/js.kt,../idea/plugins/LiveEdit/extensions/platform/src/jsonRpc.kt,../idea/plugins/LiveEdit/extensions/platform/src/platform.kt,../idea/plugins/LiveEdit/extensions/platform/src/socket.kt,../idea/plugins/LiveEdit/extensions/platform/src/extensions.kt,../idea/plugins/LiveEdit/extensions/platform/src/logging.kt,@firefox-ext-api,../idea/plugins/LiveEdit/extensions/firefox-ext-api/src/firefox.kt,../idea/plugins/LiveEdit/extensions/firefox-ext-api/src/windows.kt,../idea/plugins/LiveEdit/extensions/firefox-ext-api/src/timer.kt,../idea/plugins/LiveEdit/extensions/firefox-ext-api/src/console.kt,dist/kotlinc/lib/kotlin-jslib.jar -target v5" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" value="" />
@@ -12,7 +12,13 @@
     <option name="PASS_PARENT_ENVS" value="true" />
     <module name="cli" />
     <envs />
+    <RunnerSettings RunnerId="Debug">
+      <option name="DEBUG_PORT" value="" />
+      <option name="TRANSPORT" value="0" />
+      <option name="LOCAL" value="true" />
+    </RunnerSettings>
     <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Debug" />
     <ConfigurationWrapper RunnerId="Run" />
     <method />
   </configuration>
