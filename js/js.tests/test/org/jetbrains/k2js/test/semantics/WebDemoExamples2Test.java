@@ -38,7 +38,7 @@ public final class WebDemoExamples2Test extends SingleFileTranslationTest {
 
     //TODO: fails because it need code from stdlib
     @SuppressWarnings("UnusedDeclaration")
-    public void _testBuilder() throws Exception {
+    public void testBuilder() throws Exception {
         performTestWithMain("builder", "");
         performTestWithMain("builder", "1", "over9000");
     }
