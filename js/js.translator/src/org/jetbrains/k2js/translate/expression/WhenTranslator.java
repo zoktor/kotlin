@@ -165,14 +165,52 @@ public final class WhenTranslator extends AbstractTranslator {
 
     @NotNull
     private JsExpression translatePatternCondition(@NotNull JetWhenCondition condition) {
-        JsExpression patternMatchExpression = Translation.patternTranslator(context()).translatePattern(getPattern(condition),
-                                                                                                        expressionToMatch == null
-                                                                                                        ? null
-                                                                                                        : expressionToMatch.second);
+        JsExpression patternMatchExpression = translateWhenConditionToBooleanExpression(condition);
         if (isNegated(condition)) {
             return negated(patternMatchExpression);
         }
         return patternMatchExpression;
+    }
+
+    @NotNull
+    private JsExpression translateWhenConditionToBooleanExpression(@NotNull JetWhenCondition condition) {
+        if (condition instanceof JetWhenConditionIsPattern) {
+            return translateIsCondition((JetWhenConditionIsPattern) condition);
+        }
+        else if (condition instanceof JetWhenConditionWithExpression) {
+            return translateExpressionCondition((JetWhenConditionWithExpression) condition);
+        }
+        throw new AssertionError("Wrong type of JetWhenCondition");
+    }
+
+    @NotNull
+    private JsExpression translateIsCondition(@NotNull JetWhenConditionIsPattern conditionIsPattern) {
+        JsExpression expressionToMatch = getExpressionToMatch();
+        assert expressionToMatch != null : "An is-check is not allowed in when() without subject.";
+
+        JetTypeReference typeReference = conditionIsPattern.getTypeRef();
+        assert typeReference != null : "An is-check must have a type reference.";
+
+        return Translation.patternTranslator(context()).translateIsCheck(expressionToMatch, typeReference);
+    }
+
+    @NotNull
+    private JsExpression translateExpressionCondition(@NotNull JetWhenConditionWithExpression condition) {
+        JetExpression patternExpression = condition.getExpression();
+        assert patternExpression != null : "Expression pattern should have an expression.";
+
+        JsExpression expressionToMatch = getExpressionToMatch();
+        if (expressionToMatch == null) {
+            return Translation.patternTranslator(context()).translateExpressionForExpressionPattern(patternExpression);
+        }
+        else {
+            return Translation.patternTranslator(context()).translateExpressionPattern(expressionToMatch, patternExpression);
+        }
+    }
+
+    @Nullable
+    private JsExpression getExpressionToMatch() {
+        return expressionToMatch != null ? expressionToMatch.second : null;
     }
 
     private static boolean isNegated(@NotNull JetWhenCondition condition) {
@@ -180,21 +218,5 @@ public final class WhenTranslator extends AbstractTranslator {
             return ((JetWhenConditionIsPattern)condition).isNegated();
         }
         return false;
-    }
-
-    @NotNull
-    private static JetPattern getPattern(@NotNull JetWhenCondition condition) {
-        JetPattern pattern;
-        if (condition instanceof JetWhenConditionIsPattern) {
-            pattern = ((JetWhenConditionIsPattern)condition).getPattern();
-        }
-        else if (condition instanceof JetWhenConditionWithExpression) {
-            pattern = ((JetWhenConditionWithExpression)condition).getPattern();
-        }
-        else {
-            throw new AssertionError("Wrong type of JetWhenCondition");
-        }
-        assert pattern != null : "Condition should have a non null pattern.";
-        return pattern;
     }
 }
