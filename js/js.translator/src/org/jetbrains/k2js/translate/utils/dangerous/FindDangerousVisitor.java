@@ -57,6 +57,14 @@ public final class FindDangerousVisitor extends JetTreeVisitor<DangerousData> {
     }
 
     @Override
+    public Void visitIfExpression(JetIfExpression expression, DangerousData data) {
+        if (expressionFound(expression, data)) {
+            return null;
+        }
+        return super.visitIfExpression(expression, data);
+    }
+
+    @Override
     public Void visitBlockExpression(JetBlockExpression expression, DangerousData data) {
         if (isStatement(context.bindingContext(), expression)) {
             return null;
