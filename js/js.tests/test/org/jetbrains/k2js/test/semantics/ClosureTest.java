@@ -38,4 +38,8 @@ public final class ClosureTest extends SingleFileTranslationTest {
     public void testClosureReferencingMember() throws Exception {
         fooBoxTest();
     }
+
+    public void testLocalParameterInLocalNamedFunction() throws Exception {
+        fooBoxTest();
+    }
 }
