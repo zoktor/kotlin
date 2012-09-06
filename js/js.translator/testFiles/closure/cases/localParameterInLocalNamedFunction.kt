@@ -12,6 +12,10 @@ fun box(): Boolean {
     return result == "yes"
 }
 
+fun getAll(callback:(()->Unit)) {
+    callback()
+}
+
 fun createTab(focusWindow:Boolean, callback:((String)->Unit)?) {
     getLastFocused {
         fun createTab() {
@@ -21,7 +25,9 @@ fun createTab(focusWindow:Boolean, callback:((String)->Unit)?) {
         }
 
         if (it == null) {
-            createTab()
+            getAll {
+                createTab()
+            }
         }
     }
 }
