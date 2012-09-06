@@ -56,11 +56,6 @@ public final class UsageTracker {
         return used;
     }
 
-    @Nullable
-    public ClassDescriptor getOuterClassDescriptor() {
-        return outerClassDescriptor;
-    }
-
     private void addChild(UsageTracker child) {
         if (children == null) {
             children = new SmartList<UsageTracker>();
@@ -122,11 +117,25 @@ public final class UsageTracker {
         }
     }
 
+    @Nullable
+    public ClassDescriptor getOuterClassDescriptor() {
+        if (outerClassDescriptor == null && parent != null) {
+            UsageTracker p = parent;
+            do {
+                if (p.outerClassDescriptor != null) {
+                    return p.outerClassDescriptor;
+                }
+            }
+            while ((p = p.parent) != null);
+        }
+        return outerClassDescriptor;
+    }
+
     public void forEachCaptured(Consumer<CallableDescriptor> consumer) {
         forEachCaptured(consumer, this, children == null ? null : new THashSet<CallableDescriptor>());
     }
 
-    private boolean oneOfTheMyParentsIsAncestor(CallableDescriptor parameterDescriptor, UsageTracker requestor) {
+    private boolean isOneOfTheMyParentsIsAncestor(VariableDescriptor parameterDescriptor, UsageTracker requestor) {
         if (requestor == this) {
             return false;
         }
@@ -134,8 +143,7 @@ public final class UsageTracker {
         FunctionDescriptor paramOwner = (FunctionDescriptor) parameterDescriptor.getContainingDeclaration();
         UsageTracker p = parent;
         do {
-            if (p.memberDescriptor == paramOwner ||
-                p.memberDescriptor instanceof ClassDescriptor && p.memberDescriptor == paramOwner.getContainingDeclaration()) {
+            if (p.memberDescriptor == paramOwner) {
                 return true;
             }
         }
@@ -145,9 +153,13 @@ public final class UsageTracker {
 
     private void forEachCaptured(Consumer<CallableDescriptor> consumer, UsageTracker requestor, @Nullable THashSet<CallableDescriptor> visited) {
         if (capturedVariables != null) {
-            for (CallableDescriptor callableDescriptor : capturedVariables) {
-                if (!oneOfTheMyParentsIsAncestor(callableDescriptor, requestor) && (visited == null || visited.add(callableDescriptor))) {
-                    consumer.consume(callableDescriptor);
+            for (CallableDescriptor variable : capturedVariables) {
+                if (variable instanceof VariableDescriptor && isOneOfTheMyParentsIsAncestor((VariableDescriptor) variable, requestor)) {
+                    continue;
+                }
+
+                if (visited == null || visited.add(variable)) {
+                    consumer.consume(variable);
                 }
             }
         }
