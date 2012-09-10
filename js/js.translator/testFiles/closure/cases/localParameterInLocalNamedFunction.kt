@@ -4,30 +4,41 @@ fun getLastFocused(callback:(window:Any?)->Unit) {
     callback(null)
 }
 
+abstract class TabService(val ctorParam:String) {
+    abstract fun createTab(focusWindow:Boolean, callback: (tabs: String)->Unit)
+}
+
+abstract class PageManager(val tabService: TabService)
+
+class ChromePageManager(val expected: String): PageManager(object : TabService(expected) {
+    override fun createTab(focusWindow: Boolean, callback: (tabs: String)->Unit) {
+        getLastFocused {
+            fun createTab() {
+                if (focusWindow) {
+                    callback(expected)
+                }
+            }
+
+            if (it == null) {
+                getAll {
+                    createTab()
+                }
+            }
+        }
+    }
+}) {
+
+}
+
 fun box(): Boolean {
-    var result = "no"
-    createTab(true) {
+    var result = ""
+    val tabService = ChromePageManager("result").tabService
+    tabService.createTab(true) {
         result = it
     }
-    return result == "yes"
+    return result == "result" && tabService.ctorParam == "result"
 }
 
 fun getAll(callback:(()->Unit)) {
     callback()
-}
-
-fun createTab(focusWindow:Boolean, callback:((String)->Unit)?) {
-    getLastFocused {
-        fun createTab() {
-            if (focusWindow && callback != null) {
-                callback("yes")
-            }
-        }
-
-        if (it == null) {
-            getAll {
-                createTab()
-            }
-        }
-    }
 }
