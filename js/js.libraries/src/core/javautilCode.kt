@@ -5,7 +5,6 @@ import java.lang.*
 /** Provides [] access to maps */
 native
 public fun <K, V> MutableMap<K, V>.set(key: K, value: V): Unit = noImpl
-public fun <K, V> MutableMap<K, V>.get(key: K): V? = noImpl
 
 public object Collections {
     library("collectionsMax")
@@ -31,12 +30,12 @@ public object Collections {
     public fun <K,V> emptyMap(): Map<K,V> = emptyMap as Map<K,V>
 
     library
-    public fun <T> sort(list: MutableList<T>): Unit {
+    public fun <in T> sort(list: List<T>): Unit {
         throw UnsupportedOperationException()
     }
 
     library("sortWithComp")
-    public fun <T> sort(list: MutableList<T>, comparator: java.util.Comparator<T>): Unit {
+    public fun <in T> sort(list: List<T>, comparator: java.util.Comparator<T>): Unit {
         throw UnsupportedOperationException()
     }
 

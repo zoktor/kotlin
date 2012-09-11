@@ -155,6 +155,11 @@ public final class TranslationUtils {
     }
 
     @NotNull
+    public static JsConditional sure(@NotNull JsExpression expression, @NotNull TranslationContext context) {
+        return notNullConditional(expression, context.namer().throwNPEFunctionCall(), context);
+    }
+
+    @NotNull
     public static JsConditional notNullConditional(
             @NotNull JsExpression expression,
             @NotNull JsExpression elseExpression,
