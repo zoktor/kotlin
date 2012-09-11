@@ -45,18 +45,33 @@ public final class TranslationUtils {
     }
 
     public static boolean isCacheNeeded(@NotNull JsExpression expression) {
-        return !(expression instanceof JsNameRef) || ((JsNameRef) expression).getQualifier() != null;
+        return !(expression instanceof JsLiteral) &&
+               (!(expression instanceof JsNameRef) || ((JsNameRef) expression).getQualifier() != null);
     }
 
     @NotNull
-    public static Pair<JsVars.JsVar, JsNameRef> createTemporaryIfNeed(@NotNull JsExpression expression,
+    public static Pair<JsExpression, JsExpression> wrapAsTemporaryIfNeed(
+            @NotNull JsExpression expression,
+            @NotNull TranslationContext context
+    ) {
+        if (isCacheNeeded(expression)) {
+            TemporaryVariable cachedValue = context.declareTemporary(expression);
+            return new Pair<JsExpression, JsExpression>(cachedValue.assignmentExpression(), cachedValue.reference());
+        }
+        else {
+            return Pair.create(expression, expression);
+        }
+    }
+
+    @NotNull
+    public static Pair<JsVars.JsVar, JsExpression> createTemporaryIfNeed(@NotNull JsExpression expression,
             @NotNull TranslationContext context) {
         // don't create temp variable for simple expression
         if (isCacheNeeded(expression)) {
             return context.dynamicContext().createTemporary(expression);
         }
         else {
-            return new Pair<JsVars.JsVar, JsNameRef>(null, (JsNameRef) expression);
+            return new Pair<JsVars.JsVar, JsExpression>(null, expression);
         }
     }
 

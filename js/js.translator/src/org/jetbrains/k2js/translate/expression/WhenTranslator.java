@@ -44,10 +44,10 @@ public final class WhenTranslator extends AbstractTranslator {
     private final JetWhenExpression whenExpression;
 
     @Nullable
-    private final Pair<JsVars.JsVar, JsNameRef> result;
+    private final Pair<JsVars.JsVar, JsExpression> result;
 
     @Nullable
-    private final Pair<JsVars.JsVar, JsNameRef> expressionToMatch;
+    private final Pair<JsVars.JsVar, JsExpression> expressionToMatch;
 
     public WhenTranslator(@NotNull JetWhenExpression expression, @NotNull TranslationContext context, boolean voidResult) {
         super(context);

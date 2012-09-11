@@ -41,11 +41,11 @@ import static org.jetbrains.k2js.translate.utils.PsiUtils.getLoopRange;
  */
 public final class ArrayForTranslator extends ForTranslator {
     @NotNull
-    private final Pair<JsVar, JsNameRef> loopRange;
+    private final Pair<JsVar, JsExpression> loopRange;
     @NotNull
-    private final Pair<JsVar, JsNameRef> end;
+    private final Pair<JsVar, JsExpression> end;
     @NotNull
-    private final Pair<JsVar, JsNameRef> index;
+    private final Pair<JsVar, JsExpression> index;
 
     private ArrayForTranslator(@NotNull JetForExpression forExpression, @NotNull TranslationContext context) {
         super(forExpression, context);

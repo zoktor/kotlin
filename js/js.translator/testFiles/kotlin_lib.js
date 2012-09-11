@@ -16,24 +16,6 @@
 
 "use strict";
 
-// todo inlined
-String.prototype.startsWith = function (s) {
-  return this.indexOf(s) === 0;
-};
-
-String.prototype.endsWith = function (s) {
-  return this.indexOf(s, this.length - s.length) !== -1;
-};
-
-String.prototype.contains = function (s) {
-  return this.indexOf(s) !== -1;
-};
-
-// todo org.jetbrains.k2js.test.semantics.WebDemoExamples2Test#testBuilder
-var kotlin = {set:function (receiver, key, value) {
-    return receiver.put(key, value);
-}};
-
 (function () {
     Kotlin.equals = function (obj1, obj2) {
         if (obj1 === null || obj1 === undefined) {
@@ -460,10 +442,6 @@ var kotlin = {set:function (receiver, key, value) {
             }
     );
 
-    Kotlin.splitString = function (str, regex) {
-        return str.split(regex);
-    };
-
     Kotlin.nullArray = function (size) {
         var res = [];
         var i = size;
@@ -481,16 +459,12 @@ var kotlin = {set:function (receiver, key, value) {
         return result;
     };
 
-    Kotlin.arrayIndices = function (arr) {
-        return Kotlin.$new(Kotlin.NumberRange)(0, arr.length);
+    Kotlin.arrayIndices = function (array) {
+        return Kotlin.$new(Kotlin.NumberRange)(0, array.length);
     };
 
     Kotlin.arrayIterator = function (array) {
         return Kotlin.$new(ArrayIterator)(array);
-    };
-
-    Kotlin.toString = function (obj) {
-        return obj.toString();
     };
 
     Kotlin.jsonFromTuples = function (pairArr) {
@@ -520,11 +494,6 @@ var kotlin = {set:function (receiver, key, value) {
             }
         }
         return obj1;
-    };
-
-    //TODO: use intrinsic
-    Kotlin.sure = function (obj) {
-        return obj;
     };
 })();
 
