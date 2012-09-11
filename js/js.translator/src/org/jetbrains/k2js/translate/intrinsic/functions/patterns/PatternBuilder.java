@@ -18,6 +18,7 @@ package org.jetbrains.k2js.translate.intrinsic.functions.patterns;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
@@ -75,7 +76,8 @@ public final class PatternBuilder {
         checkersWithPrefixChecker.addAll(checkers);
         return new DescriptorPredicate() {
             @Override
-            public boolean apply(@NotNull FunctionDescriptor descriptor) {
+            public boolean apply(@Nullable FunctionDescriptor descriptor) {
+                assert descriptor != null;
                 //TODO: no need to wrap if we check beforehand
                 try {
                     return doApply(descriptor);
@@ -113,7 +115,7 @@ public final class PatternBuilder {
     }
 
     @NotNull
-    public static DescriptorPredicateImpl pattern(@NotNull final String... names) {
+    public static DescriptorPredicateImpl create(@NotNull final String... names) {
         return new DescriptorPredicateImpl(names);
     }
 
@@ -130,14 +132,14 @@ public final class PatternBuilder {
             this.names = names;
         }
 
-        public DescriptorPredicateImpl receiverExists(boolean receiverParameterExists) {
+        public DescriptorPredicateImpl receiverParameterExists(boolean receiverParameterExists) {
             this.receiverParameterExists = receiverParameterExists;
             return this;
         }
 
         @Override
-        public boolean apply(@NotNull FunctionDescriptor functionDescriptor) {
-            if (functionDescriptor.getReceiverParameter().exists() != receiverParameterExists) {
+        public boolean apply(@Nullable FunctionDescriptor functionDescriptor) {
+            if (functionDescriptor == null || functionDescriptor.getReceiverParameter().exists() != receiverParameterExists) {
                 return false;
             }
 

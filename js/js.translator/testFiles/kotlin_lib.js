@@ -16,6 +16,19 @@
 
 "use strict";
 
+// todo inlined
+String.prototype.startsWith = function (s) {
+  return this.indexOf(s) === 0;
+};
+
+String.prototype.endsWith = function (s) {
+  return this.indexOf(s, this.length - s.length) !== -1;
+};
+
+String.prototype.contains = function (s) {
+  return this.indexOf(s) !== -1;
+};
+
 (function () {
     Kotlin.equals = function (obj1, obj2) {
         if (obj1 === null || obj1 === undefined) {
@@ -442,6 +455,10 @@
             }
     );
 
+    Kotlin.splitString = function (str, regex) {
+        return str.split(regex);
+    };
+
     Kotlin.nullArray = function (size) {
         var res = [];
         var i = size;
@@ -459,8 +476,8 @@
         return result;
     };
 
-    Kotlin.arrayIndices = function (array) {
-        return Kotlin.$new(Kotlin.NumberRange)(0, array.length);
+    Kotlin.arrayIndices = function (arr) {
+        return Kotlin.$new(Kotlin.NumberRange)(0, arr.length);
     };
 
     Kotlin.arrayIterator = function (array) {
