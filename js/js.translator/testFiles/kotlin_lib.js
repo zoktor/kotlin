@@ -442,10 +442,6 @@
             }
     );
 
-    Kotlin.splitString = function (str, regex) {
-        return str.split(regex);
-    };
-
     Kotlin.nullArray = function (size) {
         var res = [];
         var i = size;
