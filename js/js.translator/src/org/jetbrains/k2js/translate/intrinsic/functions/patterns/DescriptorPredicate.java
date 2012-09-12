@@ -25,5 +25,5 @@ import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
  */
 public interface DescriptorPredicate extends Predicate<FunctionDescriptor> {
     @Override
-    boolean apply(@NotNull FunctionDescriptor descriptor);
+    boolean apply(@SuppressWarnings("NullableProblems") @NotNull FunctionDescriptor descriptor);
 }

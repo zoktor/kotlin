@@ -16,7 +16,6 @@
 
 package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 
-import com.google.common.base.Predicate;
 import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,11 +38,11 @@ public abstract class CompositeFIF implements FunctionIntrinsicFactory {
 
     @NotNull
     @Override
-    public Predicate<FunctionDescriptor> getPredicate() {
+    public DescriptorPredicate getPredicate() {
         return new DescriptorPredicate() {
             @Override
-            public boolean apply(@Nullable FunctionDescriptor descriptor) {
-                return descriptor != null && findIntrinsic(descriptor) != null;
+            public boolean apply(@NotNull FunctionDescriptor descriptor) {
+                return findIntrinsic(descriptor) != null;
             }
         };
     }

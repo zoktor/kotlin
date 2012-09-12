@@ -20,7 +20,7 @@ import com.google.dart.compiler.backend.js.ast.JsExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
-import org.jetbrains.k2js.translate.reference.CallTranslator;
+import org.jetbrains.k2js.translate.reference.CallParameters;
 
 import java.util.List;
 
@@ -48,15 +48,15 @@ public abstract class FunctionIntrinsic {
     };
 
     @NotNull
-    public JsExpression apply(@NotNull CallTranslator callTranslator, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context) {
-        return apply(callTranslator.getCallParameters().getThisOrReceiverOrNull(), arguments, context);
+    public JsExpression apply(
+            @NotNull CallParameters callParameters, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+    ) {
+        return apply(callParameters.getThisOrReceiverOrNull(), arguments, context);
     }
 
     @NotNull
-    public abstract JsExpression apply(
-            @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments,
-            @NotNull TranslationContext context
-    );
+    protected abstract JsExpression apply(@Nullable JsExpression receiver, @NotNull List<JsExpression> arguments,
+            @NotNull TranslationContext context);
 
     public boolean exists() {
         return true;
@@ -65,7 +65,7 @@ public abstract class FunctionIntrinsic {
     public abstract static class CallParametersAwareFunctionIntrinsic extends FunctionIntrinsic {
         @NotNull
         @Override
-        public JsExpression apply(
+        protected JsExpression apply(
                 @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
         ) {
             throw new IllegalStateException();
