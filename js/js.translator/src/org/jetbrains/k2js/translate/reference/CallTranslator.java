@@ -17,7 +17,6 @@
 package org.jetbrains.k2js.translate.reference;
 
 import com.google.dart.compiler.backend.js.ast.*;
-import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.*;
@@ -33,6 +32,7 @@ import org.jetbrains.k2js.translate.intrinsic.functions.patterns.NamePredicate;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.ErrorReportingUtils;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
+import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.List;
 
@@ -83,8 +83,9 @@ public final class CallTranslator extends AbstractTranslator {
             }
         }
 
-        if (isIntrinsic()) {
-            return intrinsicInvocation();
+        JsExpression result = intrinsicInvocation();
+        if (result != null) {
+            return result;
         }
         if (isConstructor()) {
             return constructorCall();
@@ -101,26 +102,7 @@ public final class CallTranslator extends AbstractTranslator {
         if (isExpressionAsFunction()) {
             return expressionAsFunctionCall();
         }
-        if (isInvoke()) {
-            return invokeCall();
-        }
         return methodCall(getThisObjectOrQualifier());
-    }
-
-    //TODO:
-    private boolean isInvoke() {
-        return descriptor.getName().getName().equals("invoke");
-    }
-
-    @NotNull
-    private JsExpression invokeCall() {
-        JsExpression thisExpression = callParameters.getThisObject();
-        if (thisExpression == null) {
-            return new JsInvocation(callParameters.getFunctionReference(), arguments);
-        }
-        else {
-            return new JsInvocation(new JsNameRef("call", callParameters.getFunctionReference()), generateCallArgumentList(thisExpression));
-        }
     }
 
     private boolean isExpressionAsFunction() {
@@ -133,25 +115,20 @@ public final class CallTranslator extends AbstractTranslator {
         return methodCall(null);
     }
 
-    private boolean isIntrinsic() {
-        if (descriptor instanceof FunctionDescriptor) {
-            FunctionIntrinsic intrinsic = context().intrinsics().getFunctionIntrinsics().getIntrinsic((FunctionDescriptor) descriptor);
-            return intrinsic.exists();
-        }
-        return false;
-    }
-
-    @NotNull
+    @Nullable
     private JsExpression intrinsicInvocation() {
-        assert descriptor instanceof FunctionDescriptor;
-        try {
-            FunctionIntrinsic intrinsic = context().intrinsics().getFunctionIntrinsics().getIntrinsic((FunctionDescriptor) descriptor);
-            assert intrinsic.exists();
-            return intrinsic.apply(callParameters.getThisOrReceiverOrNull(), arguments, context());
+        if (descriptor instanceof FunctionDescriptor) {
+            try {
+                FunctionIntrinsic intrinsic = context().intrinsics().getFunctionIntrinsics().getIntrinsic((FunctionDescriptor) descriptor);
+                if (intrinsic.exists()) {
+                    return intrinsic.apply(callParameters, arguments, context());
+                }
+            }
+            catch (RuntimeException e) {
+                throw ErrorReportingUtils.reportErrorWithLocation(e, descriptor, bindingContext());
+            }
         }
-        catch (RuntimeException e) {
-            throw ErrorReportingUtils.reportErrorWithLocation(e, descriptor, bindingContext());
-        }
+        return null;
     }
 
     private boolean isConstructor() {
@@ -209,9 +186,7 @@ public final class CallTranslator extends AbstractTranslator {
     }
 
     private boolean isExtensionFunctionLiteral() {
-        boolean isLiteral = isInvoke()
-                            || descriptor instanceof ExpressionAsFunctionDescriptor;
-        return isExtensionFunction() && isLiteral;
+        return descriptor instanceof ExpressionAsFunctionDescriptor && isExtensionFunction();
     }
 
     @NotNull
@@ -251,9 +226,7 @@ public final class CallTranslator extends AbstractTranslator {
 
     @NotNull
     private List<JsExpression> generateCallArgumentList(@NotNull JsExpression receiver) {
-        List<JsExpression> argumentList = new SmartList<JsExpression>(receiver);
-        argumentList.addAll(arguments);
-        return argumentList;
+        return TranslationUtils.generateCallArgumentList(receiver, arguments);
     }
 
     @NotNull

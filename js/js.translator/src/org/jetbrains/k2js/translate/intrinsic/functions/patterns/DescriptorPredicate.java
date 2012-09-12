@@ -17,7 +17,7 @@
 package org.jetbrains.k2js.translate.intrinsic.functions.patterns;
 
 import com.google.common.base.Predicate;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 
 /**
@@ -25,5 +25,5 @@ import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
  */
 public interface DescriptorPredicate extends Predicate<FunctionDescriptor> {
     @Override
-    boolean apply(@Nullable FunctionDescriptor descriptor);
+    boolean apply(@SuppressWarnings("NullableProblems") @NotNull FunctionDescriptor descriptor);
 }

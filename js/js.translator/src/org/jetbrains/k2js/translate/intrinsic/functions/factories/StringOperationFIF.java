@@ -16,17 +16,19 @@
 
 package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 
-import com.google.dart.compiler.backend.js.ast.JsExpression;
-import com.google.dart.compiler.backend.js.ast.JsInvocation;
-import com.google.dart.compiler.backend.js.ast.JsNameRef;
+import com.google.dart.compiler.backend.js.ast.*;
 import com.google.dart.compiler.util.AstUtil;
+import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.BuiltInPropertyIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.patterns.DescriptorPredicate;
+import org.jetbrains.k2js.translate.utils.JsAstUtils;
+import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.jetbrains.k2js.translate.intrinsic.functions.patterns.PatternBuilder.pattern;
@@ -61,7 +63,40 @@ public final class StringOperationFIF extends CompositeFIF {
 
     private StringOperationFIF() {
         add(GET_PATTERN, GET_INTRINSIC);
-        add(pattern("String.<get-length>"), new BuiltInPropertyIntrinsic("length"));
+        add(pattern("jet", "String", "<get-length>"), new BuiltInPropertyIntrinsic("length"));
+        add(pattern("js", "startsWith").receiverExists(true), new ContainsFunctionIntrinsic(false));
+        add(pattern("js", "contains").receiverExists(true), new ContainsFunctionIntrinsic(true));
+        add(pattern("js", "endsWith").receiverExists(true), new FunctionIntrinsic() {
+            @NotNull
+            @Override
+            public JsExpression apply(
+                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+            ) {
+                assert receiver != null;
+                Pair<JsExpression, JsExpression> a = TranslationUtils.wrapAsTemporaryIfNeed(receiver, context);
+                Pair<JsExpression, JsExpression> b = TranslationUtils.wrapAsTemporaryIfNeed(arguments.get(0), context);
+                return JsAstUtils.equality(new JsInvocation(new JsNameRef("indexOf", a.first), Arrays.asList(b.first, JsAstUtils.subtract(new JsNameRef("length", a.second), new JsNameRef("length", b.second)))), context.program().getNumberLiteral(0));
+            }
+        });
+
         add(pattern("CharSequence.<get-length>"), new BuiltInPropertyIntrinsic("length"));
+    }
+
+    private static class ContainsFunctionIntrinsic extends FunctionIntrinsic {
+        private final boolean contains;
+
+        private ContainsFunctionIntrinsic(boolean contains) {
+            this.contains = contains;
+        }
+
+        @NotNull
+        @Override
+        public JsExpression apply(
+                @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+        ) {
+            return new JsBinaryOperation(contains ? JsBinaryOperator.REF_NEQ : JsBinaryOperator.REF_EQ,
+                                         new JsInvocation(new JsNameRef("indexOf", receiver), arguments),
+                                         context.program().getNumberLiteral(contains ? -1 : 0));
+        }
     }
 }

@@ -18,7 +18,6 @@ package org.jetbrains.k2js.translate.intrinsic.functions.patterns;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
@@ -76,8 +75,7 @@ public final class PatternBuilder {
         checkersWithPrefixChecker.addAll(checkers);
         return new DescriptorPredicate() {
             @Override
-            public boolean apply(@Nullable FunctionDescriptor descriptor) {
-                assert descriptor != null;
+            public boolean apply(@NotNull FunctionDescriptor descriptor) {
                 //TODO: no need to wrap if we check beforehand
                 try {
                     return doApply(descriptor);
@@ -115,32 +113,47 @@ public final class PatternBuilder {
     }
 
     @NotNull
-    public static DescriptorPredicate create(@NotNull final String... names) {
-        return new DescriptorPredicate() {
-            @Override
-            public boolean apply(@Nullable FunctionDescriptor functionDescriptor) {
-                if (functionDescriptor == null) {
-                    return false;
-                }
-
-                DeclarationDescriptor descriptor = functionDescriptor;
-                int nameIndex = names.length - 1;
-                do {
-                    if (!descriptor.getName().getName().equals(names[nameIndex--])) {
-                        return false;
-                    }
-                    descriptor = descriptor.getContainingDeclaration();
-                    if (nameIndex == -1) {
-                        return isRootNamespace(descriptor);
-                    }
-                }
-                while (descriptor != null && !isRootNamespace(descriptor));
-                return false;
-            }
-        };
+    public static DescriptorPredicateImpl pattern(@NotNull final String... names) {
+        return new DescriptorPredicateImpl(names);
     }
 
     private static boolean isRootNamespace(DeclarationDescriptor declarationDescriptor) {
         return declarationDescriptor instanceof NamespaceDescriptor && DescriptorUtils.isRootNamespace((NamespaceDescriptor) declarationDescriptor);
+    }
+
+    public static class DescriptorPredicateImpl implements DescriptorPredicate {
+        private final String[] names;
+
+        private boolean receiverParameterExists;
+
+        public DescriptorPredicateImpl(String... names) {
+            this.names = names;
+        }
+
+        public DescriptorPredicateImpl receiverExists(boolean receiverParameterExists) {
+            this.receiverParameterExists = receiverParameterExists;
+            return this;
+        }
+
+        @Override
+        public boolean apply(@NotNull FunctionDescriptor functionDescriptor) {
+            if (functionDescriptor.getReceiverParameter().exists() != receiverParameterExists) {
+                return false;
+            }
+
+            DeclarationDescriptor descriptor = functionDescriptor;
+            int nameIndex = names.length - 1;
+            do {
+                if (!descriptor.getName().getName().equals(names[nameIndex--])) {
+                    return false;
+                }
+                descriptor = descriptor.getContainingDeclaration();
+                if (nameIndex == -1) {
+                    return isRootNamespace(descriptor);
+                }
+            }
+            while (descriptor != null && !isRootNamespace(descriptor));
+            return false;
+        }
     }
 }
