@@ -16,13 +16,6 @@
 
 package org.jetbrains.k2js.test.semantics;
 
-import org.jetbrains.k2js.config.EcmaVersion;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import static com.intellij.openapi.util.io.FileUtil.loadTextAndClose;
-
 /**
  * @author Pavel Talanov
  */
@@ -41,18 +34,15 @@ public final class StringTest extends AbstractExpressionTest {
     }
 
     public void testIntInTemplate() throws Exception {
-        fooBoxIsValue("my age is 3");
-        checkHasNoToStringCalls();
+        runFunctionOutputTest("intInTemplate.kt", "foo", "box", "my age is 3");
     }
 
     public void testStringInTemplate() throws Exception {
-        fooBoxIsValue("oHelloo");
-        checkHasNoToStringCalls();
+        runFunctionOutputTest("stringInTemplate.kt", "foo", "box", "oHelloo");
     }
 
-    public void testMultipleExpressionsInTemplate() throws Exception {
-        fooBoxIsValue("left = 3\nright = 2\nsum = 5\n");
-        checkHasNoToStringCalls();
+    public void testMultipleExpressionInTemplate() throws Exception {
+        runFunctionOutputTest("multipleExpressionsInTemplate.kt", "foo", "box", "left = 3\nright = 2\nsum = 5\n");
     }
 
     public void testObjectToStringCallInTemplate() throws Exception {
@@ -71,16 +61,7 @@ public final class StringTest extends AbstractExpressionTest {
         fooBoxTest();
     }
 
-    public void testNumbersInTemplate() throws Exception {
-        fooBoxIsValue("2354");
-    }
-
-    private void checkHasNoToStringCalls() throws IOException {
-        for (EcmaVersion ecmaVersion : DEFAULT_ECMA_VERSIONS) {
-            String filePath = getOutputFilePath(getTestName(true) + ".kt", ecmaVersion);
-            //noinspection IOResourceOpenedButNotSafelyClosed
-            String text = loadTextAndClose(new FileInputStream(filePath));
-            assertFalse(filePath + " should not contain toString calls", text.contains("toString"));
-        }
+    public void testExtensionMethods() throws Exception {
+        fooBoxTest();
     }
 }
