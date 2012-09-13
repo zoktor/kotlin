@@ -52,7 +52,13 @@ public class RhinoFunctionResultChecker implements RhinoResultChecker {
 
     @Override
     public void runChecks(Context context, Scriptable scope) throws Exception {
-        Object result = evaluateFunction(context, scope);
+        Object result = null;
+        //try {
+            result = evaluateFunction(context, scope);
+        //}
+        //catch (JavaScriptException e) {
+        //    throw new AssertionError(e.details());
+        //}
         flushSystemOut(context, scope);
         assertResultValid(result, context);
     }
@@ -60,8 +66,7 @@ public class RhinoFunctionResultChecker implements RhinoResultChecker {
     protected void assertResultValid(Object result, Context context) {
         String ecmaVersion = context.getLanguageVersion() == Context.VERSION_1_8 ? "ecma5" : "ecma3";
         assertEquals("Result of " + namespaceName + "." + functionName + "() is not what expected (" + ecmaVersion + ")!", expectedResult, result);
-        String report = namespaceName + "." + functionName + "() = " + Context.toString(result);
-        System.out.println(report);
+        System.out.println(namespaceName + "." + functionName + "() = " + Context.toString(result));
     }
 
     private Object evaluateFunction(Context cx, Scriptable scope) {

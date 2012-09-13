@@ -182,6 +182,12 @@ public final class TopLevelFIF extends CompositeFIF {
                 return TranslationUtils.notNullConditional(receiver, context.namer().throwNPEFunctionCall(), context);
             }
         });
+
+        add(pattern("jet", "MutableCollection", "add"), new KotlinFunctionIntrinsic("collectionAdd"));
+        add(pattern("jet", "MutableCollection", "remove"), new KotlinFunctionIntrinsic("collectionRemove"));
+        add(pattern("jet", "Collection", "iterator"), new KotlinFunctionIntrinsic("collectionIterator"));
+        add(pattern("jet", "Collection", "size"), new KotlinFunctionIntrinsic("collectionSize"));
+        add(pattern("jet", "Collection", "isEmpty"), new KotlinFunctionIntrinsic("collectionIsEmpty"));
     }
 
     private abstract static class NativeMapGetSet extends CallParametersAwareFunctionIntrinsic {
