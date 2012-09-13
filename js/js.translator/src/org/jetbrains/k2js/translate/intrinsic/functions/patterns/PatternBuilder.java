@@ -133,7 +133,6 @@ public final class PatternBuilder {
         private boolean receiverParameterExists;
 
         private String[] root;
-        private boolean checkOverridden;
 
         public DescriptorPredicateImpl(String... names) {
             this.names = names;
@@ -146,11 +145,6 @@ public final class PatternBuilder {
 
         public DescriptorPredicateImpl root(String... root) {
             this.root = root;
-            return this;
-        }
-
-        public DescriptorPredicateImpl checkOverridden() {
-            this.checkOverridden = true;
             return this;
         }
 
@@ -194,18 +188,6 @@ public final class PatternBuilder {
                 }
 
                 if (!descriptor.getName().getName().equals(list[nameIndex--])) {
-                    if (checkOverridden && nameIndex == names.length - 2) {
-                        String name = names[nameIndex];
-                        descriptor = null;
-                        for (FunctionDescriptor overriddenFunction : functionDescriptor.getOverriddenDescriptors()) {
-                            if (overriddenFunction.getName().getName().equals(name)) {
-                                descriptor = overriddenFunction;
-                            }
-                        }
-                        if (descriptor == null) {
-                            return false;
-                        }
-                    }
                     return false;
                 }
             }
