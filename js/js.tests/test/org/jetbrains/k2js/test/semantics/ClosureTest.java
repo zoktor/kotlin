@@ -43,4 +43,8 @@ public final class ClosureTest extends SingleFileTranslationTest {
     public void testLocalParameterInLocalNamedFunction() throws Exception {
         fooBoxTest();
     }
+
+    public void testWrappedVariableInExtensionFun() throws Exception {
+        //fooBoxTest();
+    }
 }
