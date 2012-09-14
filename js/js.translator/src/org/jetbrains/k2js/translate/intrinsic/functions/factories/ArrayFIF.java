@@ -17,6 +17,7 @@
 package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,7 @@ import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.lang.JetStandardClasses;
+import org.jetbrains.jet.lang.types.lang.JetStandardLibrary;
 import org.jetbrains.jet.lang.types.lang.PrimitiveType;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.BuiltInFunctionIntrinsic;
@@ -178,18 +180,8 @@ public final class ArrayFIF extends CompositeFIF {
         });
 
         PatternBuilder.DescriptorPredicateImpl removePattern = pattern(abstractList, "remove");
-        add(new ValueParametersAwareDescriptorPredicate(removePattern, new Predicate<JetType>() {
-            @Override
-            public boolean apply(JetType type) {
-                return PrimitiveType.INT.getClassName().is(type);
-            }
-        }), new KotlinFunctionIntrinsic("arrayRemoveAt"));
-        add(new ValueParametersAwareDescriptorPredicate(removePattern, new Predicate<JetType>() {
-            @Override
-            public boolean apply(JetType type) {
-                return JetStandardClasses.getNullableAnyType().equals(type);
-            }
-        }), new KotlinFunctionIntrinsic("arrayRemove"));
+        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(JetStandardLibrary.getInstance().getIntType())), new KotlinFunctionIntrinsic("arrayRemoveAt"));
+        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(JetStandardClasses.getNullableAnyType())), new KotlinFunctionIntrinsic("arrayRemove"));
 
         add(pattern(abstractList, "toString"), new KotlinFunctionIntrinsic("arrayToString"));
 

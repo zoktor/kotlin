@@ -89,16 +89,6 @@ public open class HashMap<K, V>() : MutableMap<K, V> {
 }
 
 library
-public open class LinkedList<E>(): AbstractList<E>() {
-    public override fun get(index: Int): E = js.noImpl
-    public override fun set(index: Int, element: E): E = js.noImpl
-    public override fun add(index: Int, element: E): Unit = js.noImpl
-    public fun poll(): E? = js.noImpl
-    public fun peek(): E? = js.noImpl
-    public fun offer(e: E): Boolean = js.noImpl
-}
-
-library
 public class StringBuilder() : Appendable {
     override fun append(c: Char): Appendable? = js.noImpl
     override fun append(csq: CharSequence?): Appendable? = js.noImpl
