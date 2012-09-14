@@ -16,8 +16,8 @@
 
 package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 
-import com.google.common.base.Predicate;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
 
@@ -25,10 +25,6 @@ import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
  * @author Pavel Talanov
  */
 public interface FunctionIntrinsicFactory {
-
-    @NotNull
-    Predicate<FunctionDescriptor> getPredicate();
-
-    @NotNull
+    @Nullable
     FunctionIntrinsic getIntrinsic(@NotNull FunctionDescriptor descriptor);
 }
