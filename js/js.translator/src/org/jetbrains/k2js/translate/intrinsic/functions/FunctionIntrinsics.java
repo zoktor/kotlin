@@ -84,6 +84,9 @@ public final class FunctionIntrinsics {
             if (intrinsic != null) {
                 return intrinsic;
             }
+            else {
+                int f = 4;
+            }
         }
         return FunctionIntrinsic.NO_INTRINSIC;
     }
