@@ -17,6 +17,7 @@
 package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
@@ -29,10 +30,10 @@ import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.lang.JetStandardClasses;
+import org.jetbrains.jet.lang.types.lang.JetStandardLibrary;
 import org.jetbrains.jet.lang.types.lang.PrimitiveType;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.BuiltInFunctionIntrinsic;
-import org.jetbrains.k2js.translate.intrinsic.functions.basic.CallStandardMethodIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.patterns.DescriptorPredicate;
 import org.jetbrains.k2js.translate.intrinsic.functions.patterns.NamePredicate;
@@ -111,17 +112,17 @@ public final class ArrayFIF extends CompositeFIF {
         add(pattern(ARRAYS, "get"), GET_INTRINSIC);
         add(pattern(ARRAYS, "set"), SET_INTRINSIC);
         add(pattern(ARRAYS, "<get-size>"), LENGTH_PROPERTY_INTRINSIC);
-        add(pattern(ARRAYS, "<get-indices>"), new CallStandardMethodIntrinsic(new JsNameRef("arrayIndices", "Kotlin"), true, 0));
-        CallStandardMethodIntrinsic iteratorIntrinsic = new CallStandardMethodIntrinsic(new JsNameRef("arrayIterator", "Kotlin"), true, 0);
+        add(pattern(ARRAYS, "<get-indices>"), new KotlinFunctionIntrinsic("arrayIndices"));
+        FunctionIntrinsic iteratorIntrinsic = new KotlinFunctionIntrinsic("arrayIterator");
         add(pattern(ARRAYS, "iterator"), iteratorIntrinsic);
-        add(pattern(ARRAYS, "<init>"), new CallStandardMethodIntrinsic(new JsNameRef("arrayFromFun", "Kotlin"), false, 2));
+        add(pattern(ARRAYS, "<init>"), new KotlinFunctionIntrinsic("arrayFromFun"));
         add(pattern("kotlin", "array"), ARRAY_INTRINSIC);
         add(new DescriptorPredicate() {
             @Override
             public boolean apply(@NotNull FunctionDescriptor descriptor) {
                 for (PrimitiveType type : PrimitiveType.values()) {
                     if (type.getArrayTypeName().equals(descriptor.getName())) {
-                        final DeclarationDescriptor nsDeclaration = descriptor.getContainingDeclaration();
+                        DeclarationDescriptor nsDeclaration = descriptor.getContainingDeclaration();
                         return nsDeclaration instanceof NamespaceDescriptor && DescriptorUtils.isRootNamespace((NamespaceDescriptor) nsDeclaration) && nsDeclaration.getName().getName().equals("kotlin");
                     }
                 }
@@ -142,29 +143,14 @@ public final class ArrayFIF extends CompositeFIF {
             }
         });
 
-
-        String[] abstractList = {"java", "util", "AbstractList"};
-        PatternBuilder.DescriptorPredicateImpl addPattern = pattern(abstractList, "add");
-        // http://jsperf.com/push-vs-len
-        add(new ValueParametersAwareDescriptorPredicate(addPattern, 1), new BuiltInFunctionIntrinsic("push"));
-        add(new ValueParametersAwareDescriptorPredicate(addPattern, 2), new KotlinFunctionIntrinsic("arrayAddAt"));
-
-        add(pattern(abstractList, "addAll"), new KotlinFunctionIntrinsic("arrayAddAll"));
-
-        String[] jetList = {"jet", "List"};
-        add(pattern(abstractList, "size"), LENGTH_PROPERTY_INTRINSIC);
-        add(pattern(jetList, "size"), LENGTH_PROPERTY_INTRINSIC);
-
-        KotlinFunctionIntrinsic arrayGet = new KotlinFunctionIntrinsic("arrayGet");
-        add(pattern(abstractList, "get"), arrayGet);
-        add(pattern(jetList, "get"), arrayGet);
-
-        add(pattern(abstractList, "set"), new KotlinFunctionIntrinsic("arraySet"));
-        add(pattern(abstractList, "isEmpty"), IS_EMPTY_INTRINSIC);
-        add(pattern(abstractList, "iterator"), iteratorIntrinsic);
-        add(pattern(abstractList, "indexOf"), new KotlinFunctionIntrinsic("arrayIndexOf"));
-        add(pattern(abstractList, "lastIndexOf"), new KotlinFunctionIntrinsic("arrayLastIndexOf"));
-        add(pattern(abstractList, "toArray"), new FunctionIntrinsic() {
+        String[] list = {"jet", "List"};
+        add(pattern(list, "size").checkOverridden(), LENGTH_PROPERTY_INTRINSIC);
+        add(pattern(list, "get").checkOverridden(), new KotlinFunctionIntrinsic("arrayGet"));
+        add(pattern(list, "isEmpty").checkOverridden(), IS_EMPTY_INTRINSIC);
+        add(pattern(list, "iterator").checkOverridden(), iteratorIntrinsic);
+        add(pattern(list, "indexOf").checkOverridden(), new KotlinFunctionIntrinsic("arrayIndexOf"));
+        add(pattern(list, "lastIndexOf").checkOverridden(), new KotlinFunctionIntrinsic("arrayLastIndexOf"));
+        add(pattern(list, "toArray").checkOverridden(), new FunctionIntrinsic() {
             @NotNull
             @Override
             public JsExpression apply(
@@ -174,34 +160,7 @@ public final class ArrayFIF extends CompositeFIF {
                 return new JsInvocation(new JsNameRef("slice", receiver), context.program().getNumberLiteral(0));
             }
         });
-
-        PatternBuilder.DescriptorPredicateImpl removePattern = pattern(abstractList, "remove");
-        add(new ValueParametersAwareDescriptorPredicate(removePattern, new Predicate<JetType>() {
-            @Override
-            public boolean apply(JetType type) {
-                return PrimitiveType.INT.getClassName().is(type);
-            }
-        }), new KotlinFunctionIntrinsic("arrayRemoveAt"));
-        add(new ValueParametersAwareDescriptorPredicate(removePattern, new Predicate<JetType>() {
-            @Override
-            public boolean apply(JetType type) {
-                return JetStandardClasses.getNullableAnyType().equals(type);
-            }
-        }), new KotlinFunctionIntrinsic("arrayRemove"));
-
-        add(pattern(abstractList, "toString"), new KotlinFunctionIntrinsic("arrayToString"));
-
-        add(pattern(abstractList, "clear"), new FunctionIntrinsic() {
-            @NotNull
-            @Override
-            public JsExpression apply(
-                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
-            ) {
-                assert receiver != null;
-                return assignment(new JsNameRef("length", receiver), context.program().getNumberLiteral(0));
-            }
-        });
-        add(pattern(abstractList, "contains"), new FunctionIntrinsic() {
+        add(pattern(list, "contains").checkOverridden(), new FunctionIntrinsic() {
             @NotNull
             @Override
             public JsExpression apply(
@@ -212,7 +171,45 @@ public final class ArrayFIF extends CompositeFIF {
                                   context.program().getNumberLiteral(-1));
             }
         });
-        add(pattern(abstractList, "equals"), new KotlinFunctionIntrinsic("arrayEquals"));
+
+        add(pattern(list, "equals").checkOverridden(), new KotlinFunctionIntrinsic("arrayEquals"));
+        add(pattern(list, "toString").checkOverridden(), new KotlinFunctionIntrinsic("arrayToString"));
+
+        String[] mutableList = {"jet", "MutableList"};
+        add(pattern(mutableList, "set").checkOverridden(), new KotlinFunctionIntrinsic("arraySet"));
+        // http://jsperf.com/push-vs-len
+        PatternBuilder.DescriptorPredicateImpl addPattern = pattern(mutableList, "add").checkOverridden();
+        add(new ValueParametersAwareDescriptorPredicate(addPattern, 1), new BuiltInFunctionIntrinsic("push"));
+        add(new ValueParametersAwareDescriptorPredicate(addPattern, 2), new KotlinFunctionIntrinsic("arrayAddAt"));
+        add(pattern(mutableList, "addAll").checkOverridden(), new KotlinFunctionIntrinsic("arrayAddAll"));
+        PatternBuilder.DescriptorPredicateImpl removePattern = pattern(mutableList, "remove").checkOverridden();
+        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(JetStandardLibrary.getInstance().getIntType())),
+            new KotlinFunctionIntrinsic("arrayRemoveAt"));
+        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(JetStandardClasses.getNullableAnyType())),
+            new KotlinFunctionIntrinsic("arrayRemove"));
+        add(pattern(mutableList, "clear").checkOverridden(), new FunctionIntrinsic() {
+            @NotNull
+            @Override
+            public JsExpression apply(
+                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+            ) {
+                assert receiver != null;
+                return assignment(new JsNameRef("length", receiver), context.program().getNumberLiteral(0));
+            }
+        });
+
+        add(pattern("jet", "Iterable", "iterator").checkOverridden(), new KotlinFunctionIntrinsic("collectionIterator"));
+
+        String[] collection = {"jet", "Collection"};
+        add(pattern(collection, "size").checkOverridden(), new KotlinFunctionIntrinsic("collectionSize"));
+        add(pattern(collection, "isEmpty").checkOverridden(), new KotlinFunctionIntrinsic("collectionIsEmpty"));
+        add(pattern(collection, "contains").checkOverridden(), new KotlinFunctionIntrinsic("collectionContains"));
+
+        String[] mutableCollection = {"jet", "MutableCollection"};
+        add(pattern(mutableCollection, "add").checkOverridden(), new KotlinFunctionIntrinsic("collectionAdd"));
+        add(pattern(mutableCollection, "addAll").checkOverridden(), new KotlinFunctionIntrinsic("collectionAddAll"));
+        add(pattern(mutableCollection, "remove").checkOverridden(), new KotlinFunctionIntrinsic("collectionRemove"));
+        add(pattern(mutableCollection, "clear").checkOverridden(), new KotlinFunctionIntrinsic("collectionClear"));
     }
 
     private final static class ValueParametersAwareDescriptorPredicate implements DescriptorPredicate {

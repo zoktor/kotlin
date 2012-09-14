@@ -40,12 +40,12 @@ native public abstract class AbstractList<E>(): AbstractCollection<E>(), Mutable
 
     override fun add(e: E): Boolean = js.noImpl
     override fun add(index: Int, element: E): Unit = js.noImpl
-    override fun addAll(index : Int, c : Collection<out E>) : Boolean = js.noImpl
+    override fun addAll(index: Int, c: Collection<out E>) : Boolean = js.noImpl
 
     override fun remove(index: Int): E = js.noImpl
 
     override fun indexOf(o: Any?): Int = js.noImpl
-    override fun lastIndexOf(o : Any?) : Int = js.noImpl
+    override fun lastIndexOf(o: Any?): Int = js.noImpl
 
     override fun listIterator() : MutableListIterator<E> = js.noImpl
     override fun listIterator(index : Int) : MutableListIterator<E> = js.noImpl
@@ -69,7 +69,7 @@ native public class LinkedList<E>(): AbstractList<E>() {
 }
 
 library
-public open class HashSet<E>(): AbstractCollection<E>(), MutableSet<E> {
+public class HashSet<E>(): AbstractCollection<E>(), MutableSet<E> {
 }
 
 library

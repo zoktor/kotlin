@@ -42,6 +42,7 @@ import org.jetbrains.k2js.translate.reference.CallTranslator;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.BindingUtils;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
+import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.List;
 
@@ -55,6 +56,19 @@ import static org.jetbrains.k2js.translate.utils.TranslationUtils.generateInvoca
 public final class TopLevelFIF extends CompositeFIF {
     @NotNull
     public static final CallStandardMethodIntrinsic EQUALS = new CallStandardMethodIntrinsic(new JsNameRef("equals", "Kotlin"), true, 1);
+    @NotNull
+    private static final FunctionIntrinsic RETURN_RECEIVER_INTRINSIC = new FunctionIntrinsic() {
+        @NotNull
+        @Override
+        public JsExpression apply(
+                @Nullable JsExpression receiver,
+                @NotNull List<JsExpression> arguments,
+                @NotNull TranslationContext context
+        ) {
+            assert receiver != null;
+            return receiver;
+        }
+    };
 
     private static final FunctionIntrinsic NATIVE_MAP_GET = new NativeMapGetSet() {
         @NotNull
@@ -115,7 +129,7 @@ public final class TopLevelFIF extends CompositeFIF {
     }
 
     private TopLevelFIF() {
-        add(pattern("jet", "toString").receiverExists(), new KotlinFunctionIntrinsic("stringify"));
+        add(pattern("jet", "toString").receiverExists(), new KotlinFunctionIntrinsic("toString"));
         add(pattern("jet", "equals").receiverExists(), EQUALS);
         add(pattern(NamePredicate.PRIMITIVE_NUMBERS, "equals"), EQUALS);
         add(pattern("String|Boolean|Char|Number.equals"), EQUALS);
@@ -164,6 +178,17 @@ public final class TopLevelFIF extends CompositeFIF {
 
         add(pattern(javaUtil, "HashMap", "<init>"), new MapSelectImplementationIntrinsic(false));
         add(pattern(javaUtil, "HashSet", "<init>"), new MapSelectImplementationIntrinsic(true));
+
+        add(pattern("jet", "sure").receiverExists(), new FunctionIntrinsic() {
+            @NotNull
+            @Override
+            public JsExpression apply(
+                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+            ) {
+                assert receiver != null;
+                return TranslationUtils.notNullConditional(receiver, context.namer().throwNPEFunctionCall(), context);
+            }
+        });
     }
 
     private abstract static class NativeMapGetSet extends CallParametersAwareFunctionIntrinsic {

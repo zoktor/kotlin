@@ -27,6 +27,7 @@ import org.jetbrains.jet.lang.resolve.name.Name;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Pavel Talanov
@@ -133,19 +134,55 @@ public final class PatternBuilder {
         private boolean receiverParameterExists;
 
         private String[] root;
+        private boolean checkOverridden;
 
         public DescriptorPredicateImpl(String... names) {
             this.names = names;
         }
 
-        public DescriptorPredicateImpl receiverExists(boolean receiverParameterExists) {
-            this.receiverParameterExists = receiverParameterExists;
+        public DescriptorPredicateImpl receiverExists() {
+            receiverParameterExists = true;
             return this;
         }
 
         public DescriptorPredicateImpl root(String... root) {
             this.root = root;
             return this;
+        }
+
+        public DescriptorPredicateImpl checkOverridden() {
+            this.checkOverridden = true;
+            return this;
+        }
+
+        private boolean check(FunctionDescriptor functionDescriptor) {
+            DeclarationDescriptor descriptor = functionDescriptor.getContainingDeclaration();
+            String[] list;
+            int nameIndex;
+            if (root == null) {
+                list = names;
+                nameIndex = list.length - 2;
+            }
+            else {
+                assert names.length == 1;
+                list = root;
+                nameIndex = list.length - 1;
+            }
+
+            do {
+                if (nameIndex == -1) {
+                    return isRootNamespace(descriptor);
+                }
+                else if (isRootNamespace(descriptor)) {
+                    return false;
+                }
+
+                if (!descriptor.getName().getName().equals(list[nameIndex--])) {
+                    return false;
+                }
+            }
+            while ((descriptor = descriptor.getContainingDeclaration()) != null);
+            return false;
         }
 
         @Override
@@ -188,7 +225,28 @@ public final class PatternBuilder {
                 }
 
                 if (!descriptor.getName().getName().equals(list[nameIndex--])) {
-                    return false;
+                    return checkOverridden && nameIndex == (list.length - (list == root ? 2 : 3)) && checkOverridden(functionDescriptor);
+                }
+            }
+            return false;
+        }
+
+        private boolean checkOverridden(FunctionDescriptor functionDescriptor) {
+            Set<? extends FunctionDescriptor> overriddenDescriptors = functionDescriptor.getOverriddenDescriptors();
+            if (overriddenDescriptors.isEmpty()) {
+                return false;
+            }
+
+            for (FunctionDescriptor overridden : overriddenDescriptors) {
+                if (overridden.getKind() == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
+                    for (FunctionDescriptor realOverridden : overridden.getOverriddenDescriptors()) {
+                        if (check(realOverridden) || checkOverridden(realOverridden)) {
+                            return true;
+                        }
+                    }
+                }
+                else if (check(overridden) || checkOverridden(overridden)) {
+                    return true;
                 }
             }
             return false;

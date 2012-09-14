@@ -47,7 +47,7 @@ public final class FunctionIntrinsics {
         register(PrimitiveBinaryOperationFIF.INSTANCE);
         register(StringOperationFIF.INSTANCE);
         register(ArrayFIF.INSTANCE);
-        register(TopLevelFIF.INSTANCE);
+        register(TopLevelFIF.getInstance());
         register(NumberConversionFIF.INSTANCE);
     }
 
@@ -58,11 +58,7 @@ public final class FunctionIntrinsics {
     @NotNull
     public FunctionIntrinsic getIntrinsic(@NotNull FunctionDescriptor descriptor) {
         FunctionIntrinsic intrinsic = lookUpCache(descriptor);
-        if (intrinsic != null) {
-            return intrinsic;
-        }
-        intrinsic = computeAndCacheIntrinsic(descriptor);
-        return intrinsic;
+        return intrinsic != null ? intrinsic : computeAndCacheIntrinsic(descriptor);
     }
 
     @Nullable
