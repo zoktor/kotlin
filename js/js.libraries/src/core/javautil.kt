@@ -61,7 +61,7 @@ native public abstract class AbstractList<E>(): AbstractCollection<E>(), Mutable
 native public class ArrayList<E>(): AbstractList<E>() {
 }
 
-// JS array is sparce, so, there is no any difference between ArrayList and LinkedList
+// JS array is sparse, so, there is no any difference between ArrayList and LinkedList
 native public class LinkedList<E>(): AbstractList<E>() {
     public fun poll(): E? = js.noImpl
     public fun peek(): E? = js.noImpl
