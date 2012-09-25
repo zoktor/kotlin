@@ -42,7 +42,6 @@ import org.jetbrains.k2js.translate.reference.CallTranslator;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.BindingUtils;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
-import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.List;
 
@@ -56,19 +55,6 @@ import static org.jetbrains.k2js.translate.utils.TranslationUtils.generateInvoca
 public final class TopLevelFIF extends CompositeFIF {
     @NotNull
     public static final CallStandardMethodIntrinsic EQUALS = new CallStandardMethodIntrinsic(new JsNameRef("equals", "Kotlin"), true, 1);
-    @NotNull
-    private static final FunctionIntrinsic RETURN_RECEIVER_INTRINSIC = new FunctionIntrinsic() {
-        @NotNull
-        @Override
-        public JsExpression apply(
-                @Nullable JsExpression receiver,
-                @NotNull List<JsExpression> arguments,
-                @NotNull TranslationContext context
-        ) {
-            assert receiver != null;
-            return receiver;
-        }
-    };
 
     private static final FunctionIntrinsic NATIVE_MAP_GET = new NativeMapGetSet() {
         @NotNull
@@ -118,16 +104,23 @@ public final class TopLevelFIF extends CompositeFIF {
         }
     };
 
+    private static FunctionIntrinsicFactory INSTANCE;
+
     @NotNull
-    public static final FunctionIntrinsicFactory INSTANCE = new TopLevelFIF();
+    public static FunctionIntrinsicFactory getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new TopLevelFIF();
+        }
+        return INSTANCE;
+    }
 
     private TopLevelFIF() {
-        add(pattern("jet", "toString").receiverExists(true), new KotlinFunctionIntrinsic("toString"));
-        add(pattern("jet", "equals").receiverExists(true), EQUALS);
+        add(pattern("jet", "toString").receiverExists(), new KotlinFunctionIntrinsic("stringify"));
+        add(pattern("jet", "equals").receiverExists(), EQUALS);
         add(pattern(NamePredicate.PRIMITIVE_NUMBERS, "equals"), EQUALS);
         add(pattern("String|Boolean|Char|Number.equals"), EQUALS);
         add(pattern("jet", "arrayOfNulls"), new KotlinFunctionIntrinsic("arrayOfNulls"));
-        add(pattern("jet", "iterator").receiverExists(true), RETURN_RECEIVER_INTRINSIC);
+        add(pattern("jet", "iterator").receiverExists(), RETURN_RECEIVER_INTRINSIC);
         add(new DescriptorPredicate() {
                 @Override
                 public boolean apply(@NotNull FunctionDescriptor descriptor) {
@@ -165,105 +158,12 @@ public final class TopLevelFIF extends CompositeFIF {
         );
 
         String[] javaUtil = {"java", "util"};
-        add(pattern(javaUtil, "set").receiverExists(true), NATIVE_MAP_SET);
+        add(pattern(javaUtil, "set").receiverExists(), NATIVE_MAP_SET);
         add(pattern("jet", "Map", "get"), NATIVE_MAP_GET);
         add(pattern(javaUtil, "HashMap", "get"), NATIVE_MAP_GET);
 
         add(pattern(javaUtil, "HashMap", "<init>"), new MapSelectImplementationIntrinsic(false));
         add(pattern(javaUtil, "HashSet", "<init>"), new MapSelectImplementationIntrinsic(true));
-
-        add(pattern("java", "util", "HashMap", "<init>"), new MapSelectImplementationIntrinsic(false));
-        add(pattern("java", "util", "HashSet", "<init>"), new MapSelectImplementationIntrinsic(true));
-
-        add(pattern("jet", "sure").receiverExists(true), new FunctionIntrinsic() {
-            @NotNull
-            @Override
-            public JsExpression apply(
-                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
-            ) {
-                assert receiver != null;
-                return TranslationUtils.notNullConditional(receiver, context.namer().throwNPEFunctionCall(), context);
-            }
-        });
-
-        add(pattern("jet", "MutableCollection", "add"), new KotlinFunctionIntrinsic("collectionAdd"));
-        add(pattern("jet", "MutableCollection", "remove"), new KotlinFunctionIntrinsic("collectionRemove"));
-        add(pattern("jet", "Collection", "iterator"), new KotlinFunctionIntrinsic("collectionIterator"));
-        add(pattern("jet", "Collection", "size"), new KotlinFunctionIntrinsic("collectionSize"));
-        add(pattern("jet", "Collection", "isEmpty"), new KotlinFunctionIntrinsic("collectionIsEmpty"));
-    }
-
-    private abstract static class NativeMapGetSet extends CallParametersAwareFunctionIntrinsic {
-        @NotNull
-        protected abstract String operation();
-
-        @Nullable
-        protected abstract ExpressionReceiver getExpressionReceiver(@NotNull ResolvedCall<?> resolvedCall);
-
-        protected abstract JsExpression asArrayAccess(
-                @NotNull JsExpression receiver,
-                @NotNull List<JsExpression> arguments,
-                @NotNull TranslationContext context
-        );
-
-        @NotNull
-        @Override
-        public JsExpression apply(@NotNull CallTranslator callTranslator, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context) {
-            ExpressionReceiver expressionReceiver = getExpressionReceiver(callTranslator.getResolvedCall());
-            JsExpression thisOrReceiver = callTranslator.getCallParameters().getThisOrReceiverOrNull();
-            assert thisOrReceiver != null;
-            if (expressionReceiver != null) {
-                JetExpression expression = expressionReceiver.getExpression();
-                JetReferenceExpression referenceExpression = null;
-                if (expression instanceof JetReferenceExpression) {
-                    referenceExpression = (JetReferenceExpression) expression;
-                }
-                else if (expression instanceof JetQualifiedExpression) {
-                    JetExpression candidate = ((JetQualifiedExpression) expression).getReceiverExpression();
-                    if (candidate instanceof JetReferenceExpression) {
-                        referenceExpression = (JetReferenceExpression) candidate;
-                    }
-                }
-
-                if (referenceExpression != null) {
-                    DeclarationDescriptor candidate = BindingUtils.getDescriptorForReferenceExpression(context.bindingContext(),
-                                                                                                       referenceExpression);
-                    if (candidate instanceof PropertyDescriptor && AnnotationsUtils.isNativeObject(candidate)) {
-                        return asArrayAccess(thisOrReceiver, arguments, context);
-                    }
-                }
-            }
-
-            return new JsInvocation(new JsNameRef(operation(), thisOrReceiver), arguments);
-        }
-    }
-
-    private static class MapSelectImplementationIntrinsic extends CallParametersAwareFunctionIntrinsic {
-        private final boolean isSet;
-
-        private MapSelectImplementationIntrinsic(boolean isSet) {
-            this.isSet = isSet;
-        }
-
-        @NotNull
-        @Override
-        public JsExpression apply(
-                @NotNull CallTranslator callTranslator,
-                @NotNull List<JsExpression> arguments,
-                @NotNull TranslationContext context
-        ) {
-            JetType keyType = callTranslator.getResolvedCall().getTypeArguments().values().iterator().next();
-            Name keyTypeName = JsDescriptorUtils.getNameIfStandardType(keyType);
-            String collectionClassName;
-            if (keyTypeName != null && (NamePredicate.PRIMITIVE_NUMBERS.apply(keyTypeName) || keyTypeName.getName().equals("String"))) {
-                collectionClassName = isSet ? "PrimitiveHashSet" : "PrimitiveHashMap";
-            }
-            else {
-                collectionClassName = isSet ? "ComplexHashSet" : "ComplexHashMap";
-            }
-
-            return callTranslator.createConstructorCallExpression(context.namer().kotlin(collectionClassName));
-        }
     }
 
     private abstract static class NativeMapGetSet extends CallParametersAwareFunctionIntrinsic {
