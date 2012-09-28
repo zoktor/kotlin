@@ -17,10 +17,10 @@
 package org.jetbrains.k2js.translate.reference;
 
 import com.google.dart.compiler.backend.js.ast.JsExpression;
+import com.google.dart.compiler.backend.js.ast.JsLiteral;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
-import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.calls.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.ResolvedCallWithTrace;
@@ -30,7 +30,6 @@ import org.jetbrains.jet.lang.resolve.scopes.receivers.ExtensionReceiver;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverDescriptor;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ThisReceiverDescriptor;
 import org.jetbrains.k2js.translate.context.TranslationContext;
-import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getDeclarationDescriptorForReceiver;
 
@@ -103,14 +102,15 @@ public final class CallParametersResolver {
             return null;
         }
 
-        if (thisObject instanceof ExtensionReceiver || thisObject instanceof ClassReceiver) {
-            JsExpression ref = context.getAliasForDescriptor(((ThisReceiverDescriptor) thisObject).getDeclarationDescriptor());
-            if (ref != null) {
-                return ref;
-            }
+        if (thisObject instanceof ClassReceiver) {
+            JsExpression ref = context.getAliasForDescriptor(((ClassReceiver) thisObject).getDeclarationDescriptor());
+            return ref == null ? JsLiteral.THIS : ref;
+        }
+        else if (thisObject instanceof ExtensionReceiver) {
+            return context.getAliasForDescriptor(getDeclarationDescriptorForReceiver(thisObject));
         }
 
-        return context.getThisObject(getDeclarationDescriptorForReceiver(thisObject));
+        return resolvedCall.getReceiverArgument().exists() && resolvedCall.getExplicitReceiverKind().isThisObject() ? JsLiteral.THIS : null;
     }
 
     @NotNull
@@ -118,7 +118,6 @@ public final class CallParametersResolver {
         if (qualifier != null) {
             return qualifier;
         }
-        DeclarationDescriptor receiverDescriptor = JsDescriptorUtils.getDeclarationDescriptorForExtensionCallReceiver(resolvedCall);
-        return context.getThisObject(receiverDescriptor);
+        return context.getThisObject(((ThisReceiverDescriptor) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
     }
 }

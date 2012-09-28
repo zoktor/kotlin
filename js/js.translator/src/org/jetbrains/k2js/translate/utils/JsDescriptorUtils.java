@@ -22,14 +22,12 @@ import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
-import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.name.Name;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ClassReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ExtensionReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverDescriptor;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
-import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
+import org.jetbrains.jet.lang.types.lang.JetStandardClasses;
+import org.jetbrains.jet.lang.types.lang.JetStandardLibrary;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
 import java.util.List;
@@ -85,22 +83,22 @@ public final class JsDescriptorUtils {
     }
 
     public static boolean isExtension(@NotNull CallableDescriptor functionDescriptor) {
-        return (functionDescriptor.getReceiverParameter() != null);
+        return (functionDescriptor.getReceiverParameter().exists());
     }
 
     //TODO: why callable descriptor
     @Nullable
     public static DeclarationDescriptor getExpectedThisDescriptor(@NotNull CallableDescriptor callableDescriptor) {
-        ReceiverParameterDescriptor expectedThisObject = callableDescriptor.getExpectedThisObject();
-        if (expectedThisObject == null) {
+        ReceiverDescriptor expectedThisObject = callableDescriptor.getExpectedThisObject();
+        if (!expectedThisObject.exists()) {
             return null;
         }
-        return getDeclarationDescriptorForReceiver(expectedThisObject.getValue());
+        return getDeclarationDescriptorForReceiver(expectedThisObject);
     }
 
     @NotNull
     public static DeclarationDescriptor getDeclarationDescriptorForReceiver
-            (@NotNull ReceiverValue receiverParameter) {
+            (@NotNull ReceiverDescriptor receiverParameter) {
         DeclarationDescriptor declarationDescriptor =
                 receiverParameter.getType().getConstructor().getDeclarationDescriptor();
         //TODO: WHY assert?
@@ -110,11 +108,11 @@ public final class JsDescriptorUtils {
 
     @Nullable
     public static DeclarationDescriptor getExpectedReceiverDescriptor(@NotNull CallableDescriptor callableDescriptor) {
-        ReceiverParameterDescriptor receiverParameter = callableDescriptor.getReceiverParameter();
-        if (receiverParameter == null) {
+        ReceiverDescriptor receiverParameter = callableDescriptor.getReceiverParameter();
+        if (!receiverParameter.exists()) {
             return null;
         }
-        return getDeclarationDescriptorForReceiver(receiverParameter.getValue());
+        return getDeclarationDescriptorForReceiver(receiverParameter);
     }
 
     //TODO: maybe we have similar routine
@@ -157,7 +155,7 @@ public final class JsDescriptorUtils {
         if (namespace == null) {
             return false;
         }
-        return namespace.equals(KotlinBuiltIns.getInstance().getBuiltInsScope().getContainingDeclaration());
+        return namespace.equals(JetStandardLibrary.getInstance().getLibraryScope().getContainingDeclaration());
     }
 
     @Nullable
@@ -174,24 +172,10 @@ public final class JsDescriptorUtils {
     @Nullable
     public static Name getNameIfStandardType(@NotNull JetType type) {
         ClassifierDescriptor descriptor = type.getConstructor().getDeclarationDescriptor();
-        if (descriptor != null && descriptor.getContainingDeclaration() == KotlinBuiltIns.getInstance().getBuiltInsPackage()) {
+        if (descriptor != null && descriptor.getContainingDeclaration() == JetStandardClasses.STANDARD_CLASSES_NAMESPACE) {
             return descriptor.getName();
         }
 
         return null;
-    }
-
-    @NotNull
-    public static DeclarationDescriptor getDeclarationDescriptorForExtensionCallReceiver(
-            @NotNull ResolvedCall<? extends CallableDescriptor> resolvedCall
-    ) {
-        ReceiverValue receiverArgument = resolvedCall.getReceiverArgument();
-        if (receiverArgument instanceof ExtensionReceiver) {
-            return ((ExtensionReceiver) receiverArgument).getDeclarationDescriptor();
-        }
-        if (receiverArgument instanceof ClassReceiver) {
-            return ((ClassReceiver) receiverArgument).getDeclarationDescriptor();
-        }
-        throw new IllegalStateException("Unexpected receiver of type " + receiverArgument.getClass());
     }
 }
