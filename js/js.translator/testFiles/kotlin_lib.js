@@ -180,10 +180,6 @@
         close: throwAbstractFunctionInvocationError("Closeable#close")
     });
 
-    Kotlin.parseInt = function (str) {
-        return parseInt(str, 10);
-    };
-
     Kotlin.safeParseInt = function(str) {
         var r = parseInt(str, 10);
         return isNaN(r) ? null : r;
