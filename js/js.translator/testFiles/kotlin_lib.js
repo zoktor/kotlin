@@ -168,12 +168,6 @@
         compareTo: throwAbstractFunctionInvocationError("Comparable#compareTo")
     });
 
-    Kotlin.Appendable = Kotlin.$createClass({
-        initialize: function () {
-        },
-        append: throwAbstractFunctionInvocationError("Appendable#append")
-    });
-
     Kotlin.Closeable = Kotlin.$createClass({
         initialize: function () {
         },
@@ -460,20 +454,6 @@
         }
         return max;
     };
-
-    Kotlin.StringBuilder = Kotlin.$createClass(
-            {
-                initialize:function () {
-                    this.string = "";
-                },
-                append:function (obj) {
-                    this.string = this.string + obj.toString();
-                },
-                toString:function () {
-                    return this.string;
-                }
-            }
-    );
 
     function nullFun(i) {
         return null;

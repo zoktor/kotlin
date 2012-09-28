@@ -16,9 +16,7 @@
 
 package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 
-import com.google.dart.compiler.backend.js.ast.JsExpression;
-import com.google.dart.compiler.backend.js.ast.JsInvocation;
-import com.google.dart.compiler.backend.js.ast.JsNameRef;
+import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
@@ -42,8 +40,8 @@ import org.jetbrains.k2js.translate.reference.CallTranslator;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.BindingUtils;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
-import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic.CallParametersAwareFunctionIntrinsic;
@@ -56,19 +54,6 @@ import static org.jetbrains.k2js.translate.utils.TranslationUtils.generateInvoca
 public final class TopLevelFIF extends CompositeFIF {
     @NotNull
     public static final CallStandardMethodIntrinsic EQUALS = new CallStandardMethodIntrinsic(new JsNameRef("equals", "Kotlin"), true, 1);
-    @NotNull
-    private static final FunctionIntrinsic RETURN_RECEIVER_INTRINSIC = new FunctionIntrinsic() {
-        @NotNull
-        @Override
-        public JsExpression apply(
-                @Nullable JsExpression receiver,
-                @NotNull List<JsExpression> arguments,
-                @NotNull TranslationContext context
-        ) {
-            assert receiver != null;
-            return receiver;
-        }
-    };
 
     private static final FunctionIntrinsic NATIVE_MAP_GET = new NativeMapGetSet() {
         @NotNull
@@ -129,7 +114,7 @@ public final class TopLevelFIF extends CompositeFIF {
     }
 
     private TopLevelFIF() {
-        add(pattern("jet", "toString").receiverExists(), new KotlinFunctionIntrinsic("toString"));
+        add(pattern("jet", "toString").receiverExists(), new KotlinFunctionIntrinsic("stringify"));
         add(pattern("jet", "equals").receiverExists(), EQUALS);
         add(pattern(NamePredicate.PRIMITIVE_NUMBERS, "equals"), EQUALS);
         add(pattern("String|Boolean|Char|Number.equals"), EQUALS);
@@ -176,17 +161,38 @@ public final class TopLevelFIF extends CompositeFIF {
         add(pattern("jet", "Map", "get").checkOverridden(), NATIVE_MAP_GET);
         add(pattern(new String[] {"js"}, "set").receiverExists(), NATIVE_MAP_SET);
 
+        add(pattern("js", "Json", "get"), ArrayFIF.GET_INTRINSIC);
+        add(pattern("js", "Json", "set"), ArrayFIF.SET_INTRINSIC);
+
         add(pattern(javaUtil, "HashMap", "<init>"), new MapSelectImplementationIntrinsic(false));
         add(pattern(javaUtil, "HashSet", "<init>"), new MapSelectImplementationIntrinsic(true));
 
-        add(pattern("jet", "sure").receiverExists(), new FunctionIntrinsic() {
+        add(pattern(javaUtil, "StringBuilder", "<init>"), new FunctionIntrinsic() {
             @NotNull
             @Override
             public JsExpression apply(
                     @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
             ) {
-                assert receiver != null;
-                return TranslationUtils.notNullConditional(receiver, context.namer().throwNPEFunctionCall(), context);
+                return new JsObjectLiteral(Collections.singletonList(new JsPropertyInitializer(new JsNameRef("s"), context.program().getStringLiteral(""))));
+            }
+        });
+        add(pattern(new String[] {"java", "lang", "Appendable"}, "append").checkOverridden(), new FunctionIntrinsic() {
+            @NotNull
+            @Override
+            public JsExpression apply(
+                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+            ) {
+                assert arguments.size() == 1;
+                return new JsBinaryOperation(JsBinaryOperator.ASG_ADD, new JsNameRef("s", receiver), arguments.get(0));
+            }
+        });
+        add(pattern(javaUtil, "StringBuilder", "toString"), new FunctionIntrinsic() {
+            @NotNull
+            @Override
+            public JsExpression apply(
+                    @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+            ) {
+                return new JsNameRef("s", receiver);
             }
         });
     }
