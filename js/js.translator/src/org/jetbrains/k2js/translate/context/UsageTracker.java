@@ -58,7 +58,18 @@ public final class UsageTracker {
 
     @Nullable
     public ClassDescriptor getOuterClassDescriptor() {
-        return outerClassDescriptor;
+        if (outerClassDescriptor != null || children == null) {
+            return outerClassDescriptor;
+        }
+
+        for (UsageTracker child : children) {
+            ClassDescriptor childOuterClassDescriptor = child.getOuterClassDescriptor();
+            if (childOuterClassDescriptor != null) {
+                return childOuterClassDescriptor;
+            }
+        }
+
+        return null;
     }
 
     private void addChild(UsageTracker child) {
@@ -88,14 +99,15 @@ public final class UsageTracker {
         }
         else if (descriptor instanceof SimpleFunctionDescriptor) {
             CallableDescriptor callableDescriptor = (CallableDescriptor) descriptor;
-            if (JsDescriptorUtils.isExtension(callableDescriptor)) {
+            if (callableDescriptor.getReceiverParameter().exists()) {
                 return;
             }
 
             DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
             if (containingDeclaration instanceof ClassDescriptor) {
                 // skip methods like "plus" — defined in Int class
-                if (outerClassDescriptor == null && (!callableDescriptor.getExpectedThisObject().exists() || isAncestor(containingDeclaration, memberDescriptor))) {
+                if (outerClassDescriptor == null &&
+                    (!callableDescriptor.getExpectedThisObject().exists() || isAncestor(containingDeclaration, memberDescriptor))) {
                     outerClassDescriptor = (ClassDescriptor) containingDeclaration;
                 }
                 return;

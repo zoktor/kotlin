@@ -53,6 +53,7 @@ class InnerFunctionTranslator extends InnerDeclarationTranslator {
 
     @NotNull
     private JsExpression getThis(TranslationContext outerContext) {
+        //noinspection ConstantConditions
         ClassDescriptor outerClassDescriptor = context.usageTracker().getOuterClassDescriptor();
         if (outerClassDescriptor != null && !descriptor.getReceiverParameter().exists()) {
             return outerContext.getThisObject(outerClassDescriptor);
