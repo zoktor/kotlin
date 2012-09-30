@@ -18,7 +18,6 @@ package org.jetbrains.k2js.translate.test;
 
 import com.google.dart.compiler.backend.js.ast.JsExpression;
 import com.google.dart.compiler.backend.js.ast.JsNameRef;
-import com.google.dart.compiler.util.AstUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 public final class JSRhinoUnitTester extends CommonUnitTester {
 
     @NotNull
-    private static final JsNameRef TEST_FUN_REF = AstUtil.newQualifiedNameRef("JsTests.test");
+    private static final JsNameRef TEST_FUN_REF = new JsNameRef("test", "JsTests");
 
     @NotNull
     @Override
