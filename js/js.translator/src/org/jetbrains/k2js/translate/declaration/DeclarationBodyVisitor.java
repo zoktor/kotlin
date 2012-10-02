@@ -60,8 +60,7 @@ public class DeclarationBodyVisitor extends TranslatorVisitor<Void> {
     }
 
     @Override
-    public Void visitNamedFunction(@NotNull JetNamedFunction expression,
-            @NotNull TranslationContext context) {
+    public Void visitNamedFunction(@NotNull JetNamedFunction expression, @NotNull TranslationContext context) {
         FunctionDescriptor descriptor = getFunctionDescriptor(context.bindingContext(), expression);
         if (descriptor.getModality() == Modality.ABSTRACT) {
             return null;

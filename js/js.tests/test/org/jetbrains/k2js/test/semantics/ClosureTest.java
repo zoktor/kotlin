@@ -45,6 +45,6 @@ public final class ClosureTest extends SingleFileTranslationTest {
     }
 
     public void testWrappedVariableInExtensionFun() throws Exception {
-        //fooBoxTest();
+        fooBoxTest();
     }
 }
