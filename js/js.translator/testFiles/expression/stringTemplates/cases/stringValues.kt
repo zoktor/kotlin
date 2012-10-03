@@ -7,5 +7,9 @@ fun box(): Boolean {
 
     if (message != "a = abc, b = def") return false
 
+    val v1 = null
+
+    if ("returns null" != "returns $v1") return false
+
     return true
 }

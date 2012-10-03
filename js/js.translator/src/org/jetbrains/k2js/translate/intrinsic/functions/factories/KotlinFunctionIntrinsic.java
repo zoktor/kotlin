@@ -10,7 +10,7 @@ import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.List;
 
-final class KotlinFunctionIntrinsic extends FunctionIntrinsic {
+public final class KotlinFunctionIntrinsic extends FunctionIntrinsic {
     @NotNull
     private final String functionName;
 

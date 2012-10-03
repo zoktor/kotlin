@@ -103,6 +103,8 @@ public final class TopLevelFIF extends CompositeFIF {
         }
     };
 
+    public static final KotlinFunctionIntrinsic STRINGIFY = new KotlinFunctionIntrinsic("stringify");
+
     private static FunctionIntrinsicFactory INSTANCE;
 
     @NotNull
@@ -114,7 +116,7 @@ public final class TopLevelFIF extends CompositeFIF {
     }
 
     private TopLevelFIF() {
-        add(pattern("jet", "toString").receiverExists(), new KotlinFunctionIntrinsic("stringify"));
+        add(pattern("jet", "toString").receiverExists(), STRINGIFY);
         add(pattern("jet", "equals").receiverExists(), EQUALS);
         add(pattern(NamePredicate.PRIMITIVE_NUMBERS, "equals"), EQUALS);
         add(pattern("String|Boolean|Char|Number.equals"), EQUALS);
