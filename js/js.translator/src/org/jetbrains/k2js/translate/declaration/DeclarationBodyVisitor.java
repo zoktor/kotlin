@@ -58,13 +58,9 @@ public class DeclarationBodyVisitor extends TranslatorVisitor<Void> {
         return null;
     }
 
-    protected void translateClassOrObject(@NotNull JetClassOrObject declaration, @NotNull TranslationContext context) {
-        result.add(context.classDeclarationTranslator().translate(declaration, context));
-    }
-
     @Override
     public Void visitObjectDeclaration(@NotNull JetObjectDeclaration declaration, @NotNull TranslationContext context) {
-        translateClassOrObject(declaration, context);
+        // parsed it in initializer visitor => no additional actions are needed
         return null;
     }
 

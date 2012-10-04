@@ -57,7 +57,7 @@ public final class InitializerUtils {
             @NotNull TranslationContext context
     ) {
         ClassDescriptor descriptor = getClassDescriptor(context.bindingContext(), declaration);
-        JsExpression value = ClassTranslator.generateClassCreation(declaration, descriptor, context);
+        JsExpression value = ClassTranslator.generateObjectLiteral(declaration, descriptor, context);
         initializers.add(create(descriptor, value, context));
     }
 

@@ -26,7 +26,7 @@ import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
 import org.jetbrains.jet.lang.descriptors.ClassKind;
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.jet.lang.psi.JetClassOrObject;
-import org.jetbrains.jet.lang.psi.JetObjectLiteralExpression;
+import org.jetbrains.jet.lang.psi.JetObjectDeclaration;
 import org.jetbrains.jet.lang.psi.JetParameter;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.k2js.translate.LabelGenerator;
@@ -71,21 +71,26 @@ public final class ClassTranslator extends AbstractTranslator {
     }
 
     @NotNull
-    public static JsInvocation generateClassCreation(@NotNull JetClassOrObject classDeclaration,
-            @NotNull ClassDescriptor descriptor,
-            @NotNull TranslationContext context) {
-        return new ClassTranslator(classDeclaration, descriptor, null, context).translate(context);
+    public static JsExpression generateObjectLiteral(
+            @NotNull JetObjectDeclaration objectDeclaration,
+            @NotNull TranslationContext context
+    ) {
+        return new ClassTranslator(objectDeclaration, null, context).translateObjectLiteralExpression();
     }
 
     @NotNull
-    public static JsExpression generateObjectLiteral(@NotNull JetObjectLiteralExpression objectLiteralExpression,
-            @NotNull TranslationContext context) {
-        return new ClassTranslator(objectLiteralExpression.getObjectDeclaration(), null, context).translateObjectLiteralExpression();
+    public static JsExpression generateObjectLiteral(
+            @NotNull JetObjectDeclaration objectDeclaration, @NotNull ClassDescriptor descriptor,
+            @NotNull TranslationContext context
+    ) {
+        return new ClassTranslator(objectDeclaration, descriptor, null, context).translateObjectLiteralExpression();
     }
 
-    ClassTranslator(@NotNull JetClassOrObject classDeclaration,
+    ClassTranslator(
+            @NotNull JetClassOrObject classDeclaration,
             @Nullable ClassAliasingMap aliasingMap,
-            @NotNull TranslationContext context) {
+            @NotNull TranslationContext context
+    ) {
         this(classDeclaration, getClassDescriptor(context.bindingContext(), classDeclaration), aliasingMap, context);
     }
 

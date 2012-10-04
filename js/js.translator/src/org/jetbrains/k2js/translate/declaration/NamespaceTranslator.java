@@ -187,7 +187,7 @@ final class NamespaceTranslator extends AbstractTranslator {
 
         @Override
         public Void visitClass(@NotNull JetClass declaration, @NotNull TranslationContext context) {
-            translateClassOrObject(declaration, context);
+            result.add(context.classDeclarationTranslator().translate(declaration, context));
             return null;
         }
 
