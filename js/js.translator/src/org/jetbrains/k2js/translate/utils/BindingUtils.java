@@ -60,7 +60,7 @@ public final class BindingUtils {
     @NotNull
     public static ClassDescriptor getClassDescriptor(@NotNull BindingContext context,
             @NotNull JetClassOrObject declaration) {
-        return getDescriptorForExpression(context, declaration, ClassDescriptor.class);
+        return BindingContextUtils.getNotNull(context, BindingContext.CLASS, declaration);
     }
 
     @NotNull

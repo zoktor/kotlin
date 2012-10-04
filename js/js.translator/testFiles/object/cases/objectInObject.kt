@@ -14,5 +14,5 @@ class C {
   object query {val status = "complete" + ov()}
 }
 
-fun box() = A.query.status == "complete" && B.query.status == "completed" && C().query.status == "completed"
+fun box() =  A.query.status == "complete" && B.query.status == "completed" && C().query.status == "completed"
 

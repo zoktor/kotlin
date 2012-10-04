@@ -51,21 +51,19 @@ import static org.jetbrains.k2js.translate.utils.BindingUtils.getPropertyDescrip
 final class NamespaceTranslator extends AbstractTranslator {
     @NotNull
     private final NamespaceDescriptor descriptor;
-    @NotNull
-    private final ClassDeclarationTranslator classDeclarationTranslator;
 
     private final FileDeclarationVisitor visitor;
 
     private final NotNullLazyValue<Trinity<List<JsPropertyInitializer>, LabelGenerator, JsExpression>> definitionPlace;
 
-    NamespaceTranslator(@NotNull final NamespaceDescriptor descriptor,
-            @NotNull ClassDeclarationTranslator classDeclarationTranslator,
+    NamespaceTranslator(
+            @NotNull final NamespaceDescriptor descriptor,
             @NotNull final Map<NamespaceDescriptor, List<JsExpression>> descriptorToDefineInvocation,
-            @NotNull TranslationContext context) {
+            @NotNull TranslationContext context
+    ) {
         super(context.newDeclaration(descriptor));
 
         this.descriptor = descriptor;
-        this.classDeclarationTranslator = classDeclarationTranslator;
 
         visitor = new FileDeclarationVisitor();
 
@@ -189,7 +187,7 @@ final class NamespaceTranslator extends AbstractTranslator {
 
         @Override
         public Void visitClass(@NotNull JetClass expression, @NotNull TranslationContext context) {
-            JsPropertyInitializer value = classDeclarationTranslator.translate(expression);
+            JsPropertyInitializer value = context().classDeclarationTranslator().translate(expression);
             result.add(value);
             return null;
         }

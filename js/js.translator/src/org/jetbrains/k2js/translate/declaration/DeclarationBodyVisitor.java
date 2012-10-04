@@ -60,6 +60,13 @@ public class DeclarationBodyVisitor extends TranslatorVisitor<Void> {
     }
 
     @Override
+    public Void visitObjectDeclaration(@NotNull JetObjectDeclaration declaration, @NotNull TranslationContext context) {
+        JsPropertyInitializer value = context.classDeclarationTranslator().translate(declaration);
+        result.add(value);
+        return null;
+    }
+
+    @Override
     public Void visitNamedFunction(@NotNull JetNamedFunction expression, @NotNull TranslationContext context) {
         FunctionDescriptor descriptor = getFunctionDescriptor(context.bindingContext(), expression);
         if (descriptor.getModality() == Modality.ABSTRACT) {

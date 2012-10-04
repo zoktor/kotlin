@@ -66,12 +66,12 @@ public final class ClassTranslator extends AbstractTranslator {
     private final ClassAliasingMap aliasingMap;
 
     @NotNull
-    public static JsExpression generateClassCreation(@NotNull JetClassOrObject classDeclaration, @NotNull TranslationContext context) {
+    public static JsInvocation generateClassCreation(@NotNull JetClassOrObject classDeclaration, @NotNull TranslationContext context) {
         return new ClassTranslator(classDeclaration, null, context).translate(context);
     }
 
     @NotNull
-    public static JsExpression generateClassCreation(@NotNull JetClassOrObject classDeclaration,
+    public static JsInvocation generateClassCreation(@NotNull JetClassOrObject classDeclaration,
             @NotNull ClassDescriptor descriptor,
             @NotNull TranslationContext context) {
         return new ClassTranslator(classDeclaration, descriptor, null, context).translate(context);
@@ -109,7 +109,7 @@ public final class ClassTranslator extends AbstractTranslator {
     }
 
     @NotNull
-    public JsExpression translate(@NotNull TranslationContext declarationContext) {
+    public JsInvocation translate(@NotNull TranslationContext declarationContext) {
         JsInvocation createInvocation = context().namer().classCreateInvocation(descriptor);
         translate(createInvocation, declarationContext);
         return createInvocation;
@@ -263,7 +263,7 @@ public final class ClassTranslator extends AbstractTranslator {
     }
 
     @NotNull
-    private JsExpression getClassReference(@NotNull ClassDescriptor superClassDescriptor) {
+    private JsNameRef getClassReference(@NotNull ClassDescriptor superClassDescriptor) {
         // aliasing here is needed for the declaration generation step
         if (aliasingMap != null) {
             JsNameRef name = aliasingMap.get(superClassDescriptor, descriptor);
