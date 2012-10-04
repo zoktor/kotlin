@@ -232,12 +232,6 @@ public final class BindingUtils {
     }
 
     @NotNull
-    public static PropertyDescriptor getPropertyDescriptorForObjectDeclaration(@NotNull BindingContext context,
-            @NotNull JetObjectDeclarationName name) {
-        return BindingContextUtils.getNotNull(context, BindingContext.OBJECT_DECLARATION, name);
-    }
-
-    @NotNull
     public static JetType getTypeForExpression(@NotNull BindingContext context,
             @NotNull JetExpression expression) {
         return BindingContextUtils.getNotNull(context, BindingContext.EXPRESSION_TYPE, expression);

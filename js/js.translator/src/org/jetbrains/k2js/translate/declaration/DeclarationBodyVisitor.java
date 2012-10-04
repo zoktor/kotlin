@@ -33,7 +33,6 @@ import org.jetbrains.k2js.translate.utils.JsAstUtils;
 import java.util.List;
 
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getFunctionDescriptor;
-import static org.jetbrains.k2js.translate.utils.BindingUtils.getPropertyDescriptorForObjectDeclaration;
 
 /**
  * @author Pavel Talanov
@@ -59,10 +58,13 @@ public class DeclarationBodyVisitor extends TranslatorVisitor<Void> {
         return null;
     }
 
+    protected void translateClassOrObject(@NotNull JetClassOrObject declaration, @NotNull TranslationContext context) {
+        result.add(context.classDeclarationTranslator().translate(declaration, context));
+    }
+
     @Override
     public Void visitObjectDeclaration(@NotNull JetObjectDeclaration declaration, @NotNull TranslationContext context) {
-        JsPropertyInitializer value = context.classDeclarationTranslator().translate(declaration);
-        result.add(value);
+        translateClassOrObject(declaration, context);
         return null;
     }
 
@@ -86,17 +88,6 @@ public class DeclarationBodyVisitor extends TranslatorVisitor<Void> {
     public Void visitProperty(@NotNull JetProperty expression, @NotNull TranslationContext context) {
         PropertyDescriptor propertyDescriptor = BindingUtils.getPropertyDescriptor(context.bindingContext(), expression);
         PropertyTranslator.translateAccessors(propertyDescriptor, expression, result, context);
-        return null;
-    }
-
-    @Override
-    public Void visitObjectDeclarationName(@NotNull JetObjectDeclarationName expression,
-            @NotNull TranslationContext context) {
-        if (!context.isEcma5()) {
-            PropertyTranslator
-                    .translateAccessors(getPropertyDescriptorForObjectDeclaration(context.bindingContext(), expression), result, context);
-        }
-
         return null;
     }
 

@@ -173,13 +173,11 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
     }
 
     @NotNull
-    public JsPropertyInitializer translate(@NotNull JetClassOrObject declaration) {
+    public JsPropertyInitializer translate(@NotNull JetClassOrObject declaration, TranslationContext context) {
         ClassDescriptor descriptor = getClassDescriptor(context().bindingContext(), declaration);
         JsExpression value;
         if (descriptor.getModality() == Modality.FINAL) {
-            JsInvocation invocation = context().namer().classCreateInvocation(descriptor);
-            new ClassTranslator(declaration, aliasingMap, context()).translate(invocation);
-            value = invocation;
+            value = new ClassTranslator(declaration, aliasingMap, context).translate(context);
         }
         else {
             String label = localLabelGenerator.generate();

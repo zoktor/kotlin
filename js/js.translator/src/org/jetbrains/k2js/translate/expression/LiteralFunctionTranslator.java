@@ -147,15 +147,17 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
         return new JsFunction(context().scope(), new JsBlock());
     }
 
-    public JsExpression translate(@NotNull ClassDescriptor outerClass,
+    public JsExpression translate(
+            @NotNull ClassDescriptor outerClass,
             @NotNull JetClassOrObject declaration,
             @NotNull ClassDescriptor descriptor,
-            @NotNull ClassTranslator classTranslator) {
+            @NotNull ClassTranslator classTranslator
+    ) {
         JsFunction fun = createFunction();
         JsNameRef outerClassRef = fun.getScope().declareName(Namer.OUTER_CLASS_NAME).makeRef();
         UsageTracker usageTracker = new UsageTracker(descriptor, null, outerClass);
         TranslationContext funContext = context().newFunctionBody(fun, context().aliasingContext().inner(outerClass, outerClassRef),
-                                                                    usageTracker);
+                                                                  usageTracker);
 
         fun.getBody().getStatements().add(new JsReturn(classTranslator.translate(funContext)));
         JetClassBody body = declaration.getBody();

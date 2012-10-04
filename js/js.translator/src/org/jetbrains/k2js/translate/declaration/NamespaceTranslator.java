@@ -186,15 +186,14 @@ final class NamespaceTranslator extends AbstractTranslator {
         }
 
         @Override
-        public Void visitClass(@NotNull JetClass expression, @NotNull TranslationContext context) {
-            JsPropertyInitializer value = context().classDeclarationTranslator().translate(expression);
-            result.add(value);
+        public Void visitClass(@NotNull JetClass declaration, @NotNull TranslationContext context) {
+            translateClassOrObject(declaration, context);
             return null;
         }
 
         @Override
         public Void visitObjectDeclaration(@NotNull JetObjectDeclaration declaration, @NotNull TranslationContext context) {
-            InitializerUtils.generate(declaration, initializerStatements, result, context);
+            InitializerUtils.generate(declaration, initializerStatements, context);
             return null;
         }
 

@@ -115,10 +115,6 @@ public final class ClassTranslator extends AbstractTranslator {
         return createInvocation;
     }
 
-    public void translate(@NotNull JsInvocation createInvocation) {
-        translate(createInvocation, context());
-    }
-
     private void translate(@NotNull JsInvocation createInvocation, @NotNull TranslationContext context) {
         addSuperclassReferences(createInvocation);
         addClassOwnDeclarations(createInvocation.getArguments(), context);

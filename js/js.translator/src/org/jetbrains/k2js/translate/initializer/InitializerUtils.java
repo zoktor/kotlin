@@ -18,7 +18,6 @@ package org.jetbrains.k2js.translate.initializer;
 
 import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
 import org.jetbrains.jet.lang.descriptors.Named;
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
@@ -52,18 +51,14 @@ public final class InitializerUtils {
         }
     }
 
-    public static void generate(@NotNull JetObjectDeclaration declaration,
+    public static void generate(
+            @NotNull JetObjectDeclaration declaration,
             @NotNull List<JsStatement> initializers,
-            @Nullable List<JsPropertyInitializer> definitions,
-            @NotNull TranslationContext context) {
+            @NotNull TranslationContext context
+    ) {
         ClassDescriptor descriptor = getClassDescriptor(context.bindingContext(), declaration);
         JsExpression value = ClassTranslator.generateClassCreation(declaration, descriptor, context);
-        if (definitions != null && value instanceof JsLiteral) {
-            definitions.add(createPropertyInitializer(descriptor, value, context));
-        }
-        else {
-            initializers.add(create(descriptor, value, context));
-        }
+        initializers.add(create(descriptor, value, context));
     }
 
     public static JsStatement create(Named named, JsExpression value, TranslationContext context) {
