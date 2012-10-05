@@ -90,6 +90,7 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
                 return null;
             }
 
+            item.referencedFromOpenClass = true;
             addAfter(item, openClassDescriptorToItem.get(referencedDescriptor));
             return item.label;
         }
@@ -112,6 +113,7 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
         private final JsNameRef label;
 
         private JsExpression translatedDeclaration;
+        private boolean referencedFromOpenClass;
 
         private FinalListItem(JetClass declaration, ClassDescriptor descriptor, JsNameRef label) {
             this.descriptor = descriptor;
@@ -145,7 +147,7 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
 
         if (vars.isEmpty()) {
             if (!propertyInitializers.isEmpty()) {
-                classesVar.setInitExpression(new JsObjectLiteral(propertyInitializers));
+                classesVar.setInitExpression(new JsObjectLiteral(propertyInitializers, true));
             }
             return;
         }
@@ -165,10 +167,19 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
         for (FinalListItem item : openList) {
             JsExpression translatedDeclaration = item.translatedDeclaration;
             if (translatedDeclaration == null) {
-                throw new IllegalStateException(message(item.declaration, "Could not translate class declaration)"));
+                throw new IllegalStateException(message(item.declaration, "Could not translate class declaration"));
             }
-            vars.add(new JsVar(item.label.getName(), translatedDeclaration));
-            propertyInitializers.add(new JsPropertyInitializer(item.label, item.label));
+
+            JsExpression value;
+            if (item.referencedFromOpenClass) {
+                vars.add(new JsVar(item.label.getName(), translatedDeclaration));
+                value = item.label;
+            }
+            else {
+                value = translatedDeclaration;
+            }
+
+            propertyInitializers.add(new JsPropertyInitializer(item.label, value));
         }
     }
 
