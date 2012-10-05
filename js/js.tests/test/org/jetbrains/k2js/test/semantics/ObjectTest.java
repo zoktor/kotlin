@@ -52,7 +52,7 @@ public final class ObjectTest extends SingleFileTranslationTest {
         fooBoxTest();
     }
 
-    public void testObjectInheritingFromClass() throws Exception {
+    public void testObjectInObjectAsParameter() throws Exception {
         fooBoxTest();
     }
 }
