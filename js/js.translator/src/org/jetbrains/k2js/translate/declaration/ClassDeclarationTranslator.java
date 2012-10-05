@@ -210,13 +210,10 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
             }
             qualifiedLabel.setQualifier(declarationsObjectRef);
 
-            ChameleonJsExpression chameleonExpression = new ChameleonJsExpression();
-            chameleonExpression.resolve(qualifiedLabel);
-
+            ChameleonJsExpression chameleonExpression = new ChameleonJsExpression(qualifiedLabel);
             FinalListItem item = new FinalListItem((JetClass) declaration, descriptor, name.makeRef(), chameleonExpression);
             ownOpenClasses.add(item);
             ownOpenClassDescriptorToItem.put(descriptor, item);
-
             value = chameleonExpression;
         }
 
