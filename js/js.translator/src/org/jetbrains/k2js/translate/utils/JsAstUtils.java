@@ -41,6 +41,8 @@ public final class JsAstUtils {
     private static final JsPropertyInitializer WRITABLE = new JsPropertyInitializer(new JsNameRef("writable"), JsLiteral.TRUE);
     private static final JsPropertyInitializer ENUMERABLE = new JsPropertyInitializer(new JsNameRef("enumerable"), JsLiteral.TRUE);
 
+    public static final String LENDS_JS_DOC_TAG = "lends";
+
     static {
         JsNameRef globalObjectReference = new JsNameRef("Object");
         DEFINE_PROPERTY.setQualifier(globalObjectReference);
@@ -225,52 +227,50 @@ public final class JsAstUtils {
     }
 
     @NotNull
-    public static JsInvocation defineProperty(@NotNull String name,
+    public static JsInvocation defineProperty(
+            @NotNull String name,
             @NotNull JsObjectLiteral value,
-            @NotNull TranslationContext context) {
-        JsInvocation invocation = new JsInvocation(DEFINE_PROPERTY);
-        invocation.getArguments().add(JsLiteral.THIS);
-        invocation.getArguments().add(context.program().getStringLiteral(name));
-        invocation.getArguments().add(value);
-        return invocation;
+            @NotNull TranslationContext context
+    ) {
+        return new JsInvocation(DEFINE_PROPERTY, JsLiteral.THIS, context.program().getStringLiteral(name), value);
     }
 
     @NotNull
     public static JsObjectLiteral createPropertyDataDescriptor(@NotNull FunctionDescriptor descriptor,
             @NotNull JsExpression value) {
-        return createPropertyDataDescriptor(descriptor.getModality().isOverridable(), descriptor, value);
+        return createPropertyDataDescriptor(descriptor, descriptor.getModality().isOverridable(), value);
     }
 
     @NotNull
     public static JsObjectLiteral createDataDescriptor(@NotNull JsExpression value) {
-        return createDataDescriptor(value, false);
+        return createDataDescriptor(value, false, false);
     }
 
     @NotNull
-    public static JsObjectLiteral createDataDescriptor(@NotNull JsExpression value, boolean writable) {
+    public static JsObjectLiteral createDataDescriptor(@NotNull JsExpression value, boolean writable, boolean enumerable) {
         JsObjectLiteral dataDescriptor = new JsObjectLiteral();
         dataDescriptor.getPropertyInitializers().add(new JsPropertyInitializer(VALUE, value));
         if (writable) {
             dataDescriptor.getPropertyInitializers().add(WRITABLE);
         }
-        return dataDescriptor;
-    }
-
-    @NotNull
-    public static JsObjectLiteral createPropertyDataDescriptor(@NotNull PropertyDescriptor descriptor,
-            @NotNull JsExpression value) {
-        return createPropertyDataDescriptor(descriptor.isVar(), descriptor, value);
-    }
-
-    @NotNull
-    private static JsObjectLiteral createPropertyDataDescriptor(boolean writable,
-            @NotNull DeclarationDescriptor descriptor,
-            @NotNull JsExpression value) {
-        JsObjectLiteral dataDescriptor = createDataDescriptor(value, writable);
-        if (AnnotationsUtils.isEnumerable(descriptor)) {
+        if (enumerable) {
             dataDescriptor.getPropertyInitializers().add(ENUMERABLE);
         }
         return dataDescriptor;
+    }
+
+    @NotNull
+    public static JsObjectLiteral createPropertyDataDescriptor(@NotNull PropertyDescriptor descriptor, @NotNull JsExpression value) {
+        return createPropertyDataDescriptor(descriptor, descriptor.isVar(), value);
+    }
+
+    @NotNull
+    private static JsObjectLiteral createPropertyDataDescriptor(
+            @NotNull DeclarationDescriptor descriptor,
+            boolean writable,
+            @NotNull JsExpression value
+    ) {
+        return createDataDescriptor(value, writable, AnnotationsUtils.isEnumerable(descriptor));
     }
 
     @NotNull

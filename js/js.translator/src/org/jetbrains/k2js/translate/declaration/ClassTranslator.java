@@ -35,6 +35,7 @@ import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
 import org.jetbrains.k2js.translate.initializer.ClassInitializerTranslator;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
+import org.jetbrains.k2js.translate.utils.JsAstUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -189,7 +190,7 @@ public final class ClassTranslator extends AbstractTranslator {
             else {
                 if (qualifiedReference != null) {
                     // about "prototype" — see http://code.google.com/p/jsdoc-toolkit/wiki/TagLends
-                    invocationArguments.add(new JsDocComment("lends", new JsNameRef("prototype", qualifiedReference)));
+                    invocationArguments.add(new JsDocComment(JsAstUtils.LENDS_JS_DOC_TAG, new JsNameRef("prototype", qualifiedReference)));
                 }
                 invocationArguments.add(new JsObjectLiteral(properties, true));
             }
