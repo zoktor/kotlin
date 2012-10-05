@@ -45,9 +45,9 @@ import static org.jetbrains.k2js.translate.utils.ErrorReportingUtils.message;
 public final class ClassDeclarationTranslator extends AbstractTranslator {
     private final LabelGenerator localLabelGenerator = new LabelGenerator('c');
 
-    @NotNull
-    private final THashMap<ClassDescriptor, FinalListItem> openClassDescriptorToItem = new THashMap<ClassDescriptor, FinalListItem>();
-    private final TLinkedList<FinalListItem> openList = new TLinkedList<FinalListItem>();
+    private final THashMap<ClassDescriptor, FinalListItem> ownOpenClassDescriptorToItem = new THashMap<ClassDescriptor, FinalListItem>();
+    private final TLinkedList<FinalListItem> ownOpenClasses = new TLinkedList<FinalListItem>();
+
     private final THashMap<ClassDescriptor, JsNameRef> openClassDescriptorToJsNameRef = new THashMap<ClassDescriptor, JsNameRef>();
 
     private final ClassAliasingMap aliasingMap = new ClassAliasingMap() {
@@ -84,14 +84,14 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
         @Nullable
         @Override
         public JsNameRef get(ClassDescriptor descriptor, ClassDescriptor referencedDescriptor) {
-            FinalListItem item = openClassDescriptorToItem.get(descriptor);
+            FinalListItem item = ownOpenClassDescriptorToItem.get(descriptor);
             // class declared in library
             if (item == null) {
                 return null;
             }
 
             item.referencedFromOpenClass = true;
-            addAfter(item, openClassDescriptorToItem.get(referencedDescriptor));
+            addAfter(item, ownOpenClassDescriptorToItem.get(referencedDescriptor));
             return item.label;
         }
 
@@ -102,8 +102,8 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
                 }
             }
 
-            openList.remove(referencedItem);
-            openList.addBefore((FinalListItem) item.getNext(), referencedItem);
+            ownOpenClasses.remove(referencedItem);
+            ownOpenClasses.addBefore((FinalListItem) item.getNext(), referencedItem);
         }
     }
 
@@ -111,14 +111,16 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
         private final ClassDescriptor descriptor;
         private final JetClass declaration;
         private final JsNameRef label;
+        private final ChameleonJsExpression chameleonExpression;
 
         private JsExpression translatedDeclaration;
         private boolean referencedFromOpenClass;
 
-        private FinalListItem(JetClass declaration, ClassDescriptor descriptor, JsNameRef label) {
+        private FinalListItem(JetClass declaration, ClassDescriptor descriptor, JsNameRef label, ChameleonJsExpression chameleonExpression) {
             this.descriptor = descriptor;
             this.declaration = declaration;
             this.label = label;
+            this.chameleonExpression = chameleonExpression;
         }
     }
 
@@ -159,12 +161,12 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
     private void generateOpenClassDeclarations(@NotNull List<JsVar> vars, @NotNull List<JsPropertyInitializer> propertyInitializers) {
         ClassAliasingMap classAliasingMap = new OpenClassRefProvider();
         // first pass: set up list order
-        for (FinalListItem item : openList) {
+        for (FinalListItem item : ownOpenClasses) {
             item.translatedDeclaration =
                     new ClassTranslator(item.declaration, item.descriptor, classAliasingMap, context()).translate(context());
         }
         // second pass: generate
-        for (FinalListItem item : openList) {
+        for (FinalListItem item : ownOpenClasses) {
             JsExpression translatedDeclaration = item.translatedDeclaration;
             if (translatedDeclaration == null) {
                 throw new IllegalStateException(message(item.declaration, "Could not translate class declaration"));
@@ -177,6 +179,11 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
             }
             else {
                 value = translatedDeclaration;
+                // if open class is not referenced from own final classes, so, define it inplace
+                if (!openClassDescriptorToJsNameRef.contains(item.descriptor)) {
+                    item.chameleonExpression.resolve(translatedDeclaration);
+                    continue;
+                }
             }
 
             propertyInitializers.add(new JsPropertyInitializer(item.label, value));
@@ -203,11 +210,14 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
             }
             qualifiedLabel.setQualifier(declarationsObjectRef);
 
-            FinalListItem item = new FinalListItem((JetClass) declaration, descriptor, name.makeRef());
-            openList.add(item);
-            openClassDescriptorToItem.put(descriptor, item);
+            ChameleonJsExpression chameleonExpression = new ChameleonJsExpression();
+            chameleonExpression.resolve(qualifiedLabel);
 
-            value = qualifiedLabel;
+            FinalListItem item = new FinalListItem((JetClass) declaration, descriptor, name.makeRef(), chameleonExpression);
+            ownOpenClasses.add(item);
+            ownOpenClassDescriptorToItem.put(descriptor, item);
+
+            value = chameleonExpression;
         }
 
         return InitializerUtils.createPropertyInitializer(descriptor, value, context());
