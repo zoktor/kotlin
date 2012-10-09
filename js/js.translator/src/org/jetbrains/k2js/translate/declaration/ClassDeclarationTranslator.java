@@ -25,7 +25,6 @@ import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
 import org.jetbrains.jet.lang.descriptors.Modality;
 import org.jetbrains.jet.lang.psi.JetClass;
 import org.jetbrains.jet.lang.psi.JetClassOrObject;
-import org.jetbrains.k2js.translate.LabelGenerator;
 import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
@@ -43,7 +42,7 @@ import static org.jetbrains.k2js.translate.utils.ErrorReportingUtils.message;
  *         Generates a big block where are all the classes(objects representing them) are created.
  */
 public final class ClassDeclarationTranslator extends AbstractTranslator {
-    private final LabelGenerator localLabelGenerator = new LabelGenerator('c');
+    private final THashSet<String> nameClashGuard = new THashSet<String>();
 
     private final THashMap<ClassDescriptor, FinalListItem> ownOpenClassDescriptorToItem = new THashMap<ClassDescriptor, FinalListItem>();
     private final TLinkedList<FinalListItem> ownOpenClasses = new TLinkedList<FinalListItem>();
@@ -53,7 +52,7 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
     private final ClassAliasingMap aliasingMap = new ClassAliasingMap() {
         @NotNull
         @Override
-        public JsNameRef get(ClassDescriptor descriptor, ClassDescriptor referencedDescriptor) {
+        public JsNameRef get(ClassDescriptor descriptor, @Nullable ClassDescriptor referencedDescriptor) {
             JsNameRef ref = openClassDescriptorToJsNameRef.get(descriptor);
             if (ref != null) {
                 return ref;
@@ -190,7 +189,26 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
         }
     }
 
-    @NotNull
+    private String createNameForClass(ClassDescriptor descriptor) {
+        String suggestedName = descriptor.getName().getName();
+        String name = suggestedName;
+        int counter = 0;
+        while (!nameClashGuard.add(name)) {
+            name = suggestedName + '_' + counter++;
+        }
+        return name;
+    }
+
+    @Nullable
+    public JsNameRef getQualifiedReference(ClassDescriptor descriptor) {
+        if (descriptor.getModality() != Modality.FINAL) {
+            //noinspection ConstantConditions
+            return aliasingMap.get(descriptor, null);
+        }
+        return null;
+    }
+
+    @Nullable
     public JsPropertyInitializer translate(@NotNull JetClassOrObject declaration, TranslationContext context) {
         ClassDescriptor descriptor = getClassDescriptor(context().bindingContext(), declaration);
         JsExpression value;
@@ -198,7 +216,7 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
             value = new ClassTranslator(declaration, aliasingMap, context).translate(context);
         }
         else {
-            String label = localLabelGenerator.generate();
+            String label = createNameForClass(descriptor);
             JsName name = dummyFunction.getScope().declareName(label);
             JsNameRef qualifiedLabel = openClassDescriptorToJsNameRef.get(descriptor);
             if (qualifiedLabel == null) {
@@ -215,6 +233,10 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
             ownOpenClasses.add(item);
             ownOpenClassDescriptorToItem.put(descriptor, item);
             value = chameleonExpression;
+            // not public api classes referenced to internal var _c
+            if (!descriptor.getVisibility().isPublicAPI()) {
+                return null;
+            }
         }
 
         return InitializerUtils.createPropertyInitializer(descriptor, value, context());
