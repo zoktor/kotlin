@@ -87,6 +87,7 @@ public class TranslationContext {
              usageTracker == null ? parent.usageTracker : usageTracker);
     }
 
+    @Nullable
     public UsageTracker usageTracker() {
         return usageTracker;
     }
@@ -233,6 +234,7 @@ public class TranslationContext {
         dynamicContext.jsBlock().getStatements().add(statement);
     }
 
+    @Nullable
     public JsExpression getAliasForDescriptor(@NotNull DeclarationDescriptor descriptor) {
         if (usageTracker != null) {
             usageTracker.triggerUsed(descriptor);
