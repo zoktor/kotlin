@@ -111,4 +111,8 @@ public class FunctionTest extends AbstractExpressionTest {
     public void testCallFunInInit() throws Exception {
         fooBoxTest();
     }
+
+    public void testInvokeMethod() throws Exception {
+        fooBoxIsValue("hello world!");
+    }
 }

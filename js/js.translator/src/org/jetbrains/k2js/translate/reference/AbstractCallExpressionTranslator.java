@@ -55,7 +55,7 @@ public abstract class AbstractCallExpressionTranslator extends AbstractTranslato
             @NotNull CallType type, @NotNull TranslationContext context) {
         super(context);
         this.expression = expression;
-        this.resolvedCall = getResolvedCallForCallExpression(bindingContext(), expression);
+        resolvedCall = getResolvedCallForCallExpression(bindingContext(), expression);
         this.receiver = receiver;
         this.callType = type;
     }
