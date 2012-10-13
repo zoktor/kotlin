@@ -24,16 +24,17 @@ import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
 import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
-import org.jetbrains.jet.lang.resolve.calls.util.ExpressionAsFunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedValueArgument;
 import org.jetbrains.jet.lang.resolve.calls.model.VariableAsFunctionResolvedCall;
+import org.jetbrains.jet.lang.resolve.calls.util.ExpressionAsFunctionDescriptor;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.Translation;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.PsiUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getCallee;
@@ -120,9 +121,15 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
 
     @NotNull
     private List<JsExpression> translateArguments() {
-        List<JsExpression> result = new ArrayList<JsExpression>();
-        for (ValueParameterDescriptor parameterDescriptor : resolvedCall.getResultingDescriptor().getValueParameters()) {
-            ResolvedValueArgument actualArgument = resolvedCall.getValueArgumentsByIndex().get(parameterDescriptor.getIndex());
+        List<ValueParameterDescriptor> valueParameters = resolvedCall.getResultingDescriptor().getValueParameters();
+        if (valueParameters.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<JsExpression> result = new ArrayList<JsExpression>(valueParameters.size());
+        List<ResolvedValueArgument> valueArgumentsByIndex = resolvedCall.getValueArgumentsByIndex();
+        for (ValueParameterDescriptor parameterDescriptor : valueParameters) {
+            ResolvedValueArgument actualArgument = valueArgumentsByIndex.get(parameterDescriptor.getIndex());
             result.addAll(translateSingleArgument(actualArgument, parameterDescriptor));
         }
         return result;
