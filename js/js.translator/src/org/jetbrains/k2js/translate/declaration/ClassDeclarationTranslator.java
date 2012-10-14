@@ -22,6 +22,7 @@ import gnu.trove.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.Modality;
 import org.jetbrains.jet.lang.psi.JetClass;
 import org.jetbrains.jet.lang.psi.JetClassOrObject;
@@ -192,9 +193,11 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
     private String createNameForClass(ClassDescriptor descriptor) {
         String suggestedName = descriptor.getName().getName();
         String name = suggestedName;
-        int counter = 0;
+        DeclarationDescriptor containing = descriptor;
         while (!nameClashGuard.add(name)) {
-            name = suggestedName + '_' + counter++;
+            containing = containing.getContainingDeclaration();
+            assert containing != null;
+            name = suggestedName + '_' + containing.getName().getName();
         }
         return name;
     }
