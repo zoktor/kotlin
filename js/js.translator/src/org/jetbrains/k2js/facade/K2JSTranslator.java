@@ -31,7 +31,7 @@ import org.jetbrains.k2js.utils.JetFileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.k2js.facade.FacadeUtils.parseString;
@@ -75,8 +75,7 @@ public final class K2JSTranslator {
 
     @NotNull
     public String generateProgramCode(@NotNull JetFile file, @NotNull MainCallParameters mainCallParameters) throws TranslationException {
-        JsProgram program = generateProgram(Arrays.asList(file), mainCallParameters);
-        return generateProgramToString(program);
+        return generateProgramCode(Collections.singletonList(file), mainCallParameters);
     }
 
     @NotNull

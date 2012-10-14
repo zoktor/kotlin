@@ -36,7 +36,10 @@ import org.jetbrains.k2js.generate.CodeGenerator;
 import org.jetbrains.k2js.test.config.TestConfigFactory;
 import org.jetbrains.k2js.utils.JetFileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.List;
 
@@ -106,13 +109,7 @@ public final class TranslationUtils {
             @NotNull EcmaVersion version, TestConfigFactory configFactory) throws Exception {
         List<JetFile> psiFiles = createPsiFileList(inputFiles, project);
         JsProgram program = new K2JSTranslator(getConfig(project, version, configFactory)).generateProgram(psiFiles, mainCallParameters);
-        FileWriter writer = new FileWriter(new File(outputFile));
-        try {
-            writer.write(CodeGenerator.generateProgramToString(program));
-        }
-        finally {
-            writer.close();
-        }
+        FileUtil.writeToFile(new File(outputFile), CodeGenerator.generateProgramToString(program));
     }
 
     @NotNull
