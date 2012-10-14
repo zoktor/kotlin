@@ -56,6 +56,9 @@ public class K2JSCompilerArguments extends CompilerArguments {
     @Argument(value = "main", description = "Whether a main function should be called; either 'call' or 'noCall', default 'call' (main function will be auto detected)")
     public String main;
 
+    @Argument(value = "sourcemap", description = "Generate SourceMap")
+    public boolean sourcemap;
+
     @Argument(value = "help", alias = "h", description = "Show help")
     public boolean help;
 
