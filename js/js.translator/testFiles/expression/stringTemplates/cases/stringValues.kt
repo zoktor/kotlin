@@ -1,5 +1,10 @@
 package foo
 
+// test String template must have one or more entries.
+public class Fe {
+  fun open(method:String, url:String, async:Boolean = true, user:String = "", password:String = "") = true
+}
+
 fun box(): Boolean {
     val a = "abc"
     val b = "def"
@@ -11,5 +16,6 @@ fun box(): Boolean {
 
     if ("returns null" != "returns $v1") return false
 
-    return true
+
+    return true && Fe().open("22", "33")
 }
