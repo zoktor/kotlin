@@ -16,13 +16,17 @@
 
 package org.jetbrains.k2js.facade;
 
+import com.google.dart.compiler.backend.js.JsSourceGenerationVisitor;
 import com.google.dart.compiler.backend.js.ast.JsProgram;
+import com.google.dart.compiler.util.TextOutputImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
+import org.jetbrains.jet.lang.types.lang.JetStandardLibrary;
+import org.jetbrains.js.compiler.SourceMapBuilder;
 import org.jetbrains.k2js.analyze.AnalyzerFacadeForJS;
 import org.jetbrains.k2js.config.Config;
 import org.jetbrains.k2js.facade.exceptions.TranslationException;
@@ -35,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.k2js.facade.FacadeUtils.parseString;
-import static org.jetbrains.k2js.generate.CodeGenerator.generateProgramToString;
 
 /**
  * @author Pavel Talanov
@@ -52,8 +55,14 @@ public final class K2JSTranslator {
             @NotNull String outputPath,
             @NotNull Config config) throws TranslationException, IOException {
         K2JSTranslator translator = new K2JSTranslator(config);
-        String programCode = translator.generateProgramCode(files, mainCall);
-        FileUtil.writeToFile(new File(outputPath), programCode);
+        File outFile = new File(outputPath);
+        TextOutputImpl output = new TextOutputImpl();
+        SourceMapBuilder sourceMapBuilder = config.isSourcemap() ? null : new SourceMapBuilder(outFile.getName(), output, new SourceMapBuilderConsumer());
+        String programCode = translator.generateProgramCode(files, mainCall, output, sourceMapBuilder);
+        FileUtil.writeToFile(outFile, programCode);
+        if (sourceMapBuilder != null) {
+            FileUtil.writeToFile(new File(outFile.getParentFile(), sourceMapBuilder.getOutFilename()), sourceMapBuilder.build());
+        }
     }
 
     @NotNull
@@ -81,15 +90,27 @@ public final class K2JSTranslator {
     @NotNull
     public String generateProgramCode(@NotNull List<JetFile> files, @NotNull MainCallParameters mainCallParameters)
             throws TranslationException {
+        return generateProgramCode(files, mainCallParameters, new TextOutputImpl(), null);
+    }
+
+    @NotNull
+    public String generateProgramCode(
+            @NotNull List<JetFile> files,
+            @NotNull MainCallParameters mainCallParameters,
+            @NotNull TextOutputImpl output,
+            @Nullable SourceMapBuilder sourceMapBuilder
+    ) throws TranslationException {
         JsProgram program = generateProgram(files, mainCallParameters);
-        return generateProgramToString(program);
+        JsSourceGenerationVisitor sourceGenerator = new JsSourceGenerationVisitor(output, sourceMapBuilder);
+        program.traverse(sourceGenerator, null);
+        return output.toString();
     }
 
     @NotNull
     public JsProgram generateProgram(@NotNull List<JetFile> filesToTranslate,
             @NotNull MainCallParameters mainCallParameters)
             throws TranslationException {
-        KotlinBuiltIns.initialize(config.getProject());
+        JetStandardLibrary.initialize(config.getProject());
         BindingContext bindingContext = AnalyzerFacadeForJS.analyzeFilesAndCheckErrors(filesToTranslate, config);
         return Translation.generateAst(bindingContext, filesToTranslate, mainCallParameters, config);
     }

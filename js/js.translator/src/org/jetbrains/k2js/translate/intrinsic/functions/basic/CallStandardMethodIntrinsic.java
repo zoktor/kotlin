@@ -26,8 +26,6 @@ import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.List;
 
-import static org.jetbrains.k2js.translate.utils.ErrorReportingUtils.atLocation;
-
 /**
  * @author Pavel Talanov
  */
@@ -56,8 +54,7 @@ public final class CallStandardMethodIntrinsic extends FunctionIntrinsic {
 
     @NotNull
     private String errorMessage(@Nullable JsExpression receiver, @NotNull List<JsExpression> arguments) {
-        return "Incorrect number of arguments " + arguments.size() + " when expected " + expectedParamsNumber + " on method " + methodName + " " +
-               atLocation(receiver, arguments);
+        return "Incorrect number of arguments " + arguments.size() + " when expected " + expectedParamsNumber + " on method " + methodName;
     }
 
     @NotNull
