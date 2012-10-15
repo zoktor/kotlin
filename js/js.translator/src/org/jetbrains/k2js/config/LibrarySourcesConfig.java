@@ -57,7 +57,7 @@ public class LibrarySourcesConfig extends Config {
             @NotNull EcmaVersion ecmaVersion,
             boolean sourcemap
     ) {
-        super(project, moduleId, ecmaVersion);
+        super(project, moduleId, ecmaVersion, sourcemap);
         this.files = files;
     }
 

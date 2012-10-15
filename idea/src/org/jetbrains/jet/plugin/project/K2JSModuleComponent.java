@@ -52,10 +52,7 @@ public final class K2JSModuleComponent implements ModuleComponent, PersistentSta
     @NotNull
     private EcmaVersion ecmaVersion;
 
-    @NotNull
-    public EcmaVersion getEcmaVersion() {
-        return ecmaVersion;
-    }
+    private boolean sourcemap;
 
     public K2JSModuleComponent() {
         this.isJavaScriptModule = false;
@@ -63,8 +60,21 @@ public final class K2JSModuleComponent implements ModuleComponent, PersistentSta
         this.ecmaVersion = EcmaVersion.defaultVersion();
     }
 
+    @NotNull
+    public EcmaVersion getEcmaVersion() {
+        return ecmaVersion;
+    }
+
     public void setEcmaVersion(@NotNull EcmaVersion ecmaVersion) {
         this.ecmaVersion = ecmaVersion;
+    }
+
+    public boolean isSourcemap() {
+        return sourcemap;
+    }
+
+    public void setSourcemap(boolean sourcemap) {
+        this.sourcemap = sourcemap;
     }
 
     public boolean isJavaScriptModule() {

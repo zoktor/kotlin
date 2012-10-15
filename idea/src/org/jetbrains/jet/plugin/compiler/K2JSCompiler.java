@@ -43,6 +43,7 @@ import org.jetbrains.jet.compiler.runner.CompilerRunnerUtil;
 import org.jetbrains.jet.compiler.runner.OutputItemsCollectorImpl;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.plugin.project.JsModuleDetector;
+import org.jetbrains.jet.plugin.project.K2JSModuleComponent;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -217,6 +218,11 @@ public final class K2JSCompiler implements TranslatingCompiler {
         if (libLocationAndTarget.second != null) {
             args.add("-target");
             args.add(libLocationAndTarget.second);
+        }
+
+        K2JSModuleComponent jsModuleComponent = K2JSModuleComponent.getInstance(module);
+        if (jsModuleComponent.isSourcemap()) {
+            args.add("-sourcemap");
         }
     }
 
