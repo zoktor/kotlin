@@ -21,6 +21,7 @@ import com.google.dart.compiler.backend.js.ast.JsExpression;
 import com.google.dart.compiler.backend.js.ast.JsLiteral;
 import com.google.dart.compiler.backend.js.ast.JsNode;
 import com.google.dart.compiler.backend.js.ast.JsReturn;
+import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
@@ -29,7 +30,7 @@ import org.jetbrains.jet.lang.descriptors.SimpleFunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
 import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetFunction;
-import org.jetbrains.jet.lang.resolve.calls.model.ResolvedValueArgument;
+import org.jetbrains.jet.lang.resolve.calls.ResolvedValueArgument;
 import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
@@ -155,9 +156,10 @@ public final class InlinedCallExpressionTranslator extends AbstractCallExpressio
     @NotNull
     private JsExpression translateArgument(@NotNull ValueParameterDescriptor parameterDescriptor,
                                            @NotNull ResolvedValueArgument actualArgument) {
-        List<JsExpression> translatedSingleArgument = translateSingleArgument(actualArgument, parameterDescriptor);
-        assert translatedSingleArgument.size() == 1 : "We always wrap varargs in kotlin calls.";
-        return translatedSingleArgument.get(0);
+        List<JsExpression> result = new SmartList<JsExpression>();
+        translateSingleArgument(actualArgument, parameterDescriptor, result);
+        assert result.size() == 1 : "We always wrap varargs in kotlin calls.";
+        return result.get(0);
     }
 
     @Override

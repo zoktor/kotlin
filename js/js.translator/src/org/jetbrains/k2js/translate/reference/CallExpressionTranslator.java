@@ -130,7 +130,7 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
         List<ResolvedValueArgument> valueArgumentsByIndex = resolvedCall.getValueArgumentsByIndex();
         for (ValueParameterDescriptor parameterDescriptor : valueParameters) {
             ResolvedValueArgument actualArgument = valueArgumentsByIndex.get(parameterDescriptor.getIndex());
-            result.addAll(translateSingleArgument(actualArgument, parameterDescriptor));
+            translateSingleArgument(actualArgument, parameterDescriptor, result);
         }
         return result;
     }
