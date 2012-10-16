@@ -57,7 +57,7 @@ public final class K2JSTranslator {
         K2JSTranslator translator = new K2JSTranslator(config);
         File outFile = new File(outputPath);
         TextOutputImpl output = new TextOutputImpl();
-        SourceMapBuilder sourceMapBuilder = config.isSourcemap() ? null : new SourceMapBuilder(outFile.getName(), output, new SourceMapBuilderConsumer());
+        SourceMapBuilder sourceMapBuilder = config.isSourcemap() ? new SourceMapBuilder(outFile.getName(), output, new SourceMapBuilderConsumer()) : null;
         String programCode = translator.generateProgramCode(files, mainCall, output, sourceMapBuilder);
         FileUtil.writeToFile(outFile, programCode);
         if (sourceMapBuilder != null) {
