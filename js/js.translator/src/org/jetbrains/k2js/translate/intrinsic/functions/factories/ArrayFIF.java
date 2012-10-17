@@ -29,8 +29,7 @@ import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.JetType;
-import org.jetbrains.jet.lang.types.lang.JetStandardClasses;
-import org.jetbrains.jet.lang.types.lang.JetStandardLibrary;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.jet.lang.types.lang.PrimitiveType;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.BuiltInFunctionIntrinsic;
@@ -183,9 +182,9 @@ public final class ArrayFIF extends CompositeFIF {
         add(new ValueParametersAwareDescriptorPredicate(addPattern, 2), new KotlinFunctionIntrinsic("arrayAddAt"));
         add(pattern(mutableList, "addAll").checkOverridden(), new KotlinFunctionIntrinsic("arrayAddAll"));
         PatternBuilder.DescriptorPredicateImpl removePattern = pattern(mutableList, "remove").checkOverridden();
-        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(JetStandardLibrary.getInstance().getIntType())),
+        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(KotlinBuiltIns.getInstance().getIntType())),
             new KotlinFunctionIntrinsic("arrayRemoveAt"));
-        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(JetStandardClasses.getNullableAnyType())),
+        add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(KotlinBuiltIns.getInstance().getNullableAnyType())),
             new KotlinFunctionIntrinsic("arrayRemove"));
         add(pattern(mutableList, "clear").checkOverridden(), new FunctionIntrinsic() {
             @NotNull

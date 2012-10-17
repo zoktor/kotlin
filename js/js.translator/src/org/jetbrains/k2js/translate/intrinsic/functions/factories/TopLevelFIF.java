@@ -30,7 +30,7 @@ import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverDescriptor;
 import org.jetbrains.jet.lang.types.JetType;
-import org.jetbrains.jet.lang.types.lang.JetStandardClasses;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.CallStandardMethodIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
@@ -132,8 +132,8 @@ public final class TopLevelFIF extends CompositeFIF {
                     int parameterCount = descriptor.getValueParameters().size();
                     DeclarationDescriptor fun = descriptor.getContainingDeclaration();
                     return descriptor.getReceiverParameter().exists()
-                           ? fun == JetStandardClasses.getReceiverFunction(parameterCount)
-                           : fun == JetStandardClasses.getFunction(parameterCount);
+                           ? fun == KotlinBuiltIns.getInstance().getExtensionFunction(parameterCount)
+                           : fun == KotlinBuiltIns.getInstance().getFunction(parameterCount);
                 }
             }, new CallParametersAwareFunctionIntrinsic() {
                 @NotNull

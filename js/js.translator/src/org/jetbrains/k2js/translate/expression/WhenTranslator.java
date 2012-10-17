@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.types.lang.JetStandardClasses;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
 import org.jetbrains.k2js.translate.general.Translation;
@@ -67,7 +67,7 @@ public final class WhenTranslator extends AbstractTranslator {
 
     public WhenTranslator(@NotNull JetWhenExpression expression, @NotNull TranslationContext context) {
         this(expression, context,
-             context.bindingContext().get(BindingContext.EXPRESSION_TYPE, expression) == JetStandardClasses.getTuple(0));
+             context.bindingContext().get(BindingContext.EXPRESSION_TYPE, expression) == KotlinBuiltIns.getInstance().getTuple(0));
     }
 
     @NotNull
