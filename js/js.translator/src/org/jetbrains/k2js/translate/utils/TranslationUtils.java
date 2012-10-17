@@ -253,12 +253,11 @@ public final class TranslationUtils {
     @Nullable
     public static JsExpression translateInitializerForProperty(@NotNull JetProperty declaration,
             @NotNull TranslationContext context) {
-        JsExpression jsInitExpression = null;
         JetExpression initializer = declaration.getInitializer();
         if (initializer != null) {
-            jsInitExpression = Translation.translateAsExpression(initializer, context);
+            return Translation.translateAsExpression(initializer, context);
         }
-        return jsInitExpression;
+        return null;
     }
 
     @NotNull
