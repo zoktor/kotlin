@@ -58,7 +58,6 @@
     Kotlin.modules = {};
 
     Kotlin.RuntimeException = Kotlin.$createClass();
-    Kotlin.NullPointerException = Kotlin.$createClass();
     Kotlin.NoSuchElementException = Kotlin.$createClass();
     Kotlin.IllegalArgumentException = Kotlin.$createClass();
     Kotlin.IllegalStateException = Kotlin.$createClass();
@@ -66,7 +65,7 @@
     Kotlin.IOException = Kotlin.$createClass();
 
     Kotlin.throwNPE = function () {
-        throw Kotlin.$new(Kotlin.NullPointerException)();
+        throw new ReferenceError("reference is null");
     };
 
     function throwAbstractFunctionInvocationError(funName) {
