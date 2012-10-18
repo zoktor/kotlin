@@ -82,7 +82,7 @@ public final class CallTranslator extends AbstractTranslator {
     }
 
     @NotNull
-        /*package*/ JsExpression translate() {
+    JsExpression translate() {
         JsExpression result = intrinsicInvocation();
         if (result != null) {
             return result;

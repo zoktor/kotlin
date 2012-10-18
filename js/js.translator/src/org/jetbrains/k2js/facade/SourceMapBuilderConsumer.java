@@ -23,6 +23,8 @@ import com.intellij.util.PairConsumer;
 import org.jetbrains.js.compiler.SourceMapBuilder;
 
 class SourceMapBuilderConsumer implements PairConsumer<SourceMapBuilder, Object> {
+    //private PsiElement prev;
+
     @Override
     public void consume(SourceMapBuilder builder, Object sourceInfo) {
         if (!(sourceInfo instanceof PsiElement)) {
@@ -36,6 +38,8 @@ class SourceMapBuilderConsumer implements PairConsumer<SourceMapBuilder, Object>
         assert document != null;
         int line = document.getLineNumber(offset);
         int column = offset - document.getLineStartOffset(line);
-        builder.addMapping(file.getViewProvider().getVirtualFile().getUrl(), line, column);
+        builder.addMapping(file.getViewProvider().getVirtualFile().getPath(), line, column);
+
+        //prev = element;
     }
 }
