@@ -305,9 +305,13 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
             @NotNull JetPrefixExpression expression,
             @NotNull TranslationContext context
     ) {
-        IElementType operationToken = expression.getOperationReference().getReferencedNameElementType();
+        JetSimpleNameExpression operationReference = expression.getOperationReference();
+        IElementType operationToken = operationReference.getReferencedNameElementType();
         if (JetTokens.LABELS.contains(operationToken)) {
-            return expression.accept(this, context);
+            JetExpression baseExpression = expression.getBaseExpression();
+            assert baseExpression != null;
+            return source(new JsLabel(context.scope().declareName(getReferencedName(operationReference)),
+                                      convertToStatement(baseExpression.accept(this, context))), expression);
         }
         else {
             return UnaryOperationTranslator.translate(expression, operationToken, context);
@@ -362,18 +366,36 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
         return TranslationUtils.sure(jsExpression, context);
     }
 
+    private static String getReferencedName(JetSimpleNameExpression expression) {
+        String name = expression.getReferencedName();
+        assert name != null;
+        return name.charAt(0) == '@' ? name.substring(1) + '$' : name;
+    }
+
+    private static String getTargetLabel(JetLabelQualifiedExpression expression, TranslationContext context) {
+        JetSimpleNameExpression labelElement = expression.getTargetLabel();
+        if (labelElement == null) {
+            return null;
+        }
+        else {
+            JsName name = context.scope().findName(getReferencedName(labelElement));
+            assert name != null;
+            return name.getIdent();
+        }
+    }
+
     @Override
     @NotNull
     public JsNode visitBreakExpression(@NotNull JetBreakExpression expression,
             @NotNull TranslationContext context) {
-        return new JsBreak();
+        return new JsBreak(getTargetLabel(expression, context));
     }
 
     @Override
     @NotNull
     public JsNode visitContinueExpression(@NotNull JetContinueExpression expression,
             @NotNull TranslationContext context) {
-        return new JsContinue();
+        return new JsContinue(getTargetLabel(expression, context));
     }
 
     @Override
