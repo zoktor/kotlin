@@ -24,7 +24,6 @@ import com.google.dart.compiler.util.AstUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetUnaryExpression;
-import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
 import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
@@ -34,7 +33,8 @@ import java.util.List;
 
 import static org.jetbrains.k2js.translate.reference.AccessTranslationUtils.getCachedAccessTranslator;
 import static org.jetbrains.k2js.translate.utils.JsAstUtils.newSequence;
-import static org.jetbrains.k2js.translate.utils.PsiUtils.*;
+import static org.jetbrains.k2js.translate.utils.PsiUtils.getBaseExpression;
+import static org.jetbrains.k2js.translate.utils.PsiUtils.isPrefix;
 import static org.jetbrains.k2js.translate.utils.TemporariesUtils.temporariesInitialization;
 import static org.jetbrains.k2js.translate.utils.TranslationUtils.hasCorrespondingFunctionIntrinsic;
 
@@ -43,10 +43,6 @@ import static org.jetbrains.k2js.translate.utils.TranslationUtils.hasCorrespondi
  */
 // TODO: provide better increment translator logic
 public abstract class IncrementTranslator extends AbstractTranslator {
-
-    public static boolean isIncrement(@NotNull JetUnaryExpression expression) {
-        return OperatorConventions.INCREMENT_OPERATIONS.contains(getOperationToken(expression));
-    }
 
     @NotNull
     public static JsExpression translate(@NotNull JetUnaryExpression expression,

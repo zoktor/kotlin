@@ -16,75 +16,36 @@
 
 package org.jetbrains.k2js.translate.operation;
 
-import com.google.dart.compiler.backend.js.ast.JsConditional;
 import com.google.dart.compiler.backend.js.ast.JsExpression;
+import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.psi.JetUnaryExpression;
 import org.jetbrains.jet.lexer.JetTokens;
-import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.reference.CallBuilder;
-import org.jetbrains.k2js.translate.reference.CallType;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
-import java.util.Collections;
-
-import static org.jetbrains.k2js.translate.general.Translation.translateAsExpression;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getResolvedCall;
-import static org.jetbrains.k2js.translate.utils.PsiUtils.getBaseExpression;
-import static org.jetbrains.k2js.translate.utils.PsiUtils.getOperationToken;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.isNullCheck;
-import static org.jetbrains.k2js.translate.utils.TranslationUtils.notNullConditionalTestExpression;
 
 /**
  * @author Pavel Talanov
  */
-
 public final class UnaryOperationTranslator {
     private UnaryOperationTranslator() {
     }
 
     @NotNull
-    public static JsExpression translate(@NotNull JetUnaryExpression expression,
-                                         @NotNull TranslationContext context) {
-        if (isExclExcl(expression)) {
-            return translateExclExclOperator(expression, context);
-        }
-        if (IncrementTranslator.isIncrement(expression)) {
+    public static JsExpression translate(
+            @NotNull JetUnaryExpression expression,
+            IElementType operationToken,
+            @NotNull TranslationContext context
+    ) {
+        if (operationToken == JetTokens.PLUSPLUS || operationToken == JetTokens.MINUSMINUS) {
             return IncrementTranslator.translate(expression, context);
         }
-        return translateAsCall(expression, context);
-    }
-
-    private static boolean isExclExcl(@NotNull JetUnaryExpression expression) {
-        return getOperationToken(expression).equals(JetTokens.EXCLEXCL);
-    }
-
-    @NotNull
-    private static JsExpression translateExclExclOperator(@NotNull JetUnaryExpression expression, @NotNull TranslationContext context) {
-        JsExpression baseExpression = translateAsExpression(getBaseExpression(expression), context);
-        JsExpression testExpression;
-        JsExpression thenExpression;
-        if (TranslationUtils.isCacheNeeded(baseExpression)) {
-            TemporaryVariable cachedValue = context.declareTemporary(baseExpression);
-            testExpression = notNullConditionalTestExpression(cachedValue);
-            thenExpression = cachedValue.reference();
-        }
-        else {
-            testExpression = isNullCheck(baseExpression);
-            thenExpression = baseExpression;
-        }
-
-        return new JsConditional(testExpression, thenExpression, context.namer().throwNPEFunctionCall());
-    }
-
-    @NotNull
-    private static JsExpression translateAsCall(@NotNull JetUnaryExpression expression,
-                                                @NotNull TranslationContext context) {
         return CallBuilder.build(context)
                 .receiver(TranslationUtils.translateBaseExpression(context, expression))
-                .args(Collections.<JsExpression>emptyList())
                 .resolvedCall(getResolvedCall(context.bindingContext(), expression.getOperationReference()))
-                .type(CallType.NORMAL).translate();
+                .translate();
     }
 }

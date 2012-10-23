@@ -2652,8 +2652,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
 
     @Override
     public StackValue visitPrefixExpression(JetPrefixExpression expression, StackValue receiver) {
-        JetSimpleNameExpression operationSign = expression.getOperationReference();
-        if (JetTokens.LABELS.contains(operationSign.getReferencedNameElementType())) {
+        if (JetTokens.LABELS.contains(expression.getOperationReference().getReferencedNameElementType())) {
             return genQualified(receiver, expression.getBaseExpression());
         }
 

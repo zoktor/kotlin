@@ -17,6 +17,7 @@
 package org.jetbrains.k2js.translate.expression;
 
 import com.google.dart.compiler.backend.js.ast.*;
+import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.JetNodeTypes;
@@ -49,6 +50,7 @@ import static org.jetbrains.k2js.translate.general.Translation.translateAsExpres
 import static org.jetbrains.k2js.translate.utils.BindingUtils.*;
 import static org.jetbrains.k2js.translate.utils.ErrorReportingUtils.message;
 import static org.jetbrains.k2js.translate.utils.JsAstUtils.*;
+import static org.jetbrains.k2js.translate.utils.PsiUtils.getBaseExpression;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getObjectDeclarationName;
 import static org.jetbrains.k2js.translate.utils.TranslationUtils.translateInitializerForProperty;
 import static org.jetbrains.k2js.translate.utils.mutator.LastExpressionMutator.mutateLastExpression;
@@ -299,16 +301,30 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
 
     @Override
     @NotNull
-    public JsNode visitPrefixExpression(@NotNull JetPrefixExpression expression,
-            @NotNull TranslationContext context) {
-        return UnaryOperationTranslator.translate(expression, context);
+    public JsNode visitPrefixExpression(
+            @NotNull JetPrefixExpression expression,
+            @NotNull TranslationContext context
+    ) {
+        IElementType operationToken = expression.getOperationReference().getReferencedNameElementType();
+        if (JetTokens.LABELS.contains(operationToken)) {
+            return expression.accept(this, context);
+        }
+        else {
+            return UnaryOperationTranslator.translate(expression, operationToken, context);
+        }
     }
 
     @Override
     @NotNull
     public JsNode visitPostfixExpression(@NotNull JetPostfixExpression expression,
             @NotNull TranslationContext context) {
-        return UnaryOperationTranslator.translate(expression, context);
+        IElementType operationToken = expression.getOperationReference().getReferencedNameElementType();
+        if (operationToken == JetTokens.EXCLEXCL) {
+            return TranslationUtils.notNullConditional(getBaseExpression(expression), context.namer().throwNPEFunctionCall(), context);
+        }
+        else {
+            return UnaryOperationTranslator.translate(expression, operationToken, context);
+        }
     }
 
     @Override
