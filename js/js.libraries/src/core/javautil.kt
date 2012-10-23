@@ -63,8 +63,8 @@ native public class ArrayList<E>(): AbstractList<E>() {
 
 // JS array is sparse, so, there is no any difference between ArrayList and LinkedList
 native public class LinkedList<E>(): AbstractList<E>() {
-    public fun poll(): E? = js.noImpl
-    public fun peek(): E? = js.noImpl
+    public fun poll(): E = js.noImpl
+    public fun peek(): E = js.noImpl
     public fun offer(e: E): Boolean = js.noImpl
 }
 
@@ -76,11 +76,11 @@ library
 public open class HashMap<K, V>(): MutableMap<K, V> {
     override public fun size(): Int = js.noImpl
     override public fun isEmpty(): Boolean = js.noImpl
-    override public fun get(key: Any?): V? = js.noImpl
+    override public fun get(key: Any?): V = js.noImpl
     override public  fun containsKey(key: Any?): Boolean = js.noImpl
     override public fun put(key: K, value: V): V = js.noImpl
     override public fun putAll(m: jet.Map<out K, out V>): Unit = js.noImpl
-    override public fun remove(key: Any?): V? = js.noImpl
+    override public fun remove(key: Any?): V = js.noImpl
     override public fun clear(): Unit = js.noImpl
     override public fun containsValue(value: Any?): Boolean = js.noImpl
     override public fun keySet(): MutableSet<K> = js.noImpl
