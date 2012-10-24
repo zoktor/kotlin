@@ -32,7 +32,6 @@ import org.jetbrains.k2js.translate.utils.TranslationUtils;
 import java.util.Collections;
 
 import static org.jetbrains.jet.lang.resolve.DescriptorUtils.getClassDescriptorForType;
-import static org.jetbrains.k2js.translate.utils.JsAstUtils.generateForExpression;
 import static org.jetbrains.k2js.translate.utils.JsAstUtils.inequality;
 import static org.jetbrains.k2js.translate.utils.PsiUtils.getLoopRange;
 
@@ -75,7 +74,7 @@ public final class ArrayForTranslator extends ForTranslator {
 
     @NotNull
     private JsFor translate() {
-        return generateForExpression(getInitExpression(), getCondition(), getIncrementExpression(), getBody());
+        return new JsFor(getInitExpression(), getCondition(), getIncrementExpression(), getBody());
     }
 
     @NotNull
