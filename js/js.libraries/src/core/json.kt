@@ -18,15 +18,15 @@ public fun Json.add(other: Json): Json = js.noImpl
 
 native
 public trait JsonClass {
-    public fun stringify(o: Any): String
+    public fun stringify(o: Any?): String
 
-    public fun stringify(o: Any, replacer: ((key: String, value: Any?)->Unit)?, space: Int? = null): String
+    public fun stringify(o: Any?, replacer: ((key: String, value: Any?)->Unit)?, space: Int? = null): String
 
-    public fun stringify(o: Any, replacer: ((key: String, value: Any?)->Unit)?, space: String? = null): String
+    public fun stringify(o: Any?, replacer: ((key: String, value: Any?)->Unit)?, space: String? = null): String
 
-    public fun stringify(o: Any, replacer: Array<String>?, space: Int?): String
+    public fun stringify(o: Any?, replacer: Array<String>?, space: Int?): String
 
-    public fun stringify(o: Any, replacer: Array<String>?, space: String? = null): String
+    public fun stringify(o: Any?, replacer: Array<String>?, space: String? = null): String
 
     public fun parse<T>(text: String, reviver: ((key: String, value: Any?)->Unit)? = null): T
 }
