@@ -20,7 +20,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.StandardFileSystems;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFileSystem;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
@@ -32,16 +37,10 @@ import org.jetbrains.k2js.config.EcmaVersion;
 import org.jetbrains.k2js.facade.K2JSTranslator;
 import org.jetbrains.k2js.facade.MainCallParameters;
 import org.jetbrains.k2js.test.config.TestConfigFactory;
-import org.jetbrains.k2js.utils.JetFileUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.List;
-
-import static org.jetbrains.k2js.utils.JetFileUtils.createPsiFileList;
 
 /**
  * @author Pavel Talanov
@@ -73,7 +72,7 @@ public final class TranslationUtils {
             List<JetFile> allLibFiles = getAllLibFiles(project);
             Predicate<PsiFile> filesWithCode = new Predicate<PsiFile>() {
                 @Override
-                public boolean apply(@javax.annotation.Nullable PsiFile file) {
+                public boolean apply(PsiFile file) {
                     return isFileWithCode((JetFile) file);
                 }
             };
@@ -105,14 +104,14 @@ public final class TranslationUtils {
             @NotNull String outputFile,
             @NotNull MainCallParameters mainCallParameters,
             @NotNull EcmaVersion version, TestConfigFactory configFactory) throws Exception {
-        List<JetFile> psiFiles = createPsiFileList(inputFiles, project);
+        List<JetFile> psiFiles = createPsiFileList(project, inputFiles, null);
         K2JSTranslator translator = new K2JSTranslator(getConfig(project, version, configFactory));
         FileUtil.writeToFile(new File(outputFile), translator.generateProgramCode(psiFiles, mainCallParameters));
     }
 
     @NotNull
     private static List<JetFile> initLibFiles(@NotNull Project project) {
-        return getLibFiles(project, Config.LIB_FILE_NAMES);
+        return createPsiFileList(project, Config.LIB_FILE_NAMES, Config.LIBRARIES_LOCATION);
     }
 
     @NotNull
@@ -127,26 +126,15 @@ public final class TranslationUtils {
     }
 
     @NotNull
-    private static List<JetFile> getLibFiles(@NotNull Project project, @NotNull List<String> list) {
+    private static List<JetFile> createPsiFileList(@NotNull Project project, @NotNull List<String> list, @Nullable String root) {
         List<JetFile> libFiles = Lists.newArrayList();
+        PsiManager psiManager = PsiManager.getInstance(project);
+        VirtualFileSystem fileSystem = VirtualFileManager.getInstance().getFileSystem(StandardFileSystems.FILE_PROTOCOL);
         for (String libFileName : list) {
-            JetFile file = null;
-            try {
-                @SuppressWarnings("IOResourceOpenedButNotSafelyClosed")
-                InputStream stream = new FileInputStream(Config.LIBRARIES_LOCATION + libFileName);
-                try {
-                    String text = FileUtil.loadTextAndClose(stream);
-                    file = JetFileUtils.createPsiFile(libFileName, text, project);
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-                libFiles.add(file);
-            }
-            catch (Exception e) {
-                //TODO: throw generic exception
-                throw new IllegalStateException(e);
-            }
+            VirtualFile virtualFile = fileSystem.findFileByPath(root == null ? libFileName : (root + libFileName));
+            assert virtualFile != null;
+            PsiFile psiFile = psiManager.findFile(virtualFile);
+            libFiles.add((JetFile) psiFile);
         }
         return libFiles;
     }
