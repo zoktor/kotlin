@@ -144,7 +144,7 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
         if (expressionInside != null) {
             return expressionInside.accept(this, context);
         }
-        return context.program().getEmptyStmt();
+        return context.program().getEmptyStatement();
     }
 
     @Override
@@ -223,7 +223,7 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
     private JsStatement translateNullableExpressionAsNotNullStatement(@Nullable JetExpression nullableExpression,
             @NotNull TranslationContext context) {
         if (nullableExpression == null) {
-            return context.program().getEmptyStmt();
+            return context.program().getEmptyStatement();
         }
         return convertToStatement(nullableExpression.accept(this, context));
     }
