@@ -193,12 +193,12 @@ var Kotlin = Object.create(null);
         return Kotlin.createClass(parent || null, initializer, descriptors);
     };
 
-    Kotlin.defineModule = function (id, module) {
+    Kotlin.defineModule = function (id, declaration) {
         if (id in Kotlin.modules) {
             throw Kotlin.$new(Kotlin.IllegalArgumentException)();
         }
 
-        Object.freeze(module);
-        Object.defineProperty(Kotlin.modules, id, {value: module});
+        Object.freeze(declaration);
+        Object.defineProperty(Kotlin.modules, id, {value: declaration});
     };
 })();
