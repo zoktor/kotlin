@@ -124,6 +124,4 @@ public final class CallBuilder {
     public JsExpression translate() {
         return finish().translate();
     }
-
-
 }

@@ -210,7 +210,7 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
     @NotNull
     public JsExpression visitSimpleNameExpression(@NotNull JetSimpleNameExpression expression,
             @NotNull TranslationContext context) {
-        return ReferenceTranslator.translateSimpleName(expression, context);
+        return ReferenceTranslator.translateSimpleName(expression, context).source(expression);
     }
 
     @NotNull
