@@ -5,7 +5,19 @@
  *  For details, see the Prototype web site: http://www.prototypejs.org/
  *
  *--------------------------------------------------------------------------*/
-var Kotlin = {};
+var Kotlin = {
+    modules: {},
+    keys: Object.keys || function (o) {
+        var result = [];
+        var i = 0;
+        for (var p in o) {
+            if (o.hasOwnProperty(p)) {
+                result[i++] = p;
+            }
+        }
+        return result;
+    }
+};
 
 (function () {
     "use strict";
@@ -41,17 +53,6 @@ var Kotlin = {};
             return fBound;
         };
     }
-
-    Kotlin.keys = Object.keys || function (o) {
-        var result = [];
-        var i = 0;
-        for (var p in o) {
-            if (o.hasOwnProperty(p)) {
-                result[i++] = p;
-            }
-        }
-        return result;
-    };
 
     function copyProperties(to, from) {
         for (var p in from) {

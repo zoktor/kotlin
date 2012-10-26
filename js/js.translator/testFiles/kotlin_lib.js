@@ -55,8 +55,6 @@
         return Kotlin.$new(Kotlin.NumberRange)(from, from - limit + 1, true);
     };
 
-    Kotlin.modules = {};
-
     Kotlin.RuntimeException = Kotlin.$createClass();
     Kotlin.NoSuchElementException = Kotlin.$createClass();
     Kotlin.IllegalArgumentException = Kotlin.$createClass();
