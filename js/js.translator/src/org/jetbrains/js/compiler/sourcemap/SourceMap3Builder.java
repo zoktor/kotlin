@@ -34,10 +34,14 @@ public class SourceMap3Builder implements SourceMapBuilder {
     private int previousSourceLine;
     private int previousSourceColumn;
 
+    private final boolean debug;
+
     public SourceMap3Builder(File generatedFile, TextOutput textOutput, PairConsumer<SourceMapBuilder, Object> sourceInfoConsumer) {
         this.generatedFile = generatedFile;
         this.textOutput = textOutput;
         this.sourceInfoConsumer = sourceInfoConsumer;
+
+        debug = Boolean.valueOf(System.getProperty("sourcemap.debug"));
     }
 
     @Override
@@ -113,19 +117,21 @@ public class SourceMap3Builder implements SourceMapBuilder {
             out.append(',');
         }
 
-        textOutput.print('/');
-        textOutput.print('*');
-        final String name = new File(source).getName();
-        textOutput.print(name.substring(0, name.length() - 3));
-        textOutput.print(' ');
-        textOutput.print(sourceLine + 1);
-        textOutput.print(':');
-        textOutput.print(sourceColumn);
-        textOutput.print('*');
-        textOutput.print('/');
-
         int columnDiff = textOutput.getColumn() - previousGeneratedColumn;
-        assert columnDiff != 0;
+        if (debug) {
+            assert columnDiff != 0;
+            textOutput.print('/');
+            textOutput.print('*');
+            final String name = new File(source).getName();
+            textOutput.print(name.substring(0, name.length() - 3));
+            textOutput.print(' ');
+            textOutput.print(sourceLine + 1);
+            textOutput.print(':');
+            textOutput.print(sourceColumn);
+            textOutput.print('*');
+            textOutput.print('/');
+        }
+
         Base64VLQ.encode(out, columnDiff);
         previousGeneratedColumn = textOutput.getColumn();
         int sourceIndex = getSourceIndex(source);
