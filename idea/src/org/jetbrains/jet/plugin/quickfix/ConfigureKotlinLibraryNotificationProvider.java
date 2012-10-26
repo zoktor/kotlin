@@ -56,7 +56,6 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.java.JvmStdlibNames;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.utils.PathUtil;
@@ -83,7 +82,6 @@ public class ConfigureKotlinLibraryNotificationProvider extends EditorNotificati
     }
 
     @Override
-    @Nullable
     public EditorNotificationPanel createNotificationPanel(VirtualFile file, FileEditor fileEditor) {
         try {
             if (file.getFileType() != JetFileType.INSTANCE) return null;
@@ -118,8 +116,8 @@ public class ConfigureKotlinLibraryNotificationProvider extends EditorNotificati
             }
         }
 
-        File runtimePath = PathUtil.getKotlinPathsForIdeaPlugin().getRuntimePath();
-        if (!runtimePath.exists()) {
+        File runtimePath = PathUtil.getDefaultRuntimePath();
+        if (runtimePath == null) {
             Messages.showErrorDialog(myProject, "kotlin-runtime.jar is not found. Make sure plugin is properly installed.",
                                      "No Runtime Found");
             return null;
@@ -215,8 +213,8 @@ public class ConfigureKotlinLibraryNotificationProvider extends EditorNotificati
     /* package */ static void addJdkAnnotations(Module module) {
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
         assert sdk != null;
-        File annotationsIoFile = PathUtil.getKotlinPathsForIdeaPlugin().getJdkAnnotationsPath();
-        if (annotationsIoFile.exists()) {
+        File annotationsIoFile = PathUtil.getJdkAnnotationsPath();
+        if (annotationsIoFile != null) {
             VirtualFile jdkAnnotationsJar = LocalFileSystem.getInstance().findFileByIoFile(annotationsIoFile);
             if (jdkAnnotationsJar != null) {
                 SdkModificator modificator = sdk.getSdkModificator();

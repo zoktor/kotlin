@@ -3,15 +3,15 @@
 
     <target name="update" depends="fetch-third-party">
         <execute_update
-            base.url="http://teamcity.jetbrains.com/guestAuth/repository/download/bt410/73047:id"
-            build.zip="ideaIC-123.SNAPSHOT.win.zip"
+            base.url="http://teamcity.jetbrains.com/guestAuth/repository/download/bt343/71262:id"
+            build.zip="ideaIC-122.SNAPSHOT.win.zip"
         />
     </target>
 
     <target name="jb_update" depends="fetch-third-party">
         <execute_update
-            base.url="http://buildserver.labs.intellij.net/guestAuth/repository/download/bt3498/1658566:id"
-            build.zip="ideaIC-123.SNAPSHOT.win.zip"
+            base.url="http://buildserver.labs.intellij.net/guestAuth/repository/download/bt662/1589747:id"
+            build.zip="ideaIC-122.SNAPSHOT.win.zip"
         />
     </target>
 
@@ -78,16 +78,15 @@
         <copy file="dependencies/download/dx-1.7-sources.jar" tofile="dependencies/dx-sources.jar" overwrite="true"/>
 
         <!-- jline -->
-        <get src="http://repository.jetbrains.com/remote-repos/jline/jline/2.9/jline-2.9.jar"
-             dest="dependencies/download/jline-2.9.jar" usetimestamp="true"/>
-        <copy file="dependencies/download/jline-2.9.jar" tofile="dependencies/jline.jar" overwrite="true"/>
+        <get src="http://repository.jetbrains.com/remote-repos/jline/jline/2.6/jline-2.6.jar"
+             dest="dependencies/download/jline-2.6.jar" usetimestamp="true"/>
+        <copy file="dependencies/download/jline-2.6.jar" tofile="dependencies/jline.jar" overwrite="true"/>
 
-        <get src="http://repository.jetbrains.com/remote-repos/jline/jline/2.9/jline-2.9-sources.jar"
-             dest="dependencies/download/jline-2.9-sources.jar" usetimestamp="true"/>
-        <copy file="dependencies/download/jline-2.9-sources.jar" tofile="dependencies/jline-sources.jar" overwrite="true"/>
+        <get src="http://repository.jetbrains.com/remote-repos/jline/jline/2.6/jline-2.6-sources.jar"
+             dest="dependencies/download/jline-2.6-sources.jar" usetimestamp="true"/>
+        <copy file="dependencies/download/jline-2.6-sources.jar" tofile="dependencies/jline-sources.jar" overwrite="true"/>
 
         <!-- jansi -->
-        <!--
         <get src="http://repository.jetbrains.com/remote-repos/org/fusesource/jansi/jansi/1.9/jansi-1.9.jar"
              dest="dependencies/download/jansi-1.9.jar" usetimestamp="true"/>
         <copy file="dependencies/download/jansi-1.9.jar" tofile="dependencies/jansi.jar" overwrite="true"/>
@@ -95,12 +94,6 @@
         <get src="http://repository.jetbrains.com/remote-repos/org/fusesource/jansi/jansi/1.9/jansi-1.9-sources.jar"
              dest="dependencies/download/jansi-1.9-sources.jar" usetimestamp="true"/>
         <copy file="dependencies/download/jansi-1.9-sources.jar" tofile="dependencies/jansi-sources.jar" overwrite="true"/>
-        -->
-
-        <!-- Guava 12 sources-->
-        <get src="http://repository.jetbrains.com/remote-repos/com/google/guava/guava/12.0/guava-12.0-sources.jar"
-             dest="dependencies/download/guava-12.0-sources.jar" usetimestamp="true"/>
-        <copy file="dependencies/download/guava-12.0-sources.jar" tofile="dependencies/guava-12.0-sources.jar" overwrite="true"/>
 
         <!-- ASM 4 -->
         <get-asm4-and-rename-packages/>
@@ -109,48 +102,51 @@
     <macrodef name="get-asm4-and-rename-packages">
         <sequential>
             <!-- Download vanilla ASM 4.0 & unzip the needed jars and sources -->
-            <get src="http://repository.jetbrains.com/remote-repos/org/ow2/asm/asm-analysis/4.0/asm-analysis-4.0.jar"
-                 dest="dependencies/download/asm-analysis-4.0.jar" usetimestamp="true"/>
+            <get src="http://download.forge.objectweb.org/asm/asm-4.0-bin.zip"
+                 dest="dependencies/download/asm-4.0-bin.zip" usetimestamp="true"/>
 
-            <get src="http://repository.jetbrains.com/remote-repos/org/ow2/asm/asm-util/4.0/asm-util-4.0.jar"
-                 dest="dependencies/download/asm-util-4.0.jar" usetimestamp="true"/>
-
-            <get src="http://repository.jetbrains.com/remote-repos/org/ow2/asm/asm-all/4.0/asm-all-4.0-sources.jar"
-                 dest="dependencies/download/asm-all-4.0-sources.jar" usetimestamp="true"/>
+            <delete dir="dependencies/download/asm" failonerror="false"/>
+            <unzip src="dependencies/download/asm-4.0-bin.zip" dest="dependencies/download/asm">
+                <patternset>
+                    <include name="asm-4.0/lib/asm-util-4.0.jar"/>
+                    <include name="asm-4.0/lib/asm-analysis-4.0.jar"/>
+                    <include name="asm-4.0/src.zip"/>
+                </patternset>
+                <mapper type="flatten"/>
+            </unzip>
 
             <!-- Rename packages in the jars -->
             <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${basedir}/dependencies/jarjar.jar"/>
 
             <jarjar jarfile="dependencies/jetbrains-asm-util-4.0.jar">
-                <zipfileset src="dependencies/download/asm-util-4.0.jar"/>
+                <zipfileset src="dependencies/download/asm/asm-util-4.0.jar"/>
 
                 <rule pattern="org.objectweb.asm.**" result="org.jetbrains.asm4.@1"/>
             </jarjar>
 
             <jarjar jarfile="dependencies/jetbrains-asm-analysis-4.0.jar">
-                <zipfileset src="dependencies/download/asm-analysis-4.0.jar"/>
+                <zipfileset src="dependencies/download/asm/asm-analysis-4.0.jar"/>
 
                 <rule pattern="org.objectweb.asm.**" result="org.jetbrains.asm4.@1"/>
             </jarjar>
 
             <!-- Rename packages in the sources -->
-            <delete dir="dependencies/download/asm-src" failonerror="false"/>
-            <unzip src="dependencies/download/asm-all-4.0-sources.jar" dest="dependencies/download/asm-src">
+            <unzip src="dependencies/download/asm/src.zip" dest="dependencies/download/asm/src">
                 <patternset>
                     <include name="**/*"/>
                 </patternset>
             </unzip>
 
             <replaceregexp match="org.objectweb.asm" replace="org.jetbrains.asm4">
-                <fileset dir="dependencies/download/asm-src/">
+                <fileset dir="dependencies/download/asm/src/">
                     <include name="**/*.java"/>
                 </fileset>
             </replaceregexp>
 
-            <move file="dependencies/download/asm-src/org/objectweb/asm"
-                    tofile="dependencies/download/asm-src/org/jetbrains/asm4"/>
+            <move file="dependencies/download/asm/src/org/objectweb/asm"
+                    tofile="dependencies/download/asm/src/org/jetbrains/asm4"/>
 
-            <zip destfile="dependencies/jetbrains-asm-all-4.0-src.zip" basedir="dependencies/download/asm-src"/>
+            <zip destfile="dependencies/jetbrains-asm-all-4.0-src.zip" basedir="dependencies/download/asm/src"/>
         </sequential>
     </macrodef>
 
@@ -162,8 +158,6 @@
         <sequential>
             <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${basedir}/dependencies/ant-contrib.jar"/>
             <property name="core" value="ideaSDK/core"/>
-            <property name="jps" value="ideaSDK/jps"/>
-            <property name="jps-test" value="${jps}/test"/>
 
             <if>
                 <istrue value="${idea.sdk.fetch.needed}"/>
@@ -176,31 +170,12 @@
                     </delete>
 
                     <mkdir dir="${core}"/>
-                    <mkdir dir="${jps}"/>
-                    <mkdir dir="${jps-test}"/>
                     <get src="@{base.url.for.core}/core/intellij-core.jar" dest="${core}/intellij-core.jar" usetimestamp="true"/>
                     <get src="@{base.url}/core/annotations.jar" dest="${core}/annotations.jar" usetimestamp="true"/>
                     <get src="@{base.url}/core/cli-parser-1.1.jar" dest="${core}/cli-parser-1.1.jar" usetimestamp="true"/>
                     <get src="@{base.url}/core/guava-12.0.jar" dest="${core}/guava-12.0.jar" usetimestamp="true"/>
                     <get src="@{base.url}/core/picocontainer.jar" dest="${core}/picocontainer.jar" usetimestamp="true"/>
                     <get src="@{base.url}/core/trove4j.jar" dest="${core}/trove4j.jar" usetimestamp="true"/>
-
-                    <get src="@{base.url}/jps/asm4-all.jar" dest="${jps}/asm4-all.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/groovy-jps-plugin.jar" dest="${jps}/groovy-jps-plugin.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/groovy_rt.jar" dest="${jps}/groovy_rt.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/jdom.jar" dest="${jps}/jdom.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/jgoodies-forms.jar" dest="${jps}/jgoodies-forms.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/jna.jar" dest="${jps}/jna.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/jps-builders.jar" dest="${jps}/jps-builders.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/jps-model.jar" dest="${jps}/jps-model.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/log4j.jar" dest="${jps}/log4j.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/nanoxml-2.2.3.jar" dest="${jps}/nanoxml-2.2.3.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/protobuf-2.4.1.jar" dest="${jps}/protobuf-2.4.1.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/trove4j.jar" dest="${jps}/trove4j.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/ui-designer-jps-plugin.jar" dest="${jps}/ui-designer-jps-plugin.jar" usetimestamp="true"/>
-                    <get src="@{base.url}/jps/util.jar" dest="${jps}/util.jar" usetimestamp="true"/>
-
-                    <get src="@{base.url}/jps/test/jps-build-test.jar" dest="${jps-test}/jps-build-test.jar" usetimestamp="true"/>
 
                     <get src="@{base.url}/@{build.zip}" dest="dependencies/download/@{build.zip}" usetimestamp="true"/>
 
@@ -216,7 +191,7 @@
             <copy file="ideaSDK/lib/jdom.jar" todir="${core}"/>
             <copy file="ideaSDK/lib/jna.jar" todir="${core}"/>
             <copy file="ideaSDK/lib/log4j.jar" todir="${core}"/>
-            <copy file="ideaSDK/lib/xstream-1.4.3.jar" todir="${core}"/>
+            <copy file="ideaSDK/lib/xstream.jar" todir="${core}"/>
             <copy file="ideaSDK/lib/xpp3-1.1.4-min.jar" todir="${core}"/>
             <copy file="ideaSDK/lib/asm4-all.jar" todir="${core}"/>
 
