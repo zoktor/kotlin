@@ -182,11 +182,11 @@ var Kotlin = {};
         return new singletonClass();
     };
 
-    Kotlin.defineModule = function (id, module) {
+    Kotlin.defineModule = function (id, declaration) {
         if (id in Kotlin.modules) {
-            throw Kotlin.$new(Kotlin.IllegalArgumentException)();
+            throw new Error("Module " + id + " is already defined");
         }
 
-        Kotlin.modules[id] = module;
+        Kotlin.modules[id] = declaration;
     };
 })();

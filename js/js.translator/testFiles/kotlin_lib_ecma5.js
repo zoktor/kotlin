@@ -195,7 +195,7 @@ var Kotlin = Object.create(null);
 
     Kotlin.defineModule = function (id, declaration) {
         if (id in Kotlin.modules) {
-            throw Kotlin.$new(Kotlin.IllegalArgumentException)();
+            throw new Error("Module " + id + " is already defined");
         }
 
         Object.freeze(declaration);
