@@ -113,6 +113,17 @@ public class SourceMap3Builder implements SourceMapBuilder {
             out.append(',');
         }
 
+        textOutput.print('/');
+        textOutput.print('*');
+        final String name = new File(source).getName();
+        textOutput.print(name.substring(0, name.length() - 3));
+        textOutput.print(' ');
+        textOutput.print(sourceLine);
+        textOutput.print(':');
+        textOutput.print(sourceColumn);
+        textOutput.print('*');
+        textOutput.print('/');
+
         Base64VLQ.encode(out, textOutput.getColumn() - previousGeneratedColumn);
         previousGeneratedColumn = textOutput.getColumn();
         int sourceIndex = getSourceIndex(source);

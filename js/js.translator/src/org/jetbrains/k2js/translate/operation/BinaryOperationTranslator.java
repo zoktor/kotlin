@@ -52,17 +52,13 @@ public final class BinaryOperationTranslator extends AbstractTranslator {
     @NotNull
     public static JsExpression translate(@NotNull JetBinaryExpression expression,
             @NotNull TranslationContext context) {
-        JsExpression jsExpression = new BinaryOperationTranslator(expression, context).translate();
-        jsExpression.setSourceInfo(expression);
-        return jsExpression;
+        return new BinaryOperationTranslator(expression, context).translate().source(expression);
     }
 
     @NotNull
     /*package*/ static JsExpression translateAsOverloadedCall(@NotNull JetBinaryExpression expression,
             @NotNull TranslationContext context) {
-        JsExpression jsExpression = (new BinaryOperationTranslator(expression, context)).translateAsOverloadedBinaryOperation();
-        jsExpression.setSourceInfo(expression);
-        return jsExpression;
+        return new BinaryOperationTranslator(expression, context).translateAsOverloadedBinaryOperation().source(expression);
     }
 
     @NotNull

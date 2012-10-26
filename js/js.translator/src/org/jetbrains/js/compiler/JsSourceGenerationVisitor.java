@@ -34,12 +34,12 @@ public class JsSourceGenerationVisitor extends JsToStringGenerationVisitor imple
     }
 
     @Override
-    public void visitProgramFragment(JsProgramFragment x, JsContext context) {
-        x.acceptChildren(this, context);
+    public void visitProgramFragment(JsProgramFragment x) {
+        x.acceptChildren(this);
     }
 
     @Override
-    public void visitBlock(JsBlock x, JsContext ctx) {
+    public void visitBlock(JsBlock x) {
         printJsBlock(x, false, true);
     }
 
@@ -60,12 +60,20 @@ public class JsSourceGenerationVisitor extends JsToStringGenerationVisitor imple
     }
 
     @Override
-    protected void doAccept(JsNode node, JsContext context) {
+    public void accept(JsNode node) {
+        if (!(node instanceof JsNameRef)) {
+            mapSource(node);
+        }
+        super.accept(node);
+    }
+
+    private void mapSource(JsNode node) {
         if (sourceMapBuilder != null) {
-            Object sourceInfo = node.getSourceInfo();
+            Object sourceInfo = node.getSource();
             if (sourceInfo != null) {
                 assert pendingSourceInfo == null;
                 if (p.isJustNewlined()) {
+                    //System.out.println(node.toString());
                     pendingSourceInfo = sourceInfo;
                 }
                 else {
@@ -73,12 +81,16 @@ public class JsSourceGenerationVisitor extends JsToStringGenerationVisitor imple
                 }
             }
         }
-        super.doAccept(node, context);
     }
 
     @Override
-    public void visitProgram(JsProgram program, JsContext context) {
-        program.acceptChildren(this, context);
+    protected void beforeNodePrinted(JsNode node) {
+        mapSource(node);
+    }
+
+    @Override
+    public void visitProgram(JsProgram program) {
+        program.acceptChildren(this);
         if (sourceMapBuilder != null) {
             sourceMapBuilder.addLink();
         }

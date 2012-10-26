@@ -20,6 +20,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.PairConsumer;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.js.compiler.SourceMapBuilder;
 
 class SourceMapBuilderConsumer implements PairConsumer<SourceMapBuilder, Object> {

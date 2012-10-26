@@ -61,7 +61,7 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
             @Nullable JsExpression receiver,
             @NotNull CallType callType, @NotNull TranslationContext context) {
         super(expression, receiver, callType, context);
-        this.isNativeFunctionCall = AnnotationsUtils.isNativeObject(resolvedCall.getCandidateDescriptor());
+        isNativeFunctionCall = AnnotationsUtils.isNativeObject(resolvedCall.getCandidateDescriptor());
     }
 
     @NotNull
@@ -85,10 +85,7 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
 
     @Nullable
     private JsExpression getReceiver() {
-        if (receiver != null) {
-            return receiver;
-        }
-        return null;
+        return receiver;
     }
 
     @Nullable
