@@ -36,67 +36,86 @@ import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getDeclaratio
 /**
  * @author Pavel Talanov
  */
-public final class CallParametersResolver {
+public final class CallParametersResolver implements CallParameters {
+    private JsExpression functionReference;
+    private final JsExpression thisObject;
+    private final JsExpression receiver;
+
     public static CallParameters resolveCallParameters(@Nullable JsExpression qualifier,
             @Nullable JsExpression callee,
             @NotNull CallableDescriptor descriptor,
             @NotNull ResolvedCall<? extends CallableDescriptor> call,
             @NotNull TranslationContext context) {
-        return (new CallParametersResolver(qualifier, callee, descriptor, call, context)).resolve();
+        return new CallParametersResolver(qualifier, callee, descriptor, call, context);
     }
 
-    // the actual qualifier for the call at the call site
-    @Nullable
-    private final JsExpression qualifier;
-    @Nullable
-    private final JsExpression callee;
     @NotNull
     private final CallableDescriptor descriptor;
     @NotNull
     private final TranslationContext context;
     @NotNull
     private final ResolvedCall<? extends CallableDescriptor> resolvedCall;
-    private final boolean isExtensionCall;
 
     private CallParametersResolver(@Nullable JsExpression qualifier,
             @Nullable JsExpression callee,
             @NotNull CallableDescriptor descriptor,
             @NotNull ResolvedCall<? extends CallableDescriptor> call,
             @NotNull TranslationContext context) {
-        this.qualifier = qualifier;
-        this.callee = callee;
         this.descriptor = descriptor;
         this.context = context;
         this.resolvedCall = call;
-        this.isExtensionCall = resolvedCall.getReceiverArgument().exists();
-    }
 
-    @NotNull
-    private CallParameters resolve() {
-        JsExpression receiver = isExtensionCall ? getExtensionFunctionCallReceiver() : null;
-        JsExpression functionReference = getFunctionReference();
-        JsExpression thisObject = getThisObject();
-        return new CallParameters(receiver, functionReference, thisObject);
-    }
-
-    @NotNull
-    private JsExpression getFunctionReference() {
         if (callee != null) {
-            return callee;
+            functionReference = callee;
         }
-        if (!(resolvedCall instanceof VariableAsFunctionResolvedCall)) {
-            return ReferenceTranslator.translateAsLocalNameReference(descriptor, context);
+
+        boolean extensionCall = resolvedCall.getReceiverArgument().exists();
+        if (qualifier != null && !extensionCall) {
+            thisObject = qualifier;
         }
-        ResolvedCallWithTrace<FunctionDescriptor> call = ((VariableAsFunctionResolvedCall) resolvedCall).getFunctionCall();
-        return CallBuilder.build(context).resolvedCall(call).translate();
+        else {
+            thisObject = resolveThisObject();
+        }
+
+        if (extensionCall) {
+            receiver = qualifier != null
+                       ? qualifier
+                       : context.getThisObject(((ThisReceiverDescriptor) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
+        }
+        else {
+            receiver = null;
+        }
     }
 
     @Nullable
-    private JsExpression getThisObject() {
-        if (qualifier != null && !isExtensionCall) {
-            return qualifier;
-        }
+    @Override
+    public JsExpression getReceiver() {
+        return receiver;
+    }
 
+    @Override
+    @Nullable
+    public JsExpression getThisObject() {
+        return thisObject;
+    }
+
+    @Override
+    @NotNull
+    public JsExpression getFunctionReference() {
+        if (functionReference == null) {
+            if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
+                ResolvedCallWithTrace<FunctionDescriptor> call = ((VariableAsFunctionResolvedCall) resolvedCall).getFunctionCall();
+                functionReference = CallBuilder.build(context).resolvedCall(call).translate();
+            }
+            else {
+                functionReference = ReferenceTranslator.translateAsLocalNameReference(descriptor, context);
+            }
+        }
+        return functionReference;
+    }
+
+    @Nullable
+    private JsExpression resolveThisObject() {
         ReceiverDescriptor thisObject = resolvedCall.getThisObject();
         if (!thisObject.exists()) {
             return null;
@@ -113,11 +132,13 @@ public final class CallParametersResolver {
         return resolvedCall.getReceiverArgument().exists() && resolvedCall.getExplicitReceiverKind().isThisObject() ? JsLiteral.THIS : null;
     }
 
-    @NotNull
-    private JsExpression getExtensionFunctionCallReceiver() {
-        if (qualifier != null) {
-            return qualifier;
+    @Override
+    @Nullable
+    public JsExpression getThisOrReceiverOrNull() {
+        if (thisObject == null) {
+            return receiver;
         }
-        return context.getThisObject(((ThisReceiverDescriptor) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
+        assert receiver == null;
+        return thisObject;
     }
 }

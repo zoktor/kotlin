@@ -23,46 +23,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Pavel Talanov
  */
-public final class CallParameters {
-
-    @Nullable
-    private final JsExpression receiver;
-
+public interface CallParameters {
     @NotNull
-    private final JsExpression functionReference;
+    JsExpression getFunctionReference();
 
     @Nullable
-    private final JsExpression thisObject;
-
-    public CallParameters(@Nullable JsExpression receiver,
-                          @NotNull JsExpression functionReference,
-                          @Nullable JsExpression thisObject) {
-        this.receiver = receiver;
-        this.functionReference = functionReference;
-        this.thisObject = thisObject;
-    }
-
-    @NotNull
-    public JsExpression getFunctionReference() {
-        return functionReference;
-    }
+    JsExpression getThisObject();
 
     @Nullable
-    public JsExpression getThisObject() {
-        return thisObject;
-    }
+    JsExpression getReceiver();
 
     @Nullable
-    public JsExpression getReceiver() {
-        return receiver;
-    }
-
-    @Nullable
-    public JsExpression getThisOrReceiverOrNull() {
-        if (thisObject == null) {
-            return receiver;
-        }
-        assert receiver == null;
-        return thisObject;
-    }
+    JsExpression getThisOrReceiverOrNull();
 }
