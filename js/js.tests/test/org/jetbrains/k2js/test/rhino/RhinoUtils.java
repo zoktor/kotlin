@@ -16,7 +16,6 @@
 
 package org.jetbrains.k2js.test.rhino;
 
-import closurecompiler.internal.com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.NotNull;
@@ -27,10 +26,7 @@ import org.mozilla.javascript.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.jetbrains.jet.utils.ExceptionUtils.rethrow;
 import static org.jetbrains.k2js.test.BasicTest.pathToTestFilesRoot;
@@ -47,7 +43,7 @@ public final class RhinoUtils {
     private static final NativeObject JSHINT_OPTIONS = new NativeObject();
     
     @NotNull
-    private static final Map<EcmaVersion, ScriptableObject> versionToScope = Maps.newHashMap();    
+    private static final EnumMap<EcmaVersion, ScriptableObject> versionToScope = new EnumMap<EcmaVersion, ScriptableObject>(EcmaVersion.class);
 
     static {
         // don't read JS, use kotlin and idea debugger ;)
@@ -165,8 +161,11 @@ public final class RhinoUtils {
             versionToScope.put(version, parentScope);
         }
         else {
-            NativeObject kotlin = (NativeObject) parentScope.get("Kotlin");
-            kotlin.put("modules", kotlin, new NativeObject());
+            for (Iterator<Object> iterator = ((NativeObject) ((NativeObject) parentScope.get("Kotlin")).get("modules")).keySet().iterator();
+                 iterator.hasNext(); ) {
+                iterator.next();
+                iterator.remove();
+            }
         }
         return parentScope;
     }
@@ -190,7 +189,6 @@ public final class RhinoUtils {
         return scope;
     }
 
-    //TODO:
     @NotNull
     private static Context createContext(@NotNull EcmaVersion ecmaVersion) {
         Context context = Context.enter();

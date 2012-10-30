@@ -29,6 +29,8 @@ import java.util.List;
  * @author Pavel Talanov
  */
 public class TestConfig extends Config {
+    @NotNull
+    public static final String TEST_MODULE_NAME = "JS_TESTS";
 
     @NotNull
     public static TestConfigFactory FACTORY = new TestConfigFactory() {
@@ -48,7 +50,7 @@ public class TestConfig extends Config {
 
     public TestConfig(@NotNull Project project, @NotNull EcmaVersion version,
             @NotNull List<JetFile> files, @NotNull BindingContext context) {
-        super(project, REWRITABLE_MODULE_NAME, version);
+        super(project, TEST_MODULE_NAME, version);
         jsLibFiles = files;
         libraryContext = context;
     }

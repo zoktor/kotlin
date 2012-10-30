@@ -16,8 +16,9 @@
 
 package org.jetbrains.k2js.test.config;
 
-import closurecompiler.internal.com.google.common.collect.Lists;
-import closurecompiler.internal.com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
+import com.intellij.util.containers.MultiMap;
+import gnu.trove.THashMap;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -33,13 +34,12 @@ import java.util.Map;
  * @author Pavel Talanov
  */
 public class JsUnitTestReporter {
-
     @NotNull
-    private final Map<String, Boolean> finishedTests = Maps.newHashMap();
+    private final Map<String, Boolean> finishedTests = new THashMap<String, Boolean>();
     @NotNull
-    private final Map<String, List<String>> errors = Maps.newHashMap();
+    private final MultiMap<String, String> errors = MultiMap.createSmartList();
     @NotNull
-    private final List<String> processedTests = Lists.newArrayList();
+    private final List<String> processedTests = new ArrayList<String>();
 
     @Nullable
     private String currentTestName;
@@ -70,9 +70,9 @@ public class JsUnitTestReporter {
     //NOTE: usable from Rhino
     @SuppressWarnings("UnusedDeclaration")
     public void reportError(@NotNull String message) {
-        List<String> errorList = errors.get(currentTestName);
-        if (errorList == null) {
-            errors.put(currentTestName, Lists.newArrayList(message));
+        Collection<String> errorList = errors.get(currentTestName);
+        if (errorList.isEmpty()) {
+            errors.putValue(currentTestName, message);
         }
         else {
             errorList.add(message);
@@ -81,15 +81,14 @@ public class JsUnitTestReporter {
 
     @NotNull
     private Collection<String> getNewFinishedTests() {
-        ArrayList<String> finishedTests = Lists.newArrayList(this.finishedTests.keySet());
+        Collection<String> finishedTests = Lists.newArrayList(this.finishedTests.keySet());
         finishedTests.removeAll(processedTests);
         return finishedTests;
     }
 
     @NotNull
     public Collection<String> getErrors(@NotNull String testName) {
-        List<String> errorList = errors.get(testName);
-        assert errorList != null;
+        Collection<String> errorList = errors.get(testName);
         assert !errorList.isEmpty();
         return errorList;
     }
@@ -140,6 +139,7 @@ public class JsUnitTestReporter {
         for (String testName : testNames) {
             if (getResult(testName)) {
                 //TODO: make test fail?
+                //noinspection UseOfSystemOutOrSystemErr
                 System.out.println("Test " + testName + " has passed. And we ignored it! Turn it on?");
             }
             eraseTestInfo(testName);

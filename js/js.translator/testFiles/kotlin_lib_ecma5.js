@@ -198,8 +198,6 @@ var Kotlin = Object.create(null, {
         if (id in Kotlin.modules) {
             throw new Error("Module " + id + " is already defined");
         }
-
-        Object.freeze(declaration);
-        Object.defineProperty(Kotlin.modules, id, {value: declaration});
+        Kotlin.modules[id] = Object.freeze(declaration);
     };
 })();

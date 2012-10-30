@@ -187,7 +187,6 @@ var Kotlin = {
         if (id in Kotlin.modules) {
             throw new Error("Module " + id + " is already defined");
         }
-
         Kotlin.modules[id] = declaration;
     };
 })();
