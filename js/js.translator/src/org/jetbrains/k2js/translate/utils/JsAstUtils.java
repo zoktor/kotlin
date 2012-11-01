@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
+import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
 import java.util.Arrays;
@@ -202,11 +203,20 @@ public final class JsAstUtils {
         return result;
     }
 
+    public static String createNameForProperty(@NotNull PropertyDescriptor descriptor, @NotNull TranslationContext context) {
+        if (context.isEcma5() && !JsDescriptorUtils.isAsPrivate(descriptor)) {
+            return descriptor.getName().getName();
+        }
+        else {
+            return Namer.getKotlinBackingFieldName(descriptor.getName().getName());
+        }
+    }
+
     @NotNull
     public static JsInvocation definePropertyDataDescriptor(@NotNull PropertyDescriptor descriptor,
             @NotNull JsExpression value,
             @NotNull TranslationContext context) {
-        return defineProperty(context.getNameForDescriptor(descriptor).getIdent(), createPropertyDataDescriptor(descriptor, value),
+        return defineProperty(createNameForProperty(descriptor, context), createPropertyDataDescriptor(descriptor, value),
                               context);
     }
 

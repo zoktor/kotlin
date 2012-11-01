@@ -59,7 +59,7 @@ final class NamespaceTranslator extends AbstractTranslator {
             @NotNull final Map<NamespaceDescriptor, List<JsExpression>> descriptorToDefineInvocation,
             @NotNull TranslationContext context
     ) {
-        super(context.newDeclaration(descriptor));
+        super(context);
 
         this.descriptor = descriptor;
 
@@ -136,7 +136,7 @@ final class NamespaceTranslator extends AbstractTranslator {
     }
 
     private JsPropertyInitializer getEntry(@NotNull NamespaceDescriptor descriptor, List<JsExpression> defineInvocation) {
-        return new JsPropertyInitializer(context().getNameForDescriptor(descriptor).makeRef(),
+        return new JsPropertyInitializer(context().getNameRefForDescriptor(descriptor),
                                          new JsInvocation(context().namer().packageDefinitionMethodReference(), defineInvocation));
     }
 
@@ -200,7 +200,7 @@ final class NamespaceTranslator extends AbstractTranslator {
                 JsExpression value = Translation.translateAsExpression(initializer, initializerContext);
                 PropertyDescriptor propertyDescriptor = getPropertyDescriptor(context.bindingContext(), property);
                 if (value instanceof JsLiteral) {
-                    result.add(new JsPropertyInitializer(context.getNameForDescriptor(propertyDescriptor).makeRef(),
+                    result.add(new JsPropertyInitializer(context.getNameRefForDescriptor(propertyDescriptor),
                                                          context().isEcma5() ? JsAstUtils
                                                                  .createPropertyDataDescriptor(propertyDescriptor, value) : value));
                 }

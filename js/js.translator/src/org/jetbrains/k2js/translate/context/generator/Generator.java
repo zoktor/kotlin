@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
+import org.jetbrains.k2js.translate.context.TranslationContext;
 
 import java.util.List;
 import java.util.Map;
@@ -29,10 +30,8 @@ import java.util.Map;
  * @author Pavel Talanov
  */
 public class Generator<V> {
-
-
     @NotNull
-    private final Map<DeclarationDescriptor, V> values = Maps.newHashMap();
+    protected final Map<DeclarationDescriptor, V> values = Maps.newHashMap();
     @NotNull
     private final List<Rule<V>> rules = Lists.newArrayList();
 
@@ -41,21 +40,21 @@ public class Generator<V> {
     }
 
     @Nullable
-    public V get(@NotNull DeclarationDescriptor descriptor) {
+    public V get(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
         V result = values.get(descriptor);
         if (result != null) {
             return result;
         }
-        result = generate(descriptor);
+        result = generate(descriptor, context);
         values.put(descriptor, result);
         return result;
     }
 
     @Nullable
-    private V generate(@NotNull DeclarationDescriptor descriptor) {
+    private V generate(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
         V result = null;
         for (Rule<V> rule : rules) {
-            result = rule.apply(descriptor);
+            result = rule.apply(descriptor, context);
             if (result != null) {
                 return result;
             }

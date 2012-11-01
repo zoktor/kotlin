@@ -37,16 +37,8 @@ public final class AnnotationsUtils {
     private AnnotationsUtils() {
     }
 
-    private static boolean hasAnnotation(@NotNull DeclarationDescriptor descriptor,
-                                         @NotNull PredefinedAnnotation annotation) {
-        return getAnnotationByName(descriptor, annotation) != null;
-    }
-
     @Nullable
-    private static String getAnnotationStringParameter(@NotNull DeclarationDescriptor declarationDescriptor,
-                                                       @NotNull PredefinedAnnotation annotation) {
-        AnnotationDescriptor annotationDescriptor = getAnnotationByName(declarationDescriptor, annotation);
-        assert annotationDescriptor != null;
+    public static String getAnnotationStringParameter(@NotNull AnnotationDescriptor annotationDescriptor) {
         //TODO: this is a quick fix for unsupported default args problem
         if (annotationDescriptor.getAllValueArguments().isEmpty()) {
             return null;
@@ -59,21 +51,6 @@ public final class AnnotationsUtils {
         Object value = constant.getValue();
         assert value instanceof String : "Native function annotation should have one String parameter";
         return (String) value;
-    }
-
-    @Nullable
-    public static String getNameForAnnotatedObject(@NotNull DeclarationDescriptor declarationDescriptor,
-                                                   @NotNull PredefinedAnnotation annotation) {
-        if (!hasAnnotation(declarationDescriptor, annotation)) {
-            return null;
-        }
-        return getAnnotationStringParameter(declarationDescriptor, annotation);
-    }
-
-    @Nullable
-    private static AnnotationDescriptor getAnnotationByName(@NotNull DeclarationDescriptor descriptor,
-            @NotNull PredefinedAnnotation annotation) {
-        return getAnnotationByName(descriptor, annotation.getFQName());
     }
 
     @Nullable
@@ -123,14 +100,15 @@ public final class AnnotationsUtils {
 
     public static boolean hasAnnotationOrInsideAnnotatedClass(@NotNull DeclarationDescriptor descriptor,
             @NotNull PredefinedAnnotation annotation) {
-        return hasAnnotationOrInsideAnnotatedClass(descriptor, annotation.getFQName());
+        return getAnnotationOrInsideAnnotatedClass(descriptor, annotation.getFQName()) != null;
     }
 
-    private static boolean hasAnnotationOrInsideAnnotatedClass(@NotNull DeclarationDescriptor descriptor, @NotNull String fqn) {
-        if (getAnnotationByName(descriptor, fqn) != null) {
-            return true;
+    public static AnnotationDescriptor getAnnotationOrInsideAnnotatedClass(@NotNull DeclarationDescriptor descriptor, @NotNull String fqn) {
+        AnnotationDescriptor annotationDescriptor = getAnnotationByName(descriptor, fqn);
+        if (annotationDescriptor != null) {
+            return annotationDescriptor;
         }
         ClassDescriptor containingClass = getContainingClass(descriptor);
-        return containingClass != null && getAnnotationByName(containingClass, fqn) != null;
+        return containingClass == null ? null : getAnnotationByName(containingClass, fqn);
     }
 }

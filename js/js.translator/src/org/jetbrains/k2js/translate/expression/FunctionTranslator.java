@@ -17,10 +17,7 @@
 package org.jetbrains.k2js.translate.expression;
 
 
-import com.google.dart.compiler.backend.js.ast.JsFunction;
-import com.google.dart.compiler.backend.js.ast.JsName;
-import com.google.dart.compiler.backend.js.ast.JsParameter;
-import com.google.dart.compiler.backend.js.ast.JsPropertyInitializer;
+import com.google.dart.compiler.backend.js.ast.*;
 import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +38,6 @@ import org.jetbrains.k2js.translate.utils.TranslationUtils;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.k2js.translate.utils.BindingUtils.getFunctionDescriptor;
 import static org.jetbrains.k2js.translate.utils.ErrorReportingUtils.message;
 import static org.jetbrains.k2js.translate.utils.FunctionBodyTranslator.translateFunctionBody;
 import static org.jetbrains.k2js.translate.utils.JsAstUtils.setParameters;
@@ -51,12 +47,6 @@ import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getExpectedRe
  * @author Pavel Talanov
  */
 public final class FunctionTranslator extends AbstractTranslator {
-    @NotNull
-    public static FunctionTranslator newInstance(@NotNull JetDeclarationWithBody function,
-            @NotNull TranslationContext context) {
-        return new FunctionTranslator(function, context);
-    }
-
     @NotNull
     private final TranslationContext functionBodyContext;
     @NotNull
@@ -68,11 +58,11 @@ public final class FunctionTranslator extends AbstractTranslator {
     @NotNull
     private final FunctionDescriptor descriptor;
 
-    private FunctionTranslator(@NotNull JetDeclarationWithBody functionDeclaration, @NotNull TranslationContext context) {
+    public FunctionTranslator(@NotNull JetDeclarationWithBody functionDeclaration, @NotNull FunctionDescriptor functionDescriptor,  @NotNull TranslationContext context) {
         super(context);
-        this.descriptor = getFunctionDescriptor(context.bindingContext(), functionDeclaration);
+        this.descriptor = functionDescriptor;
         this.functionDeclaration = functionDeclaration;
-        functionObject = context().getFunctionObject(descriptor);
+        functionObject = new JsFunction(context.scope(), new JsBlock());
         assert functionObject.getParameters().isEmpty()
                 : message(bindingContext(), descriptor, "Function " + functionDeclaration.getText() + " processed for the second time.");
         //NOTE: it's important we compute the context before we start the computation
@@ -103,17 +93,12 @@ public final class FunctionTranslator extends AbstractTranslator {
 
     @NotNull
     public JsPropertyInitializer translateAsMethod() {
-        JsName functionName = context().getNameForDescriptor(descriptor);
         generateFunctionObject();
-        return new JsPropertyInitializer(functionName.makeRef(), functionObject);
+        return new JsPropertyInitializer(context().getNameRefForDescriptor(descriptor), functionObject);
     }
 
     private void generateFunctionObject() {
         setParameters(functionObject, translateParameters());
-        translateBody();
-    }
-
-    private void translateBody() {
         JetExpression jetBodyExpression = functionDeclaration.getBodyExpression();
         if (jetBodyExpression == null) {
             assert descriptor.getModality().equals(Modality.ABSTRACT);

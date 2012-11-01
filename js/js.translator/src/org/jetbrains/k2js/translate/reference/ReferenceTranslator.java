@@ -57,7 +57,7 @@ public final class ReferenceTranslator {
                 return alias;
             }
         }
-        return context.getNameForDescriptor(descriptor).makeRef();
+        return context.getNameRefForDescriptor(descriptor);
     }
 
     @NotNull

@@ -19,12 +19,18 @@ package org.jetbrains.k2js.translate.context.generator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
+import org.jetbrains.k2js.translate.context.TranslationContext;
 
 /**
  * @author Pavel Talanov
  */
-public interface Rule<V> {
-
+public abstract class Rule<V> {
     @Nullable
-    V apply(@NotNull DeclarationDescriptor descriptor);
+    public V apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
+        return apply(descriptor);
+    }
+
+    public V apply(@NotNull DeclarationDescriptor descriptor) {
+        throw new AbstractMethodError();
+    }
 }

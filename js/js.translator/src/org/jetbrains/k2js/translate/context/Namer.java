@@ -72,32 +72,13 @@ public final class Namer {
     }
 
     @NotNull
-    public static String getNameForAccessor(@NotNull String propertyName, boolean isGetter, boolean useNativeAccessor) {
-        if (useNativeAccessor) {
-            return propertyName;
-        }
-
-        if (isGetter) {
-            return getNameForGetter(propertyName);
-        }
-        else {
-            return getNameForSetter(propertyName);
-        }
+    public static String getNameForAccessor(@NotNull String propertyName, boolean isGetter) {
+        return getNameWithPrefix(propertyName, isGetter ? GETTER_PREFIX : SETTER_PREFIX);
     }
 
     @NotNull
     public static String getKotlinBackingFieldName(@NotNull String propertyName) {
         return getNameWithPrefix(propertyName, BACKING_FIELD_PREFIX);
-    }
-
-    @NotNull
-    private static String getNameForGetter(@NotNull String propertyName) {
-        return getNameWithPrefix(propertyName, GETTER_PREFIX);
-    }
-
-    @NotNull
-    private static String getNameForSetter(@NotNull String propertyName) {
-        return getNameWithPrefix(propertyName, SETTER_PREFIX);
     }
 
     @NotNull

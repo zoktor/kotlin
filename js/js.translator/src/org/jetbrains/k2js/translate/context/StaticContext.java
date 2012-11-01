@@ -16,16 +16,18 @@
 
 package org.jetbrains.k2js.translate.context;
 
-import com.google.common.collect.Maps;
 import com.google.dart.compiler.backend.js.ast.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.*;
+import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingContextUtils;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
+import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.k2js.config.EcmaVersion;
 import org.jetbrains.k2js.config.LibrarySourcesConfig;
 import org.jetbrains.k2js.translate.context.generator.Generator;
@@ -35,7 +37,6 @@ import org.jetbrains.k2js.translate.expression.LiteralFunctionTranslator;
 import org.jetbrains.k2js.translate.intrinsic.Intrinsics;
 import org.jetbrains.k2js.translate.utils.AnnotationsUtils;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
-import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 import org.jetbrains.k2js.translate.utils.PredefinedAnnotation;
 
 import java.util.Arrays;
@@ -82,14 +83,7 @@ public final class StaticContext {
     @NotNull
     private final Generator<JsName> names = new NameGenerator();
     @NotNull
-    private final Generator<JsScope> scopes = new ScopeGenerator();
-    @NotNull
     private final Generator<JsNameRef> qualifiers = new QualifierGenerator();
-    @NotNull
-    private final Generator<Boolean> qualifierIsNull = new QualifierIsNullGenerator();
-
-    @NotNull
-    private final Map<JsScope, JsFunction> scopeToFunction = Maps.newHashMap();
 
     @NotNull
     private final EcmaVersion ecmaVersion;
@@ -157,22 +151,7 @@ public final class StaticContext {
     }
 
     @NotNull
-    public JsScope getScopeForDescriptor(@NotNull DeclarationDescriptor descriptor) {
-        JsScope scope = scopes.get(descriptor.getOriginal());
-        assert scope != null : "Must have a scope for descriptor";
-        return scope;
-    }
-
-    @NotNull
-    public JsFunction getFunctionWithScope(@NotNull CallableDescriptor descriptor) {
-        JsScope scope = getScopeForDescriptor(descriptor);
-        JsFunction function = scopeToFunction.get(scope);
-        assert scope.equals(function.getScope()) : "Inconsistency.";
-        return function;
-    }
-
-    @NotNull
-    public JsNameRef getQualifiedReference(@NotNull DeclarationDescriptor descriptor) {
+    public JsNameRef getQualifiedReference(@NotNull DeclarationDescriptor descriptor, @NotNull TranslationContext context) {
         ClassDescriptor classDescriptor;
         if (descriptor instanceof ConstructorDescriptor) {
             classDescriptor = ((ConstructorDescriptor) descriptor).getContainingDeclaration();
@@ -190,19 +169,71 @@ public final class StaticContext {
                 return reference;
             }
         }
-        return new JsNameRef(getNameForDescriptor(descriptor), getQualifierForDescriptor(descriptor));
+        return new JsNameRef(getNameForDescriptor(descriptor, context), getQualifierForDescriptor(descriptor));
     }
 
     @NotNull
-    public JsName getNameForDescriptor(@NotNull DeclarationDescriptor descriptor) {
-        JsName name = names.get(descriptor.getOriginal());
+    public JsName getNameForDescriptor(@NotNull DeclarationDescriptor descriptor, @Nullable TranslationContext context) {
+        JsName name = names.get(descriptor.getOriginal(), context);
         assert name != null : "Must have name for descriptor";
         return name;
     }
 
+    private final Map<PropertyAccessorDescriptor, String> extensionPropertyNameMap = new THashMap<PropertyAccessorDescriptor, String>();
+
+    @NotNull
+    public JsNameRef getNameRefForDescriptor(@NotNull DeclarationDescriptor descriptor, @NotNull TranslationContext context) {
+        // property cannot be overloaded, so, name collision is not possible, we don't need create extra JsName and keep generated ref
+        if (descriptor instanceof PropertyAccessorDescriptor) {
+            PropertyAccessorDescriptor accessorDescriptor = (PropertyAccessorDescriptor) descriptor;
+            if (accessorDescriptor.getReceiverParameter().exists()) {
+                String name = extensionPropertyNameMap.get(accessorDescriptor);
+                if (name != null) {
+                    return new JsNameRef(name);
+                }
+            }
+
+            String propertyName = accessorDescriptor.getCorrespondingProperty().getName().getName();
+            if (!isObjectDeclaration(bindingContext, accessorDescriptor.getCorrespondingProperty()) &&
+                (accessorDescriptor.getReceiverParameter().exists() || !isEcma5())) {
+                propertyName = Namer.getNameForAccessor(propertyName, descriptor instanceof PropertyGetterDescriptor);
+            }
+
+            if (accessorDescriptor.getReceiverParameter().exists()) {
+                JetScope memberScope = getMemberScope(accessorDescriptor.getCorrespondingProperty());
+                if (memberScope != null) {
+                    Collection<VariableDescriptor> properties =
+                            memberScope.getProperties(accessorDescriptor.getCorrespondingProperty().getName());
+                    if (properties.size() > 1) {
+                        int counter = -1;
+                        String name = propertyName;
+                        for (VariableDescriptor property : properties) {
+                            if (!(property instanceof PropertyDescriptor) || !property.getReceiverParameter().exists()) {
+                                continue;
+                            }
+
+                            PropertyDescriptor propertyDescriptor = (PropertyDescriptor) property;
+                            PropertyAccessorDescriptor currentAccessor = accessorDescriptor instanceof PropertyGetterDescriptor
+                                                                         ? propertyDescriptor.getGetter()
+                                                                         : propertyDescriptor.getSetter();
+                            String currentName = counter == -1 ? name : name + '_' + counter;
+                            if (currentAccessor == accessorDescriptor) {
+                                propertyName = currentName;
+                            }
+                            extensionPropertyNameMap.put(currentAccessor, currentName);
+                            counter++;
+                        }
+                    }
+                }
+            }
+            return new JsNameRef(propertyName);
+        }
+        return getNameForDescriptor(descriptor, context).makeRef();
+    }
+
     private final class NameGenerator extends Generator<JsName> {
-        private JsName declareName(DeclarationDescriptor descriptor, String name) {
-            JsScope scope = getEnclosingScope(descriptor);
+        private JsName declareName(String name, TranslationContext context) {
+            JsScope scope = context.scope();
             // ecma 5 property name never declares as obfuscatable:
             // 1) property cannot be overloaded, so, name collision is not possible
             // 2) main reason: if property doesn't have any custom accessor, value holder will have the same name as accessor, so, the same name will be declared more than once
@@ -235,111 +266,98 @@ public final class StaticContext {
             Rule<JsName> memberDeclarationsInsideParentsScope = new Rule<JsName>() {
                 @Override
                 @Nullable
-                public JsName apply(@NotNull DeclarationDescriptor descriptor) {
-                    JsScope scope = getEnclosingScope(descriptor);
-                    DeclarationDescriptor declaration = descriptor.getContainingDeclaration();
-                    if (!(descriptor instanceof FunctionDescriptor) || !(declaration instanceof ClassDescriptor)) {
+                public JsName apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
+                    JsScope scope = context.scope();
+                    JetScope memberScope = descriptor instanceof FunctionDescriptor ? getMemberScope(descriptor) : null;
+                    if (memberScope == null) {
                         return scope.declareFreshName(descriptor.getName().getName());
                     }
 
-                    Collection<FunctionDescriptor> functions =
-                            ((ClassDescriptor) declaration).getDefaultType().getMemberScope().getFunctions(descriptor.getName());
+                    Collection<FunctionDescriptor> functions = memberScope.getFunctions(descriptor.getName());
                     String name = descriptor.getName().getName();
-                    int counter = -1;
-                    if (functions.size() > 1) {
-                        // see testOverloadedFun
-                        FunctionDescriptor[] sorted = functions.toArray(new FunctionDescriptor[functions.size()]);
-                        Arrays.sort(sorted, new Comparator<FunctionDescriptor>() {
-                            @Override
-                            public int compare(FunctionDescriptor a, FunctionDescriptor b) {
-                                Integer result = Visibilities.compare(b.getVisibility(), a.getVisibility());
-                                if (result == null) {
-                                    return 0;
-                                }
-                                else if (result == 0) {
-                                    // open fun > not open fun
-                                    int aWeight = a.getModality().isOverridable() ? 1 : 0;
-                                    int bWeight = b.getModality().isOverridable() ? 1 : 0;
-                                    return bWeight - aWeight;
-                                }
-
-                                return result;
-                            }
-                        });
-                        for (FunctionDescriptor function : sorted) {
-                            if (function == descriptor) {
-                                break;
-                            }
-                            counter++;
-                        }
+                    if (functions.size() <= 1) {
+                        return scope.declareName(name);
                     }
 
-                    return scope.declareName(counter == -1 ? name : name + '_' + counter);
+                    // see testOverloadedFun
+                    FunctionDescriptor[] sorted = functions.toArray(new FunctionDescriptor[functions.size()]);
+                    Arrays.sort(sorted, new Comparator<FunctionDescriptor>() {
+                        @Override
+                        public int compare(FunctionDescriptor a, FunctionDescriptor b) {
+                            Integer result = Visibilities.compare(b.getVisibility(), a.getVisibility());
+                            if (result == null) {
+                                return 0;
+                            }
+                            else if (result == 0) {
+                                // open fun > not open fun
+                                int aWeight = a.getModality().isOverridable() ? 1 : 0;
+                                int bWeight = b.getModality().isOverridable() ? 1 : 0;
+                                return bWeight - aWeight;
+                            }
+
+                            return result;
+                        }
+                    });
+                    JsName result = null;
+                    int counter = -1;
+                    for (FunctionDescriptor function : sorted) {
+                        if (function != descriptor && values.containsKey(function)) {
+                            // it is native fun
+                            continue;
+                        }
+
+                        JsName funName = scope.declareName(counter == -1 ? name : name + '_' + counter);
+                        if (function == descriptor) {
+                            result = funName;
+                        }
+                        else {
+                            values.put(function, funName);
+                        }
+                        counter++;
+                    }
+                    return result;
                 }
             };
             Rule<JsName> constructorHasTheSameNameAsTheClass = new Rule<JsName>() {
                 @Override
-                public JsName apply(@NotNull DeclarationDescriptor descriptor) {
+                public JsName apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
                     if (!(descriptor instanceof ConstructorDescriptor)) {
                         return null;
                     }
                     ClassDescriptor containingClass = getContainingClass(descriptor);
                     assert containingClass != null : "Can't have constructor without a class";
-                    return getNameForDescriptor(containingClass);
+                    return getNameForDescriptor(containingClass, context);
                 }
             };
-            Rule<JsName> accessorsHasNamesWithSpecialPrefixes = new Rule<JsName>() {
-                @Override
-                public JsName apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!(descriptor instanceof PropertyAccessorDescriptor)) {
-                        return null;
-                    }
-
-                    PropertyAccessorDescriptor accessorDescriptor = (PropertyAccessorDescriptor) descriptor;
-                    String propertyName = accessorDescriptor.getCorrespondingProperty().getName().getName();
-                    if (isObjectDeclaration(bindingContext, accessorDescriptor.getCorrespondingProperty())) {
-                        return declareName(descriptor, propertyName);
-                    }
-
-                    boolean isGetter = descriptor instanceof PropertyGetterDescriptor;
-                    String accessorName = Namer.getNameForAccessor(propertyName, isGetter,
-                                                                   accessorDescriptor.getReceiverParameter() == null && isEcma5());
-                    return declareName(descriptor, accessorName);
-                }
-            };
-
             Rule<JsName> predefinedObjectsHasUnobfuscatableNames = new Rule<JsName>() {
                 @Override
-                public JsName apply(@NotNull DeclarationDescriptor descriptor) {
+                public JsName apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
                     for (PredefinedAnnotation annotation : PredefinedAnnotation.values()) {
-                        if (!hasAnnotationOrInsideAnnotatedClass(descriptor, annotation)) {
+                        AnnotationDescriptor annotationDescriptor = getAnnotationOrInsideAnnotatedClass(descriptor, annotation.getFQName());
+                        if (annotationDescriptor == null) {
                             continue;
                         }
-                        String name = getNameForAnnotatedObject(descriptor, annotation);
-                        name = (name != null) ? name : descriptor.getName().getName();
-                        return getEnclosingScope(descriptor).declareName(name);
+                        String name = getAnnotationStringParameter(annotationDescriptor);
+                        if (name == null) {
+                            name = descriptor.getName().getName();
+                        }
+                        return context.scope().declareName(name);
                     }
                     return null;
                 }
             };
             Rule<JsName> propertiesCorrespondToSpeciallyTreatedBackingFieldNames = new Rule<JsName>() {
                 @Override
-                public JsName apply(@NotNull DeclarationDescriptor descriptor) {
+                public JsName apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
                     if (!(descriptor instanceof PropertyDescriptor)) {
                         return null;
                     }
-
-                    String name = descriptor.getName().getName();
-                    if (!isEcma5() || JsDescriptorUtils.isAsPrivate((PropertyDescriptor) descriptor)) {
-                        name = Namer.getKotlinBackingFieldName(name);
-                    }
-
-                    return declareName(descriptor, name);
+                    return declareName(JsAstUtils.createNameForProperty((PropertyDescriptor) descriptor, context), context);
                 }
             };
             Rule<JsName> overridingDescriptorsReferToOriginalName = new Rule<JsName>() {
                 @Override
-                public JsName apply(@NotNull DeclarationDescriptor descriptor) {
+                public JsName apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
                     //TODO: refactor
                     if (!(descriptor instanceof FunctionDescriptor)) {
                         return null;
@@ -349,8 +367,8 @@ public final class StaticContext {
                         return null;
                     }
 
-                    JsScope scope = getEnclosingScope(descriptor);
-                    JsName result = getNameForDescriptor(overriddenDescriptor);
+                    JsScope scope = context.scope();
+                    JsName result = getNameForDescriptor(overriddenDescriptor, context);
                     scope.declareName(result.getIdent());
                     return result;
                 }
@@ -361,70 +379,34 @@ public final class StaticContext {
             addRule(propertiesCorrespondToSpeciallyTreatedBackingFieldNames);
             addRule(namespacesShouldBeDefinedInRootScope);
             addRule(overridingDescriptorsReferToOriginalName);
-            addRule(accessorsHasNamesWithSpecialPrefixes);
             addRule(memberDeclarationsInsideParentsScope);
         }
     }
 
-    @NotNull
-    private JsScope getEnclosingScope(@NotNull DeclarationDescriptor descriptor) {
-        DeclarationDescriptor containingDeclaration = getContainingDeclaration(descriptor);
-        return getScopeForDescriptor(containingDeclaration.getOriginal());
-    }
-
-    private final class ScopeGenerator extends Generator<JsScope> {
-
-        public ScopeGenerator() {
-            Rule<JsScope> generateNewScopesForClasses = new Rule<JsScope>() {
-                @Override
-                public JsScope apply(@NotNull DeclarationDescriptor descriptor) {
-                    return descriptor instanceof ClassDescriptor ? getRootScope().innerScope(null) : null;
-                }
-            };
-            Rule<JsScope> generateNewScopesForNamespaceDescriptors = new Rule<JsScope>() {
-                @Override
-                public JsScope apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!(descriptor instanceof NamespaceDescriptor)) {
-                        return null;
-                    }
-                    return getRootScope().innerScope("Namespace " + descriptor.getName());
-                }
-            };
-            //TODO: never get there
-            Rule<JsScope> generateInnerScopesForMembers = new Rule<JsScope>() {
-                @Override
-                public JsScope apply(@NotNull DeclarationDescriptor descriptor) {
-                    JsScope enclosingScope = getEnclosingScope(descriptor);
-                    return enclosingScope.innerScope("Scope for member " + descriptor.getName());
-                }
-            };
-            Rule<JsScope> createFunctionObjectsForCallableDescriptors = new Rule<JsScope>() {
-                @Override
-                public JsScope apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!(descriptor instanceof CallableDescriptor)) {
-                        return null;
-                    }
-                    JsScope enclosingScope = getEnclosingScope(descriptor);
-
-                    JsFunction correspondingFunction = JsAstUtils.createFunctionWithEmptyBody(enclosingScope);
-                    assert (!scopeToFunction.containsKey(correspondingFunction.getScope())) : "Scope to function value overridden for " + descriptor;
-                    scopeToFunction.put(correspondingFunction.getScope(), correspondingFunction);
-                    return correspondingFunction.getScope();
-                }
-            };
-            addRule(createFunctionObjectsForCallableDescriptors);
-            addRule(generateNewScopesForClasses);
-            addRule(generateNewScopesForNamespaceDescriptors);
-            addRule(generateInnerScopesForMembers);
+    @Nullable
+    private static JetScope getMemberScope(@NotNull DeclarationDescriptor descriptor) {
+        JetScope memberScope;
+        DeclarationDescriptor containing = descriptor.getContainingDeclaration();
+        if (containing instanceof ClassDescriptor) {
+            memberScope = ((ClassDescriptor) containing).getDefaultType().getMemberScope();
         }
+        else if (containing instanceof NamespaceDescriptor) {
+            memberScope = ((NamespaceDescriptor) containing).getMemberScope();
+        }
+        else {
+            memberScope = null;
+        }
+        return memberScope;
     }
 
     @Nullable
     public JsNameRef getQualifierForDescriptor(@NotNull DeclarationDescriptor descriptor) {
-        if (qualifierIsNull.get(descriptor.getOriginal()) != null) {
+        if (descriptor instanceof PropertyDescriptor ||
+            (descriptor instanceof NamespaceDescriptor && DescriptorUtils.isRootNamespace((NamespaceDescriptor) descriptor)) ||
+            AnnotationsUtils.isNativeObject(descriptor)) {
             return null;
         }
-        return qualifiers.get(descriptor.getOriginal());
+        return qualifiers.get(descriptor.getOriginal(), null);
     }
 
     private final class QualifierGenerator extends Generator<JsNameRef> {
@@ -441,13 +423,13 @@ public final class StaticContext {
             //TODO: review and refactor
             Rule<JsNameRef> namespaceLevelDeclarationsHaveEnclosingNamespacesNamesAsQualifier = new Rule<JsNameRef>() {
                 @Override
-                public JsNameRef apply(@NotNull DeclarationDescriptor descriptor) {
+                public JsNameRef apply(@NotNull DeclarationDescriptor descriptor, TranslationContext context) {
                     DeclarationDescriptor containingDescriptor = getContainingDeclaration(descriptor);
                     if (!(containingDescriptor instanceof NamespaceDescriptor)) {
                         return null;
                     }
 
-                    final JsNameRef result = new JsNameRef(getNameForDescriptor(containingDescriptor));
+                    final JsNameRef result = new JsNameRef(getNameForDescriptor(containingDescriptor, context));
                     if (DescriptorUtils.isRootNamespace((NamespaceDescriptor) containingDescriptor)) {
                         return result;
                     }
@@ -455,7 +437,7 @@ public final class StaticContext {
                     JsNameRef qualifier = result;
                     while ((containingDescriptor = getContainingDeclaration(containingDescriptor)) instanceof NamespaceDescriptor &&
                            !DescriptorUtils.isRootNamespace((NamespaceDescriptor) containingDescriptor)) {
-                        JsNameRef ref = getNameForDescriptor(containingDescriptor).makeRef();
+                        JsNameRef ref = getNameForDescriptor(containingDescriptor, context).makeRef();
                         qualifier.setQualifier(ref);
                         qualifier = ref;
                     }
@@ -508,43 +490,6 @@ public final class StaticContext {
             addRule(constructorHaveTheSameQualifierAsTheClass);
             addRule(standardObjectsHaveKotlinQualifier);
             addRule(namespaceLevelDeclarationsHaveEnclosingNamespacesNamesAsQualifier);
-        }
-    }
-
-    private static class QualifierIsNullGenerator extends Generator<Boolean> {
-
-        private QualifierIsNullGenerator() {
-            Rule<Boolean> propertiesHaveNoQualifiers = new Rule<Boolean>() {
-                @Override
-                public Boolean apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!(descriptor instanceof PropertyDescriptor)) {
-                        return null;
-                    }
-                    return true;
-                }
-            };
-            //TODO: hack!
-            Rule<Boolean> nativeObjectsHaveNoQualifiers = new Rule<Boolean>() {
-                @Override
-                public Boolean apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!AnnotationsUtils.isNativeObject(descriptor)) {
-                        return null;
-                    }
-                    return true;
-                }
-            };
-            Rule<Boolean> topLevelNamespaceHaveNoQualifier = new Rule<Boolean>() {
-                @Override
-                public Boolean apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (descriptor instanceof NamespaceDescriptor && DescriptorUtils.isRootNamespace((NamespaceDescriptor) descriptor)) {
-                        return true;
-                    }
-                    return null;
-                }
-            };
-            addRule(topLevelNamespaceHaveNoQualifier);
-            addRule(propertiesHaveNoQualifiers);
-            addRule(nativeObjectsHaveNoQualifiers);
         }
     }
 }

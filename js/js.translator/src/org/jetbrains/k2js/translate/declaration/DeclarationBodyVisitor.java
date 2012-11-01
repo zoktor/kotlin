@@ -25,7 +25,7 @@ import org.jetbrains.jet.lang.descriptors.Modality;
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.k2js.translate.context.TranslationContext;
-import org.jetbrains.k2js.translate.general.Translation;
+import org.jetbrains.k2js.translate.expression.FunctionTranslator;
 import org.jetbrains.k2js.translate.general.TranslatorVisitor;
 import org.jetbrains.k2js.translate.utils.BindingUtils;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
@@ -71,7 +71,7 @@ public class DeclarationBodyVisitor extends TranslatorVisitor<Void> {
             return null;
         }
 
-        JsPropertyInitializer methodAsPropertyInitializer = Translation.functionTranslator(expression, context).translateAsMethod();
+        JsPropertyInitializer methodAsPropertyInitializer = new FunctionTranslator(expression, descriptor, context).translateAsMethod();
         if (context.isEcma5()) {
             JsExpression methodBodyExpression = methodAsPropertyInitializer.getValueExpr();
             methodAsPropertyInitializer.setValueExpr(JsAstUtils.createPropertyDataDescriptor(descriptor, methodBodyExpression));

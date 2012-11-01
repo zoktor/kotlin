@@ -22,17 +22,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.PropertyAccessorDescriptor;
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
-import org.jetbrains.jet.lang.descriptors.PropertyGetterDescriptor;
-import org.jetbrains.jet.lang.descriptors.PropertySetterDescriptor;
 import org.jetbrains.jet.lang.psi.JetProperty;
 import org.jetbrains.jet.lang.psi.JetPropertyAccessor;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.expression.FunctionTranslator;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
-import org.jetbrains.k2js.translate.general.Translation;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.k2js.translate.utils.TranslationUtils.assignmentToBackingField;
@@ -81,81 +79,45 @@ public final class PropertyTranslator extends AbstractTranslator {
             to = result;
         }
 
-        to.add(generateGetter());
+        to.add(generateAccessor(true));
         if (descriptor.isVar()) {
-            to.add(generateSetter());
+            to.add(generateAccessor(false));
         }
     }
 
-    private JsPropertyInitializer generateGetter() {
-        if (hasCustomGetter()) {
-            return translateCustomAccessor(getCustomGetterDeclaration());
-        }
-        else {
-            return generateDefaultGetter();
-        }
-    }
-
-    private JsPropertyInitializer generateSetter() {
-        if (hasCustomSetter()) {
-            return translateCustomAccessor(getCustomSetterDeclaration());
+    private JsPropertyInitializer generateAccessor(boolean isGetter) {
+        JetPropertyAccessor accessorDeclaration;
+        PropertyAccessorDescriptor accessorDescriptor;
+        if (isGetter) {
+            accessorDeclaration = declaration == null ? null : declaration.getGetter();
+            accessorDescriptor = descriptor.getGetter();
         }
         else {
-            return generateDefaultSetter();
+            accessorDeclaration = declaration == null ? null : declaration.getSetter();
+            accessorDescriptor = descriptor.getSetter();
+        }
+        assert accessorDescriptor != null;
+        if (accessorDeclaration != null && accessorDeclaration.getBodyExpression() != null) {
+            FunctionTranslator translator = new FunctionTranslator(accessorDeclaration, accessorDescriptor, context());
+            return context().isEcma5() ? translator.translateAsEcma5PropertyDescriptor() : translator.translateAsMethod();
+        }
+        else {
+            return generateDefaultAccessor(accessorDescriptor,
+                                           isGetter ? generateDefaultGetterFunction() : generateDefaultSetterFunction());
         }
     }
 
-    private boolean hasCustomGetter() {
-        return declaration != null && declaration.getGetter() != null && getCustomGetterDeclaration().getBodyExpression() != null;
-    }
-
-    private boolean hasCustomSetter() {
-        return declaration != null && declaration.getSetter() != null && getCustomSetterDeclaration().getBodyExpression() != null;
+    @NotNull
+    private JsFunction generateDefaultGetterFunction() {
+        return new JsFunction(context().scope(), new JsBlock(new JsReturn(backingFieldReference(context(), descriptor))));
     }
 
     @NotNull
-    private JetPropertyAccessor getCustomGetterDeclaration() {
-        assert declaration != null;
-        JetPropertyAccessor getterDeclaration = declaration.getGetter();
-        assert getterDeclaration != null;
-        return getterDeclaration;
-    }
-
-    @NotNull
-    private JetPropertyAccessor getCustomSetterDeclaration() {
-        assert declaration != null;
-        JetPropertyAccessor setter = declaration.getSetter();
-        assert setter != null;
-        return setter;
-    }
-
-    @NotNull
-    private JsPropertyInitializer generateDefaultGetter() {
-        PropertyGetterDescriptor getterDescriptor = descriptor.getGetter();
-        assert getterDescriptor != null : "Getter descriptor should not be null";
-        return generateDefaultAccessor(getterDescriptor, generateDefaultGetterFunction(getterDescriptor));
-    }
-
-    @NotNull
-    private JsFunction generateDefaultGetterFunction(@NotNull PropertyGetterDescriptor descriptor) {
-        JsFunction fun = new JsFunction(context().getScopeForDescriptor(descriptor.getContainingDeclaration()));
-        fun.setBody(new JsBlock(new JsReturn(backingFieldReference(context(), this.descriptor))));
-        return fun;
-    }
-
-    @NotNull
-    private JsPropertyInitializer generateDefaultSetter() {
-        PropertySetterDescriptor setterDescriptor = descriptor.getSetter();
-        assert setterDescriptor != null : "Setter descriptor should not be null";
-        return generateDefaultAccessor(setterDescriptor, generateDefaultSetterFunction(setterDescriptor));
-    }
-
-    @NotNull
-    private JsFunction generateDefaultSetterFunction(@NotNull PropertySetterDescriptor setterDescriptor) {
-        JsFunction fun = new JsFunction(context().getScopeForDescriptor(setterDescriptor.getContainingDeclaration()));
-        JsParameter defaultParameter = new JsParameter(propertyAccessContext(setterDescriptor).scope().declareTemporary());
-        fun.getParameters().add(defaultParameter);
-        fun.setBody(new JsBlock(assignmentToBackingField(context(), descriptor, defaultParameter.getName().makeRef()).makeStmt()));
+    private JsFunction generateDefaultSetterFunction() {
+        JsFunction fun = new JsFunction(context().scope(), new JsBlock());
+        JsName defaultParameterName = fun.getScope().declareName("value");
+        fun.setParameters(Collections.singletonList(new JsParameter(defaultParameterName)));
+        fun.setBody(new JsBlock(assignmentToBackingField(context(), descriptor, defaultParameterName.makeRef()).makeStmt()));
         return fun;
     }
 
@@ -166,18 +128,7 @@ public final class PropertyTranslator extends AbstractTranslator {
             return TranslationUtils.translateFunctionAsEcma5PropertyDescriptor(function, accessorDescriptor, context());
         }
         else {
-            return new JsPropertyInitializer(context().getNameForDescriptor(accessorDescriptor).makeRef(), function);
+            return new JsPropertyInitializer(context().getNameRefForDescriptor(accessorDescriptor), function);
         }
-    }
-
-    @NotNull
-    private TranslationContext propertyAccessContext(@NotNull PropertySetterDescriptor propertySetterDescriptor) {
-        return context().newDeclaration(propertySetterDescriptor);
-    }
-
-    @NotNull
-    private JsPropertyInitializer translateCustomAccessor(@NotNull JetPropertyAccessor expression) {
-        FunctionTranslator translator = Translation.functionTranslator(expression, context());
-        return context().isEcma5() ? translator.translateAsEcma5PropertyDescriptor() : translator.translateAsMethod();
     }
 }

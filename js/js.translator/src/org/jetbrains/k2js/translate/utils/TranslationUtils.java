@@ -90,7 +90,7 @@ public final class TranslationUtils {
     private static JsPropertyInitializer translateExtensionFunctionAsEcma5DataDescriptor(@NotNull JsFunction function,
             @NotNull FunctionDescriptor descriptor, @NotNull TranslationContext context) {
         JsObjectLiteral meta = createDataDescriptor(function, descriptor.getModality().isOverridable(), false);
-        return new JsPropertyInitializer(context.getNameForDescriptor(descriptor).makeRef(), meta);
+        return new JsPropertyInitializer(context.getNameRefForDescriptor(descriptor), meta);
     }
 
     @NotNull
@@ -236,16 +236,16 @@ public final class TranslationUtils {
     @NotNull
     public static JsNameRef backingFieldReference(@NotNull TranslationContext context,
             @NotNull PropertyDescriptor descriptor) {
-        JsName backingFieldName = context.getNameForDescriptor(descriptor);
-        return new JsNameRef(backingFieldName, JsLiteral.THIS);
+        JsNameRef backingFieldNameRef = context.getNameRefForDescriptor(descriptor);
+        backingFieldNameRef.setQualifier(JsLiteral.THIS);
+        return backingFieldNameRef;
     }
 
     @NotNull
     public static JsExpression assignmentToBackingField(@NotNull TranslationContext context,
             @NotNull PropertyDescriptor descriptor,
             @NotNull JsExpression assignTo) {
-        JsNameRef backingFieldReference = backingFieldReference(context, descriptor);
-        return assignment(backingFieldReference, assignTo);
+        return assignment(backingFieldReference(context, descriptor), assignTo);
     }
 
     @Nullable

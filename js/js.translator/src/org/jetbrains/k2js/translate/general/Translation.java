@@ -20,7 +20,6 @@ import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
-import org.jetbrains.jet.lang.psi.JetDeclarationWithBody;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetNamedFunction;
@@ -36,7 +35,6 @@ import org.jetbrains.k2js.translate.context.StaticContext;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.declaration.NamespaceDeclarationTranslator;
 import org.jetbrains.k2js.translate.expression.ExpressionVisitor;
-import org.jetbrains.k2js.translate.expression.FunctionTranslator;
 import org.jetbrains.k2js.translate.expression.PatternTranslator;
 import org.jetbrains.k2js.translate.reference.CallBuilder;
 import org.jetbrains.k2js.translate.test.JSTestGenerator;
@@ -62,12 +60,6 @@ import static org.jetbrains.k2js.translate.utils.dangerous.DangerousData.collect
 public final class Translation {
 
     private Translation() {
-    }
-
-    @NotNull
-    public static FunctionTranslator functionTranslator(@NotNull JetDeclarationWithBody function,
-            @NotNull TranslationContext context) {
-        return FunctionTranslator.newInstance(function, context);
     }
 
     @NotNull

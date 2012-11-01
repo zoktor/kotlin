@@ -17,7 +17,6 @@
 package org.jetbrains.k2js.translate.reference;
 
 import com.google.dart.compiler.backend.js.ast.JsExpression;
-import com.google.dart.compiler.backend.js.ast.JsName;
 import com.google.dart.compiler.backend.js.ast.JsNameRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,13 +68,11 @@ public final class NativePropertyAccessTranslator extends PropertyAccessTranslat
 
     @NotNull
     private JsExpression doTranslateAsGet(JsExpression receiver) {
-        JsName nativePropertyName = context().getNameForDescriptor(propertyDescriptor);
+        JsNameRef ref = context().getNameRefForDescriptor(propertyDescriptor);
         if (receiver != null) {
-            return new JsNameRef(nativePropertyName, receiver);
+            ref.setQualifier(receiver);
         }
-        else {
-            return nativePropertyName.makeRef();
-        }
+        return ref;
     }
 
     @Override
