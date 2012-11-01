@@ -29,8 +29,6 @@ import org.jetbrains.jet.lang.resolve.calls.model.VariableAsFunctionResolvedCall
 import org.jetbrains.jet.lang.resolve.constants.CompileTimeConstant;
 import org.jetbrains.jet.lang.types.JetType;
 
-import java.util.List;
-
 import static org.jetbrains.jet.lang.resolve.BindingContext.INDEXED_LVALUE_GET;
 import static org.jetbrains.jet.lang.resolve.BindingContext.INDEXED_LVALUE_SET;
 import static org.jetbrains.k2js.translate.utils.ErrorReportingUtils.message;
@@ -91,12 +89,6 @@ public final class BindingUtils {
         assert result instanceof JetParameter :
                 message(context, descriptor, "ValueParameterDescriptor should have corresponding JetParameter");
         return (JetParameter) result;
-    }
-
-    public static boolean hasAncestorClass(@NotNull BindingContext context, @NotNull JetClassOrObject classDeclaration) {
-        ClassDescriptor classDescriptor = getClassDescriptor(context, classDeclaration);
-        List<ClassDescriptor> superclassDescriptors = DescriptorUtils.getSuperclassDescriptors(classDescriptor);
-        return (JsDescriptorUtils.findAncestorClass(superclassDescriptors) != null);
     }
 
     public static boolean isStatement(@NotNull BindingContext context, @NotNull JetExpression expression) {

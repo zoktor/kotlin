@@ -29,7 +29,6 @@ import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -50,16 +49,6 @@ public final class JsDescriptorUtils {
 
     public static boolean isCompareTo(@NotNull FunctionDescriptor functionDescriptor) {
         return (functionDescriptor.getName().equals(OperatorConventions.COMPARE_TO));
-    }
-
-    @Nullable
-    public static ClassDescriptor findAncestorClass(@NotNull List<ClassDescriptor> superclassDescriptors) {
-        for (ClassDescriptor descriptor : superclassDescriptors) {
-            if (descriptor.getKind() == ClassKind.CLASS) {
-                return descriptor;
-            }
-        }
-        return null;
     }
 
     @NotNull

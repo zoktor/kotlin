@@ -20,13 +20,13 @@ import com.google.dart.compiler.backend.js.ast.*;
 import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.descriptors.ConstructorDescriptor;
-import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
-import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
+import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.JetClassOrObject;
 import org.jetbrains.jet.lang.psi.JetDelegationSpecifier;
 import org.jetbrains.jet.lang.psi.JetDelegatorToSuperCall;
 import org.jetbrains.jet.lang.psi.JetParameter;
+import org.jetbrains.jet.lang.resolve.DescriptorUtils;
+import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
@@ -45,14 +45,20 @@ import static org.jetbrains.k2js.translate.utils.TranslationUtils.translateArgum
 public final class ClassInitializerTranslator extends AbstractTranslator {
     @NotNull
     private final JetClassOrObject classDeclaration;
+    private final ClassDescriptor descriptor;
     @NotNull
     private final List<JsStatement> initializerStatements = new SmartList<JsStatement>();
 
-    public ClassInitializerTranslator(@NotNull JetClassOrObject classDeclaration, @NotNull TranslationContext context) {
+    public ClassInitializerTranslator(
+            @NotNull JetClassOrObject classDeclaration,
+            @NotNull ClassDescriptor descriptor,
+            @NotNull TranslationContext context
+    ) {
         // Note: it's important we use scope for class descriptor because anonymous function used in property initializers
         // belong to the properties themselves
         super(context.newDeclaration(getConstructor(context.bindingContext(), classDeclaration)));
         this.classDeclaration = classDeclaration;
+        this.descriptor = descriptor;
     }
 
     @NotNull
@@ -79,12 +85,15 @@ public final class ClassInitializerTranslator extends AbstractTranslator {
     }
 
     private void mayBeAddCallToSuperMethod(JsFunction initializer) {
-        if (hasAncestorClass(bindingContext(), classDeclaration)) {
-            JetDelegatorToSuperCall superCall = getSuperCall();
-            if (superCall == null) {
+        for (JetType type : descriptor.getTypeConstructor().getSupertypes()) {
+            ClassDescriptor superClassDescriptor = DescriptorUtils.getClassDescriptorForType(type);
+            if (superClassDescriptor.getKind() == ClassKind.CLASS) {
+                JetDelegatorToSuperCall superCall = getSuperCall();
+                if (superCall != null) {
+                    addCallToSuperMethod(superCall, initializer);
+                }
                 return;
             }
-            addCallToSuperMethod(superCall, initializer);
         }
     }
 
@@ -111,13 +120,12 @@ public final class ClassInitializerTranslator extends AbstractTranslator {
 
     @Nullable
     private JetDelegatorToSuperCall getSuperCall() {
-        JetDelegatorToSuperCall result = null;
         for (JetDelegationSpecifier specifier : classDeclaration.getDelegationSpecifiers()) {
             if (specifier instanceof JetDelegatorToSuperCall) {
-                result = (JetDelegatorToSuperCall) specifier;
+                return (JetDelegatorToSuperCall) specifier;
             }
         }
-        return result;
+        return null;
     }
 
     @NotNull
