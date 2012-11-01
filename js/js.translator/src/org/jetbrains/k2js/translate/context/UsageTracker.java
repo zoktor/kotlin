@@ -22,10 +22,11 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.*;
-import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 
 import java.util.List;
 import java.util.Set;
+
+import static org.jetbrains.jet.lang.resolve.DescriptorUtils.isAncestor;
 
 public final class UsageTracker {
     @Nullable
@@ -93,7 +94,7 @@ public final class UsageTracker {
         else if (descriptor instanceof VariableDescriptor) {
             VariableDescriptor variableDescriptor = (VariableDescriptor) descriptor;
             if ((capturedVariables == null || !capturedVariables.contains(variableDescriptor)) &&
-                !isAncestor(memberDescriptor, variableDescriptor)) {
+                !isAncestor(memberDescriptor, variableDescriptor, true, true)) {
                 addCapturedMember(variableDescriptor);
             }
         }
@@ -107,7 +108,7 @@ public final class UsageTracker {
             if (containingDeclaration instanceof ClassDescriptor) {
                 // skip methods like "plus" — defined in Int class
                 if (outerClassDescriptor == null &&
-                    (!callableDescriptor.getExpectedThisObject().exists() || isAncestor(containingDeclaration, memberDescriptor))) {
+                    (!callableDescriptor.getExpectedThisObject().exists() || isAncestor(containingDeclaration, memberDescriptor, true, true))) {
                     outerClassDescriptor = (ClassDescriptor) containingDeclaration;
                 }
                 return;
@@ -115,7 +116,7 @@ public final class UsageTracker {
 
             // local named function
             if (!(containingDeclaration instanceof ClassOrNamespaceDescriptor) &&
-                !isAncestor(memberDescriptor, descriptor)) {
+                !isAncestor(memberDescriptor, descriptor, true, true)) {
                 addCapturedMember(callableDescriptor);
             }
         }
@@ -151,7 +152,7 @@ public final class UsageTracker {
     private void forEachCaptured(Consumer<CallableDescriptor> consumer, MemberDescriptor requestorDescriptor, @Nullable THashSet<CallableDescriptor> visited) {
         if (capturedVariables != null) {
             for (CallableDescriptor callableDescriptor : capturedVariables) {
-                if (!isAncestor(requestorDescriptor, callableDescriptor) && (visited == null || visited.add(callableDescriptor))) {
+                if (!isAncestor(requestorDescriptor, callableDescriptor, true, true) && (visited == null || visited.add(callableDescriptor))) {
                     consumer.consume(callableDescriptor);
                 }
             }
@@ -174,20 +175,6 @@ public final class UsageTracker {
                 if (child.hasCaptured()) {
                     return true;
                 }
-            }
-        }
-        return false;
-    }
-
-    // differs from DescriptorUtils - fails if reach NamespaceDescriptor
-    private static boolean isAncestor(
-            @NotNull DeclarationDescriptor ancestor,
-            @NotNull DeclarationDescriptor declarationDescriptor
-    ) {
-        DeclarationDescriptor descriptor = declarationDescriptor;
-        while ((descriptor = descriptor.getContainingDeclaration()) != null && !(descriptor instanceof NamespaceDescriptor)) {
-            if (ancestor == descriptor) {
-                return true;
             }
         }
         return false;

@@ -165,9 +165,18 @@ public class DescriptorUtils {
     }
 
     public static boolean isAncestor(@Nullable DeclarationDescriptor ancestor, @NotNull DeclarationDescriptor declarationDescriptor, boolean strict) {
+        return isAncestor(ancestor, declarationDescriptor, strict, false);
+    }
+
+    public static boolean isAncestor(
+            @Nullable DeclarationDescriptor ancestor,
+            @NotNull DeclarationDescriptor declarationDescriptor,
+            boolean strict,
+            boolean stopIfReachNamespace
+    ) {
         if (ancestor == null) return false;
         DeclarationDescriptor descriptor = strict ? declarationDescriptor.getContainingDeclaration() : declarationDescriptor;
-        while (descriptor != null) {
+        while (descriptor != null && (!stopIfReachNamespace || !(descriptor instanceof NamespaceDescriptor))) {
             if (ancestor == descriptor) return true;
             descriptor = descriptor.getContainingDeclaration();
         }
