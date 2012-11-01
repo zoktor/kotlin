@@ -32,8 +32,6 @@ import org.jetbrains.k2js.translate.context.TranslationContext;
 import java.util.List;
 import java.util.Set;
 
-import static org.jetbrains.jet.lang.resolve.DescriptorUtils.getSuperclassDescriptors;
-
 /**
  * @author Pavel Talanov
  */
@@ -62,11 +60,6 @@ public final class JsDescriptorUtils {
             }
         }
         return null;
-    }
-
-    @Nullable
-    public static ClassDescriptor getSuperclass(@NotNull ClassDescriptor classDescriptor) {
-        return findAncestorClass(getSuperclassDescriptors(classDescriptor));
     }
 
     @NotNull

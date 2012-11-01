@@ -375,29 +375,10 @@ public final class StaticContext {
     private final class ScopeGenerator extends Generator<JsScope> {
 
         public ScopeGenerator() {
-            Rule<JsScope> generateNewScopesForClassesWithNoAncestors = new Rule<JsScope>() {
+            Rule<JsScope> generateNewScopesForClasses = new Rule<JsScope>() {
                 @Override
                 public JsScope apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!(descriptor instanceof ClassDescriptor)) {
-                        return null;
-                    }
-                    if (getSuperclass((ClassDescriptor) descriptor) == null) {
-                        return getRootScope().innerScope("Scope for class " + descriptor.getName());
-                    }
-                    return null;
-                }
-            };
-            Rule<JsScope> generateInnerScopesForDerivedClasses = new Rule<JsScope>() {
-                @Override
-                public JsScope apply(@NotNull DeclarationDescriptor descriptor) {
-                    if (!(descriptor instanceof ClassDescriptor)) {
-                        return null;
-                    }
-                    ClassDescriptor superclass = getSuperclass((ClassDescriptor) descriptor);
-                    if (superclass == null) {
-                        return null;
-                    }
-                    return getScopeForDescriptor(superclass).innerScope("Scope for class " + descriptor.getName());
+                    return descriptor instanceof ClassDescriptor ? getRootScope().innerScope(null) : null;
                 }
             };
             Rule<JsScope> generateNewScopesForNamespaceDescriptors = new Rule<JsScope>() {
@@ -432,8 +413,7 @@ public final class StaticContext {
                 }
             };
             addRule(createFunctionObjectsForCallableDescriptors);
-            addRule(generateNewScopesForClassesWithNoAncestors);
-            addRule(generateInnerScopesForDerivedClasses);
+            addRule(generateNewScopesForClasses);
             addRule(generateNewScopesForNamespaceDescriptors);
             addRule(generateInnerScopesForMembers);
         }
