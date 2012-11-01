@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.jetbrains.jet.lang.resolve.DescriptorUtils.getSuperclassDescriptors;
-import static org.jetbrains.jet.lang.resolve.DescriptorUtils.isClassObject;
 
 /**
  * @author Pavel Talanov
@@ -110,15 +109,19 @@ public final class JsDescriptorUtils {
         return getDeclarationDescriptorForReceiver(receiverParameter.getValue());
     }
 
-    //TODO: maybe we have similar routine
     @Nullable
     public static ClassDescriptor getContainingClass(@NotNull DeclarationDescriptor descriptor) {
-        DeclarationDescriptor containing = descriptor.getContainingDeclaration();
-        while (containing != null) {
-            if (containing instanceof ClassDescriptor && !isClassObject(containing)) {
-                return (ClassDescriptor) containing;
+        DeclarationDescriptor containing = descriptor;
+        while ((containing = containing.getContainingDeclaration()) != null) {
+            if (containing instanceof ClassDescriptor) {
+                ClassDescriptor containingClass = (ClassDescriptor) containing;
+                if (containingClass.getKind() != ClassKind.CLASS_OBJECT) {
+                    return containingClass;
+                }
             }
-            containing = containing.getContainingDeclaration();
+            else if (containing instanceof NamespaceDescriptor) {
+                return null;
+            }
         }
         return null;
     }
