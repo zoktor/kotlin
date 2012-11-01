@@ -66,7 +66,6 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
 
     public JsExpression translateFunction(@NotNull JetDeclarationWithBody declaration, @NotNull FunctionDescriptor descriptor, @NotNull TranslationContext outerContext) {
         JsFunction fun = createFunction();
-        TranslationContext funContext;
         final boolean asInner;
         ClassDescriptor outerClass;
         AliasingContext aliasingContext;
@@ -96,8 +95,8 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
             asInner = descriptor.getContainingDeclaration() instanceof NamespaceDescriptor;
         }
 
-        funContext = outerContext.newFunctionBody(fun, aliasingContext,
-                                                  new UsageTracker(descriptor, outerContext.usageTracker(), outerClass));
+        TranslationContext funContext = outerContext.newFunctionBody(fun, aliasingContext,
+                                                                     new UsageTracker(descriptor, outerContext.usageTracker(), outerClass));
         fun.getBody().getStatements().addAll(translateFunctionBody(descriptor, declaration, funContext).getStatements());
 
         InnerFunctionTranslator translator = null;

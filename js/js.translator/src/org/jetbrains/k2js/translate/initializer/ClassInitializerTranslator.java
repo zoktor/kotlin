@@ -43,45 +43,54 @@ import static org.jetbrains.k2js.translate.utils.TranslationUtils.translateArgum
  */
 public final class ClassInitializerTranslator extends AbstractTranslator {
     @NotNull
-    private final JetClassOrObject classDeclaration;
+    private final JetClassOrObject declaration;
     private final ClassDescriptorFromSource descriptor;
     @NotNull
     private final List<JsStatement> initializerStatements = new SmartList<JsStatement>();
 
-    public ClassInitializerTranslator(
-            @NotNull JetClassOrObject classDeclaration,
+    private final JsFunction initializerFunction;
+
+    public static JsFunction translateInitializerFunction(
+            @NotNull JetClassOrObject declaration,
             @NotNull ClassDescriptorFromSource descriptor,
+            @NotNull TranslationContext classContext
+    ) {
+        JsFunction fun = new JsFunction(classContext.scope(), new JsBlock());
+        TranslationContext context = classContext.newFunctionBody(fun, null, null);
+        return new ClassInitializerTranslator(declaration, descriptor, fun, context).generateInitializeMethod();
+    }
+
+    private ClassInitializerTranslator(
+            @NotNull JetClassOrObject declaration,
+            @NotNull ClassDescriptorFromSource descriptor,
+            @NotNull JsFunction initializerFunction,
             @NotNull TranslationContext context
     ) {
-        // Note: it's important we use scope for class descriptor because anonymous function used in property initializers
-        // belong to the properties themselves
-        super(context.newDeclaration(descriptor.getUnsubstitutedPrimaryConstructor()));
-        this.classDeclaration = classDeclaration;
+        super(context);
+        this.initializerFunction = initializerFunction;
+        this.declaration = declaration;
         this.descriptor = descriptor;
     }
 
     @NotNull
     public JsFunction generateInitializeMethod() {
-        //TODO: it's inconsistent that we have scope for class and function for constructor, currently have problems implementing better way
-        ConstructorDescriptor primaryConstructor = descriptor.getUnsubstitutedPrimaryConstructor();
-        assert primaryConstructor != null;
-        JsFunction result = context().getFunctionObject(primaryConstructor);
         //NOTE: while we translate constructor parameters we also add property initializer statements
         // for properties declared as constructor parameters
-        translatePrimaryConstructorParameters(result.getParameters());
-        mayBeAddCallToSuperMethod(result);
-        new InitializerVisitor(initializerStatements).traverseContainer(classDeclaration, context());
+        translatePrimaryConstructorParameters(initializerFunction.getParameters());
+        mayBeAddCallToSuperMethod(initializerFunction);
+        new InitializerVisitor(initializerStatements).traverseContainer(declaration, context());
 
+        List<JsStatement> funStatements = initializerFunction.getBody().getStatements();
         for (JsStatement statement : initializerStatements) {
             if (statement instanceof JsBlock) {
-                result.getBody().getStatements().addAll(((JsBlock) statement).getStatements());
+                funStatements.addAll(((JsBlock) statement).getStatements());
             }
             else {
-                result.getBody().getStatements().add(statement);
+                funStatements.add(statement);
             }
         }
 
-        return result;
+        return initializerFunction;
     }
 
     private void mayBeAddCallToSuperMethod(JsFunction initializer) {
@@ -115,7 +124,7 @@ public final class ClassInitializerTranslator extends AbstractTranslator {
 
     @Nullable
     private JetDelegatorToSuperCall getSuperCall() {
-        for (JetDelegationSpecifier specifier : classDeclaration.getDelegationSpecifiers()) {
+        for (JetDelegationSpecifier specifier : declaration.getDelegationSpecifiers()) {
             if (specifier instanceof JetDelegatorToSuperCall) {
                 return (JetDelegatorToSuperCall) specifier;
             }
@@ -124,13 +133,11 @@ public final class ClassInitializerTranslator extends AbstractTranslator {
     }
 
     private void translatePrimaryConstructorParameters(List<JsParameter> result) {
-        List<JetParameter> parameterList = getPrimaryConstructorParameters(classDeclaration);
-        if (parameterList.isEmpty()) {
-            return;
-        }
-
-        for (JetParameter jetParameter : parameterList) {
-            result.add(translateParameter(jetParameter));
+        List<JetParameter> parameterList = getPrimaryConstructorParameters(declaration);
+        if (!parameterList.isEmpty()) {
+            for (JetParameter jetParameter : parameterList) {
+                result.add(translateParameter(jetParameter));
+            }
         }
     }
 
