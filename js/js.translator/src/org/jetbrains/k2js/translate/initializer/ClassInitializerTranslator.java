@@ -143,10 +143,8 @@ public final class ClassInitializerTranslator extends AbstractTranslator {
 
     @NotNull
     private JsParameter translateParameter(@NotNull JetParameter jetParameter) {
-        DeclarationDescriptor parameterDescriptor =
-                getDescriptorForElement(bindingContext(), jetParameter);
-        JsName parameterName = context().getNameForDescriptor(parameterDescriptor);
-        JsParameter jsParameter = new JsParameter(parameterName);
+        DeclarationDescriptor parameterDescriptor = getDescriptorForElement(bindingContext(), jetParameter);
+        JsParameter jsParameter = new JsParameter(context().getNameForDescriptor(parameterDescriptor));
         mayBeAddInitializerStatementForProperty(jsParameter, jetParameter);
         return jsParameter;
     }

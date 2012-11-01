@@ -140,7 +140,7 @@ public final class ClassDeclarationTranslator extends AbstractTranslator {
             public boolean execute(ClassDescriptor descriptor, JsNameRef ref) {
                 if (ref.getName() == null) {
                     // from library
-                    ref.resolve(context().getNameForDescriptor(descriptor));
+                    ref.setIdent(context().getNameRefForDescriptor(descriptor).getIdent());
                     ref.setQualifier(context().getQualifierForDescriptor(descriptor));
                 }
                 return true;

@@ -29,8 +29,6 @@ import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
-import java.util.Set;
-
 /**
  * @author Pavel Talanov
  */
@@ -49,13 +47,6 @@ public final class JsDescriptorUtils {
 
     public static boolean isCompareTo(@NotNull FunctionDescriptor functionDescriptor) {
         return (functionDescriptor.getName().equals(OperatorConventions.COMPARE_TO));
-    }
-
-    @NotNull
-    public static DeclarationDescriptor getContainingDeclaration(@NotNull DeclarationDescriptor descriptor) {
-        DeclarationDescriptor containing = descriptor.getContainingDeclaration();
-        assert containing != null : "Should be called on objects that have containing declaration.";
-        return containing;
     }
 
     public static boolean isExtension(@NotNull CallableDescriptor functionDescriptor) {
@@ -106,18 +97,6 @@ public final class JsDescriptorUtils {
             }
         }
         return null;
-    }
-
-    @Nullable
-    public static FunctionDescriptor getOverriddenDescriptor(@NotNull FunctionDescriptor functionDescriptor) {
-        Set<? extends FunctionDescriptor> overriddenDescriptors = functionDescriptor.getOverriddenDescriptors();
-        if (overriddenDescriptors.isEmpty()) {
-            return null;
-        }
-        else {
-            //TODO: for now translator can't deal with multiple inheritance good enough
-            return overriddenDescriptors.iterator().next();
-        }
     }
 
     private static boolean isDefaultAccessor(@Nullable PropertyAccessorDescriptor accessorDescriptor) {

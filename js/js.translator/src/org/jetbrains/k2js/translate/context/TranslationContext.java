@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.Named;
-import org.jetbrains.jet.lang.descriptors.PropertyGetterDescriptor;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.k2js.translate.declaration.ClassDeclarationTranslator;
@@ -145,13 +144,13 @@ public class TranslationContext {
 
     @NotNull
     public JsName getNameForDescriptor(@NotNull DeclarationDescriptor descriptor) {
-        assert !(descriptor instanceof PropertyGetterDescriptor);
         return staticContext.getNameForDescriptor(descriptor, this);
     }
 
     @NotNull
     public JsNameRef getNameRefForDescriptor(@NotNull DeclarationDescriptor descriptor) {
-        return staticContext.getNameRefForDescriptor(descriptor, this);
+        final JsNameRef descriptor1 = staticContext.getNameRefForDescriptor(descriptor, this);
+        return descriptor1;
     }
 
     @NotNull

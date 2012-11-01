@@ -1,25 +1,23 @@
 package js;
 
-import js.library
-import js.native
 import java.util.*;
 import java.lang.*;
 
 native
-public val noImpl : Nothing = throw Exception()
+public val noImpl: Nothing = throw Exception()
 
 /** Provides [] access to maps */
 native public fun <K, V> MutableMap<K, V>.set(key: K, value: V): Unit = noImpl
 
 library("println")
-public fun println() {}
+public fun println(): Unit = js.noImpl
 library("println")
-public fun println(s : Any?) {}
+public fun println(s: Any?): Unit = js.noImpl
 library("print")
-public fun print(s : Any?) {}
+public fun print(s: Any?): Unit = js.noImpl
 //TODO: consistent parseInt
-native public fun parseInt(s: String, radix:Int = 10): Int = js.noImpl
+native public fun parseInt(s: String, radix: Int = 10): Int = js.noImpl
 library
-public fun safeParseInt(s : String) : Int? = js.noImpl
+public fun safeParseInt(s: String): Int? = js.noImpl
 library
-public fun safeParseDouble(s : String) : Double? = js.noImpl
+public fun safeParseDouble(s: String): Double? = js.noImpl

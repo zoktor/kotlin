@@ -204,7 +204,11 @@ public final class JsAstUtils {
     }
 
     public static String createNameForProperty(@NotNull PropertyDescriptor descriptor, @NotNull TranslationContext context) {
-        if (context.isEcma5() && !JsDescriptorUtils.isAsPrivate(descriptor)) {
+        return createNameForProperty(descriptor, context.isEcma5());
+    }
+
+    public static String createNameForProperty(@NotNull PropertyDescriptor descriptor, boolean isEcma5) {
+        if (isEcma5 && !JsDescriptorUtils.isAsPrivate(descriptor)) {
             return descriptor.getName().getName();
         }
         else {
