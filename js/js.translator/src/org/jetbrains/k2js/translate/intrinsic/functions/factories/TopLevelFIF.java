@@ -131,9 +131,9 @@ public final class TopLevelFIF extends CompositeFIF {
 
                     int parameterCount = descriptor.getValueParameters().size();
                     DeclarationDescriptor fun = descriptor.getContainingDeclaration();
-                    return descriptor.getReceiverParameter() != null
-                           ? fun == KotlinBuiltIns.getInstance().getExtensionFunction(parameterCount)
-                           : fun == KotlinBuiltIns.getInstance().getFunction(parameterCount);
+                    return fun == (descriptor.getReceiverParameter() == null
+                                   ? KotlinBuiltIns.getInstance().getFunction(parameterCount)
+                                   : KotlinBuiltIns.getInstance().getExtensionFunction(parameterCount));
                 }
             }, new CallParametersAwareFunctionIntrinsic() {
                 @NotNull
