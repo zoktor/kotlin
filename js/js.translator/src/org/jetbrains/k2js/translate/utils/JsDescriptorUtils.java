@@ -49,10 +49,6 @@ public final class JsDescriptorUtils {
         return (functionDescriptor.getName().equals(OperatorConventions.COMPARE_TO));
     }
 
-    public static boolean isExtension(@NotNull CallableDescriptor functionDescriptor) {
-        return (functionDescriptor.getReceiverParameter() != null);
-    }
-
     //TODO: why callable descriptor
     @Nullable
     public static DeclarationDescriptor getExpectedThisDescriptor(@NotNull CallableDescriptor callableDescriptor) {
@@ -76,10 +72,7 @@ public final class JsDescriptorUtils {
     @Nullable
     public static DeclarationDescriptor getExpectedReceiverDescriptor(@NotNull CallableDescriptor callableDescriptor) {
         ReceiverParameterDescriptor receiverParameter = callableDescriptor.getReceiverParameter();
-        if (receiverParameter == null) {
-            return null;
-        }
-        return getDeclarationDescriptorForReceiver(receiverParameter.getValue());
+        return receiverParameter == null ? null : getDeclarationDescriptorForReceiver(receiverParameter.getValue());
     }
 
     @Nullable
@@ -104,7 +97,7 @@ public final class JsDescriptorUtils {
     }
 
     public static boolean isAsPrivate(@NotNull PropertyDescriptor propertyDescriptor) {
-        return isExtension(propertyDescriptor) ||
+        return (propertyDescriptor.getReceiverParameter() != null) ||
                !isDefaultAccessor(propertyDescriptor.getGetter()) ||
                !isDefaultAccessor(propertyDescriptor.getSetter());
     }

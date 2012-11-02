@@ -77,12 +77,12 @@ public final class TranslationUtils {
     public static JsPropertyInitializer translateFunctionAsEcma5PropertyDescriptor(@NotNull JsFunction function,
             @NotNull FunctionDescriptor descriptor,
             @NotNull TranslationContext context) {
-        if (JsDescriptorUtils.isExtension(descriptor)) {
-            return translateExtensionFunctionAsEcma5DataDescriptor(function, descriptor, context);
-        }
-        else {
+        if (descriptor.getReceiverParameter() == null) {
             JsStringLiteral getOrSet = context.program().getStringLiteral(descriptor instanceof PropertyGetterDescriptor ? "get" : "set");
             return new JsPropertyInitializer(getOrSet, function);
+        }
+        else {
+            return translateExtensionFunctionAsEcma5DataDescriptor(function, descriptor, context);
         }
     }
 
