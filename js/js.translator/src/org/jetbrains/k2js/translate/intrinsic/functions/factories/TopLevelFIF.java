@@ -31,6 +31,7 @@ import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
+import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.CallStandardMethodIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
@@ -103,7 +104,7 @@ public final class TopLevelFIF extends CompositeFIF {
         }
     };
 
-    public static final KotlinFunctionIntrinsic STRINGIFY = new KotlinFunctionIntrinsic("stringify");
+    public static final FunctionIntrinsic STRINGIFY = kotlinFunction("stringify");
 
     private static FunctionIntrinsicFactory INSTANCE;
 
@@ -120,7 +121,7 @@ public final class TopLevelFIF extends CompositeFIF {
         add(pattern("jet", "equals").receiverExists(), EQUALS);
         add(pattern(NamePredicate.PRIMITIVE_NUMBERS, "equals"), EQUALS);
         add(pattern("String|Boolean|Char|Number.equals"), EQUALS);
-        add(pattern("jet", "arrayOfNulls"), new KotlinFunctionIntrinsic("arrayOfNulls"));
+        add(pattern("jet", "arrayOfNulls"), kotlinFunction("arrayOfNulls"));
         add(pattern("jet", "iterator").receiverExists(), RETURN_RECEIVER_INTRINSIC);
         add(new DescriptorPredicate() {
                 @Override
@@ -169,8 +170,9 @@ public final class TopLevelFIF extends CompositeFIF {
         add(pattern("js", "Json", "get"), ArrayFIF.GET_INTRINSIC);
         add(pattern("js", "Json", "set"), ArrayFIF.SET_INTRINSIC);
 
-        add(pattern("js", "println"), new SystemOutFunctionIntrinsic("println"));
-        add(pattern("js", "print"), new SystemOutFunctionIntrinsic("print"));
+        JsNameRef systemOut = new JsNameRef("out", new JsNameRef("System", Namer.KOTLIN_OBJECT_NAME_REF));
+        add(pattern("js", "println"), new QualifiedInvocationFunctionIntrinsic("println", systemOut));
+        add(pattern("js", "print"), new QualifiedInvocationFunctionIntrinsic("print", systemOut));
 
         add(pattern(javaUtil, "HashMap", "<init>"), new MapSelectImplementationIntrinsic(false));
         add(pattern(javaUtil, "HashSet", "<init>"), new MapSelectImplementationIntrinsic(true));
@@ -275,23 +277,6 @@ public final class TopLevelFIF extends CompositeFIF {
             }
 
             return callTranslator.createConstructorCallExpression(context.namer().kotlin(collectionClassName));
-        }
-    }
-
-    private static class SystemOutFunctionIntrinsic extends FunctionIntrinsic {
-        private final String methodName;
-
-        private SystemOutFunctionIntrinsic(String methodName) {
-            this.methodName = methodName;
-        }
-
-        @NotNull
-        @Override
-        public JsExpression apply(
-                @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
-        ) {
-            return new JsInvocation(
-                    new JsNameRef(methodName, new JsNameRef("out", new JsNameRef("System", context.namer().kotlinObject()))), arguments);
         }
     }
 }

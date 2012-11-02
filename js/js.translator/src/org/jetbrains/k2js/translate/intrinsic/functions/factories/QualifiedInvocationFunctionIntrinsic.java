@@ -5,19 +5,18 @@ import com.google.dart.compiler.backend.js.ast.JsInvocation;
 import com.google.dart.compiler.backend.js.ast.JsNameRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
 
 import java.util.List;
 
-public final class KotlinFunctionIntrinsic extends FunctionIntrinsic {
-    @NotNull
-    private final JsNameRef function;
+public final class QualifiedInvocationFunctionIntrinsic extends FunctionIntrinsic {
+    private final JsNameRef nameRef;
 
-    public KotlinFunctionIntrinsic(@NotNull String functionName) {
-        function = new JsNameRef(functionName, Namer.KOTLIN_OBJECT_NAME_REF);
+    public QualifiedInvocationFunctionIntrinsic(@NotNull String functionName, @NotNull JsExpression qualifier) {
+        // don't worry about source map — source expression must be set for JsInvocation
+        nameRef = new JsNameRef(functionName, qualifier);
     }
 
     @NotNull
@@ -27,6 +26,6 @@ public final class KotlinFunctionIntrinsic extends FunctionIntrinsic {
             @NotNull List<JsExpression> arguments,
             @NotNull TranslationContext context
     ) {
-        return new JsInvocation(function, receiver == null ? arguments : TranslationUtils.generateInvocationArguments(receiver, arguments));
+        return new JsInvocation(nameRef, receiver == null ? arguments : TranslationUtils.generateInvocationArguments(receiver, arguments));
     }
 }

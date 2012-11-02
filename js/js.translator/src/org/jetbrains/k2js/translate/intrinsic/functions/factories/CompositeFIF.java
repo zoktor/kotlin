@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
+import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.BuiltInPropertyIntrinsic;
 import org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic;
@@ -80,5 +81,9 @@ public abstract class CompositeFIF implements FunctionIntrinsicFactory {
 
     protected void add(@NotNull Predicate<FunctionDescriptor> pattern, @NotNull FunctionIntrinsic intrinsic) {
         patternsAndIntrinsics.add(Pair.create(pattern, intrinsic));
+    }
+
+    protected static FunctionIntrinsic kotlinFunction(@NotNull String functionName) {
+        return new QualifiedInvocationFunctionIntrinsic(functionName, Namer.KOTLIN_OBJECT_NAME_REF);
     }
 }

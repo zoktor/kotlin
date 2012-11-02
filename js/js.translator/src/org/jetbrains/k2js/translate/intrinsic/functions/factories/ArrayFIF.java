@@ -111,10 +111,10 @@ public final class ArrayFIF extends CompositeFIF {
         add(pattern(ARRAYS, "get"), GET_INTRINSIC);
         add(pattern(ARRAYS, "set"), SET_INTRINSIC);
         add(pattern(ARRAYS, "<get-size>"), LENGTH_PROPERTY_INTRINSIC);
-        add(pattern(ARRAYS, "<get-indices>"), new KotlinFunctionIntrinsic("arrayIndices"));
-        FunctionIntrinsic iteratorIntrinsic = new KotlinFunctionIntrinsic("arrayIterator");
+        add(pattern(ARRAYS, "<get-indices>"), kotlinFunction("arrayIndices"));
+        FunctionIntrinsic iteratorIntrinsic = kotlinFunction("arrayIterator");
         add(pattern(ARRAYS, "iterator"), iteratorIntrinsic);
-        add(pattern(ARRAYS, "<init>"), new KotlinFunctionIntrinsic("arrayFromFun"));
+        add(pattern(ARRAYS, "<init>"), kotlinFunction("arrayFromFun"));
         add(pattern("kotlin", "array"), ARRAY_INTRINSIC);
         add(new DescriptorPredicate() {
             @Override
@@ -144,11 +144,11 @@ public final class ArrayFIF extends CompositeFIF {
 
         String[] list = {"jet", "List"};
         add(pattern(list, "size").checkOverridden(), LENGTH_PROPERTY_INTRINSIC);
-        add(pattern(list, "get").checkOverridden(), new KotlinFunctionIntrinsic("arrayGet"));
+        add(pattern(list, "get").checkOverridden(), kotlinFunction("arrayGet"));
         add(pattern(list, "isEmpty").checkOverridden(), IS_EMPTY_INTRINSIC);
         add(pattern(list, "iterator").checkOverridden(), iteratorIntrinsic);
-        add(pattern(list, "indexOf").checkOverridden(), new KotlinFunctionIntrinsic("arrayIndexOf"));
-        add(pattern(list, "lastIndexOf").checkOverridden(), new KotlinFunctionIntrinsic("arrayLastIndexOf"));
+        add(pattern(list, "indexOf").checkOverridden(), kotlinFunction("arrayIndexOf"));
+        add(pattern(list, "lastIndexOf").checkOverridden(), kotlinFunction("arrayLastIndexOf"));
         add(pattern(list, "toArray").checkOverridden(), new FunctionIntrinsic() {
             @NotNull
             @Override
@@ -171,21 +171,21 @@ public final class ArrayFIF extends CompositeFIF {
             }
         });
 
-        add(pattern(list, "equals").checkOverridden(), new KotlinFunctionIntrinsic("arrayEquals"));
-        add(pattern(list, "toString").checkOverridden(), new KotlinFunctionIntrinsic("arrayToString"));
+        add(pattern(list, "equals").checkOverridden(), kotlinFunction("arrayEquals"));
+        add(pattern(list, "toString").checkOverridden(), kotlinFunction("arrayToString"));
 
         String[] mutableList = {"jet", "MutableList"};
-        add(pattern(mutableList, "set").checkOverridden(), new KotlinFunctionIntrinsic("arraySet"));
+        add(pattern(mutableList, "set").checkOverridden(), kotlinFunction("arraySet"));
         // http://jsperf.com/push-vs-len
         PatternBuilder.DescriptorPredicateImpl addPattern = pattern(mutableList, "add").checkOverridden();
         add(new ValueParametersAwareDescriptorPredicate(addPattern, 1), new BuiltInFunctionIntrinsic("push"));
-        add(new ValueParametersAwareDescriptorPredicate(addPattern, 2), new KotlinFunctionIntrinsic("arrayAddAt"));
-        add(pattern(mutableList, "addAll").checkOverridden(), new KotlinFunctionIntrinsic("arrayAddAll"));
+        add(new ValueParametersAwareDescriptorPredicate(addPattern, 2), kotlinFunction("arrayAddAt"));
+        add(pattern(mutableList, "addAll").checkOverridden(), kotlinFunction("arrayAddAll"));
         PatternBuilder.DescriptorPredicateImpl removePattern = pattern(mutableList, "remove").checkOverridden();
         add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(KotlinBuiltIns.getInstance().getIntType())),
-            new KotlinFunctionIntrinsic("arrayRemoveAt"));
+            kotlinFunction("arrayRemoveAt"));
         add(new ValueParametersAwareDescriptorPredicate(removePattern, Predicates.equalTo(KotlinBuiltIns.getInstance().getNullableAnyType())),
-            new KotlinFunctionIntrinsic("arrayRemove"));
+            kotlinFunction("arrayRemove"));
         add(pattern(mutableList, "clear").checkOverridden(), new FunctionIntrinsic() {
             @NotNull
             @Override
@@ -197,18 +197,18 @@ public final class ArrayFIF extends CompositeFIF {
             }
         });
 
-        add(pattern("jet", "Iterable", "iterator").checkOverridden(), new KotlinFunctionIntrinsic("collectionIterator"));
+        add(pattern("jet", "Iterable", "iterator").checkOverridden(), kotlinFunction("collectionIterator"));
 
         String[] collection = {"jet", "Collection"};
-        add(pattern(collection, "size").checkOverridden(), new KotlinFunctionIntrinsic("collectionSize"));
-        add(pattern(collection, "isEmpty").checkOverridden(), new KotlinFunctionIntrinsic("collectionIsEmpty"));
-        add(pattern(collection, "contains").checkOverridden(), new KotlinFunctionIntrinsic("collectionContains"));
+        add(pattern(collection, "size").checkOverridden(), kotlinFunction("collectionSize"));
+        add(pattern(collection, "isEmpty").checkOverridden(), kotlinFunction("collectionIsEmpty"));
+        add(pattern(collection, "contains").checkOverridden(), kotlinFunction("collectionContains"));
 
         String[] mutableCollection = {"jet", "MutableCollection"};
-        add(pattern(mutableCollection, "add").checkOverridden(), new KotlinFunctionIntrinsic("collectionAdd"));
-        add(pattern(mutableCollection, "addAll").checkOverridden(), new KotlinFunctionIntrinsic("collectionAddAll"));
-        add(pattern(mutableCollection, "remove").checkOverridden(), new KotlinFunctionIntrinsic("collectionRemove"));
-        add(pattern(mutableCollection, "clear").checkOverridden(), new KotlinFunctionIntrinsic("collectionClear"));
+        add(pattern(mutableCollection, "add").checkOverridden(), kotlinFunction("collectionAdd"));
+        add(pattern(mutableCollection, "addAll").checkOverridden(), kotlinFunction("collectionAddAll"));
+        add(pattern(mutableCollection, "remove").checkOverridden(), kotlinFunction("collectionRemove"));
+        add(pattern(mutableCollection, "clear").checkOverridden(), kotlinFunction("collectionClear"));
     }
 
     private final static class ValueParametersAwareDescriptorPredicate implements DescriptorPredicate {
