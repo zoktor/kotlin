@@ -112,16 +112,21 @@ public final class FunctionTranslator extends AbstractTranslator {
         }
 
         List<JsParameter> jsParameters = new SmartList<JsParameter>();
-        if (extensionFunctionReceiverName != null) {
-            jsParameters.add(new JsParameter(extensionFunctionReceiverName));
-        }
-        addParameters(jsParameters, descriptor, functionBodyContext);
+        addRegularParameters(descriptor, jsParameters, functionBodyContext, extensionFunctionReceiverName);
         return jsParameters;
     }
 
-    public static void addParameters(List<JsParameter> list, FunctionDescriptor descriptor, TranslationContext context) {
+    public static void addRegularParameters(
+            @NotNull FunctionDescriptor descriptor,
+            @NotNull List<JsParameter> parameters,
+            @NotNull TranslationContext funContext,
+            @Nullable JsName receiverName
+    ) {
+        if (receiverName != null) {
+            parameters.add(new JsParameter(receiverName));
+        }
         for (ValueParameterDescriptor valueParameter : descriptor.getValueParameters()) {
-            list.add(new JsParameter(context.getNameForDescriptor(valueParameter)));
+            parameters.add(new JsParameter(funContext.getNameForDescriptor(valueParameter)));
         }
     }
 

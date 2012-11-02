@@ -36,6 +36,7 @@ import org.jetbrains.k2js.translate.initializer.InitializerUtils;
 
 import java.util.List;
 
+import static org.jetbrains.k2js.translate.expression.FunctionTranslator.addRegularParameters;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getExpectedReceiverDescriptor;
 
 public class LiteralFunctionTranslator extends AbstractTranslator {
@@ -104,7 +105,7 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
         }
 
         if (asInner) {
-            addRegularParameters(descriptor, fun, funContext, receiverName);
+            addRegularParameters(descriptor, fun.getParameters(), funContext, receiverName);
             if (outerClass != null) {
                 UsageTracker usageTracker = funContext.usageTracker();
                 assert usageTracker != null;
@@ -120,7 +121,7 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
         }
 
         JsExpression result = translator.translate(createReference(fun), outerContext);
-        addRegularParameters(descriptor, fun, funContext, receiverName);
+        addRegularParameters(descriptor, fun.getParameters(), funContext, receiverName);
         return result;
     }
 
@@ -129,18 +130,6 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
         JsNameRef nameRef = new JsNameRef(place.second.generate(), place.third);
         place.first.add(new JsPropertyInitializer(nameRef, InitializerUtils.toDataDescriptor(fun, context())));
         return nameRef;
-    }
-
-    private static void addRegularParameters(
-            @NotNull FunctionDescriptor descriptor,
-            @NotNull JsFunction fun,
-            @NotNull TranslationContext funContext,
-            @Nullable JsName receiverName
-    ) {
-        if (receiverName != null) {
-            fun.getParameters().add(new JsParameter(receiverName));
-        }
-        FunctionTranslator.addParameters(fun.getParameters(), descriptor, funContext);
     }
 
     private JsFunction createFunction() {
