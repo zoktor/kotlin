@@ -169,6 +169,9 @@ public final class TopLevelFIF extends CompositeFIF {
         add(pattern("js", "Json", "get"), ArrayFIF.GET_INTRINSIC);
         add(pattern("js", "Json", "set"), ArrayFIF.SET_INTRINSIC);
 
+        add(pattern("js", "println"), new SystemOutFunctionIntrinsic("println"));
+        add(pattern("js", "print"), new SystemOutFunctionIntrinsic("print"));
+
         add(pattern(javaUtil, "HashMap", "<init>"), new MapSelectImplementationIntrinsic(false));
         add(pattern(javaUtil, "HashSet", "<init>"), new MapSelectImplementationIntrinsic(true));
 
@@ -272,6 +275,23 @@ public final class TopLevelFIF extends CompositeFIF {
             }
 
             return callTranslator.createConstructorCallExpression(context.namer().kotlin(collectionClassName));
+        }
+    }
+
+    private static class SystemOutFunctionIntrinsic extends FunctionIntrinsic {
+        private final String methodName;
+
+        private SystemOutFunctionIntrinsic(String methodName) {
+            this.methodName = methodName;
+        }
+
+        @NotNull
+        @Override
+        public JsExpression apply(
+                @Nullable JsExpression receiver, @NotNull List<JsExpression> arguments, @NotNull TranslationContext context
+        ) {
+            return new JsInvocation(
+                    new JsNameRef(methodName, new JsNameRef("out", new JsNameRef("System", context.namer().kotlinObject()))), arguments);
         }
     }
 }

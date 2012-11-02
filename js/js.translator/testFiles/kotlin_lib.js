@@ -26,7 +26,7 @@
             return Kotlin.arrayEquals(obj1, obj2);
         }
 
-        if (typeof obj1 == "object" && obj1.equals !== undefined) {
+        if (typeof obj1 == "object" && "equals" in obj1) {
             return obj1.equals(obj2);
         }
 
@@ -307,28 +307,22 @@
 
     Kotlin.System = function () {
         var output = "";
-
-        var print = function (obj) {
-            if (obj !== undefined) {
-                if (obj === null || typeof obj !== "object") {
-                    output += obj;
-                }
-                else {
-                    output += obj.toString();
-                }
-            }
-        };
-        var println = function (obj) {
-            this.print(obj);
-            output += "\n";
-        };
-
         return {
-            out: function () {
-                return {
-                    print: print,
-                    println: println
-                };
+            out: {
+                print: function (obj) {
+                    if (obj !== undefined) {
+                        if (obj === null || typeof obj !== "object") {
+                            output += obj;
+                        }
+                        else {
+                            output += obj.toString();
+                        }
+                    }
+                },
+                println: function (obj) {
+                    this.print(obj);
+                    output += "\n";
+                }
             },
             output: function () {
                 return output;
@@ -338,14 +332,6 @@
             }
         };
     }();
-
-    Kotlin.println = function (s) {
-        Kotlin.System.out().println(s);
-    };
-
-    Kotlin.print = function (s) {
-        Kotlin.System.out().print(s);
-    };
 
     Kotlin.RangeIterator = Kotlin.$createClass(Kotlin.Iterator, {
         initialize: function (start, count, reversed) {
