@@ -136,7 +136,7 @@ public final class FunctionTranslator extends AbstractTranslator {
         JsNode body = Translation.translateExpression(jetBodyExpression, context);
         JetType functionReturnType = descriptor.getReturnType();
         assert functionReturnType != null : "Function return typed type must be resolved.";
-        if (!((!declaration.hasBlockBody()) && (!KotlinBuiltIns.getInstance().isUnit(functionReturnType)))) {
+        if (declaration.hasBlockBody() || KotlinBuiltIns.getInstance().isUnit(functionReturnType)) {
             return body;
         }
         return mutateLastExpression(body, new Mutator() {
