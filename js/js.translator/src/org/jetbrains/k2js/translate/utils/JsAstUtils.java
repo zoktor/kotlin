@@ -166,12 +166,6 @@ public final class JsAstUtils {
         setArguments(invocation, Arrays.asList(arguments));
     }
 
-    public static void setParameters(@NotNull JsFunction function, @NotNull List<JsParameter> newParams) {
-        List<JsParameter> parameters = function.getParameters();
-        assert parameters.isEmpty() : "Arguments already set.";
-        parameters.addAll(newParams);
-    }
-
     @NotNull
     public static JsExpression newSequence(@NotNull List<JsExpression> expressions) {
         assert !expressions.isEmpty();

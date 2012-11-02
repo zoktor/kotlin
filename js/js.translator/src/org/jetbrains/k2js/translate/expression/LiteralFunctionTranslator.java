@@ -36,7 +36,6 @@ import org.jetbrains.k2js.translate.initializer.InitializerUtils;
 
 import java.util.List;
 
-import static org.jetbrains.k2js.translate.utils.FunctionBodyTranslator.translateFunctionBody;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getExpectedReceiverDescriptor;
 
 public class LiteralFunctionTranslator extends AbstractTranslator {
@@ -97,7 +96,7 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
 
         TranslationContext funContext = outerContext.newFunctionBody(fun, aliasingContext,
                                                                      new UsageTracker(descriptor, outerContext.usageTracker(), outerClass));
-        fun.getBody().getStatements().addAll(translateFunctionBody(descriptor, declaration, funContext).getStatements());
+        FunctionTranslator.addBodyResult(fun, FunctionTranslator.translateBody(descriptor, declaration, funContext));
 
         InnerFunctionTranslator translator = null;
         if (!asInner) {

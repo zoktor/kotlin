@@ -149,8 +149,7 @@ public class TranslationContext {
 
     @NotNull
     public JsNameRef getNameRefForDescriptor(@NotNull DeclarationDescriptor descriptor) {
-        final JsNameRef descriptor1 = staticContext.getNameRefForDescriptor(descriptor, this);
-        return descriptor1;
+        return staticContext.getNameRefForDescriptor(descriptor, this);
     }
 
     @NotNull

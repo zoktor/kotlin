@@ -33,6 +33,7 @@ import org.jetbrains.jet.lang.psi.JetFunction;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedValueArgument;
 import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
+import org.jetbrains.k2js.translate.expression.FunctionTranslator;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
 import org.jetbrains.k2js.translate.utils.mutator.LastExpressionMutator;
 import org.jetbrains.k2js.translate.utils.mutator.Mutator;
@@ -42,7 +43,6 @@ import java.util.Map;
 
 import static org.jetbrains.k2js.translate.reference.CallParametersResolver.resolveCallParameters;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getFunctionForDescriptor;
-import static org.jetbrains.k2js.translate.utils.FunctionBodyTranslator.translateFunctionBody;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getExpectedReceiverDescriptor;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getExpectedThisDescriptor;
 
@@ -78,7 +78,7 @@ public final class InlinedCallExpressionTranslator extends AbstractCallExpressio
     @NotNull
     private JsExpression translate() {
         TranslationContext contextWithAllParametersAliased = createContextForInlining();
-        JsNode translatedBody = translateFunctionBody(getFunctionDescriptor(), getFunctionBody(), contextWithAllParametersAliased);
+        JsNode translatedBody = FunctionTranslator.translateBody(getFunctionDescriptor(), getFunctionBody(), contextWithAllParametersAliased);
         //TODO: declare uninitialized temporary
         TemporaryVariable temporaryVariable = contextWithAllParametersAliased.declareTemporary(JsLiteral.NULL);
         JsNode mutatedBody = LastExpressionMutator.mutateLastExpression(translatedBody, new InlineFunctionMutator(temporaryVariable));
