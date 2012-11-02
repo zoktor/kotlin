@@ -100,7 +100,7 @@ public final class UsageTracker {
         }
         else if (descriptor instanceof SimpleFunctionDescriptor) {
             CallableDescriptor callableDescriptor = (CallableDescriptor) descriptor;
-            if (callableDescriptor.getReceiverParameter().exists()) {
+            if (callableDescriptor.getReceiverParameter() != null) {
                 return;
             }
 
@@ -108,7 +108,7 @@ public final class UsageTracker {
             if (containingDeclaration instanceof ClassDescriptor) {
                 // skip methods like "plus" — defined in Int class
                 if (outerClassDescriptor == null &&
-                    (!callableDescriptor.getExpectedThisObject().exists() || isAncestor(containingDeclaration, memberDescriptor, true, true))) {
+                    (callableDescriptor.getExpectedThisObject() == null || isAncestor(containingDeclaration, memberDescriptor, true, true))) {
                     outerClassDescriptor = (ClassDescriptor) containingDeclaration;
                 }
                 return;

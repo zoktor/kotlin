@@ -187,7 +187,7 @@ public final class PatternBuilder {
 
         @Override
         public boolean apply(@NotNull FunctionDescriptor functionDescriptor) {
-            if (functionDescriptor.getReceiverParameter().exists() != receiverParameterExists) {
+            if ((functionDescriptor.getReceiverParameter() != null) == receiverParameterExists) {
                 return false;
             }
 

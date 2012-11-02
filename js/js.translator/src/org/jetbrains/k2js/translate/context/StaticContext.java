@@ -199,7 +199,7 @@ public final class StaticContext {
         // property cannot be overloaded, so, name collision is not possible, we don't need create extra JsName and keep generated ref
         if (descriptor instanceof PropertyAccessorDescriptor) {
             PropertyAccessorDescriptor accessorDescriptor = (PropertyAccessorDescriptor) descriptor;
-            if (accessorDescriptor.getReceiverParameter().exists()) {
+            if (accessorDescriptor.getReceiverParameter() != null) {
                 return new JsNameRef(overloadedMemberNameGenerator.forExtensionProperty(accessorDescriptor));
             }
 
