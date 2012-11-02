@@ -24,6 +24,7 @@ import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.jet.lang.descriptors.PropertyGetterDescriptor;
 import org.jetbrains.jet.lang.psi.*;
+import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.Translation;
@@ -179,17 +180,8 @@ public final class TranslationUtils {
     }
 
     @NotNull
-    public static JsExpression notNullConditional(
-            @NotNull JetExpression expression,
-            @NotNull JsExpression elseExpression,
-            @NotNull TranslationContext context
-    ) {
-        return notNullConditional(Translation.translateAsExpression(expression, context), elseExpression, context);
-    }
-
-    @NotNull
     public static JsConditional sure(@NotNull JsExpression expression, @NotNull TranslationContext context) {
-        return notNullConditional(expression, context.namer().throwNPEFunctionCall(), context);
+        return notNullConditional(expression, new JsInvocation(Namer.THROW_NPE_FUN_NAME_REF), context);
     }
 
     @NotNull

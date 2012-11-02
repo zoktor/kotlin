@@ -41,7 +41,6 @@ import org.jetbrains.k2js.translate.operation.UnaryOperationTranslator;
 import org.jetbrains.k2js.translate.reference.*;
 import org.jetbrains.k2js.translate.utils.BindingUtils;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
-import org.jetbrains.k2js.translate.utils.TranslationUtils;
 import org.jetbrains.k2js.translate.utils.mutator.AssignToExpressionMutator;
 
 import java.util.List;
@@ -318,7 +317,7 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
             @NotNull TranslationContext context) {
         IElementType operationToken = expression.getOperationReference().getReferencedNameElementType();
         if (operationToken == JetTokens.EXCLEXCL) {
-            return TranslationUtils.notNullConditional(getBaseExpression(expression), context.namer().throwNPEFunctionCall(), context);
+            return sure(translateAsExpression(getBaseExpression(expression), context), context).source(expression);
         }
         else {
             return UnaryOperationTranslator.translate(expression, operationToken, context).source(expression);
@@ -357,7 +356,7 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
 
         // KT-2670
         // we actually do not care for types in js
-        return TranslationUtils.sure(jsExpression, context).source(expression);
+        return sure(jsExpression, context).source(expression);
     }
 
     private static String getReferencedName(JetSimpleNameExpression expression) {
@@ -366,6 +365,7 @@ public final class ExpressionVisitor extends TranslatorVisitor<JsNode> {
         return name.charAt(0) == '@' ? name.substring(1) + '$' : name;
     }
 
+    @Nullable
     private static String getTargetLabel(JetLabelQualifiedExpression expression, TranslationContext context) {
         JetSimpleNameExpression labelElement = expression.getTargetLabel();
         if (labelElement == null) {

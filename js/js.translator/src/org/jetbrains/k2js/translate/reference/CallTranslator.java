@@ -169,14 +169,10 @@ public final class CallTranslator extends AbstractTranslator {
                 if (useThis) {
                     setQualifier(functionReference, getThisObjectOrQualifier());
                 }
-                return new JsInvocation(callParameters.getFunctionReference(), generateCallArgumentList(receiver));
+                return new JsInvocation(callParameters.getFunctionReference(),
+                                        TranslationUtils.generateInvocationArguments(receiver, arguments));
             }
         }, context());
-    }
-
-    @NotNull
-    private List<JsExpression> generateCallArgumentList(@NotNull JsExpression receiver) {
-        return TranslationUtils.generateInvocationArguments(receiver, arguments);
     }
 
     @NotNull

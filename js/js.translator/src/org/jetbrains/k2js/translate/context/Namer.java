@@ -40,11 +40,13 @@ public final class Namer {
     private static final String GETTER_PREFIX = "get_";
     private static final String BACKING_FIELD_PREFIX = "$";
     private static final String SUPER_METHOD_NAME = "super_init";
-    public static final String KOTLIN_OBJECT_NAME = "Kotlin";
+
+    public static final JsNameRef KOTLIN_OBJECT_NAME_REF = new JsNameRef("Kotlin");
+
     private static final String ROOT_NAMESPACE = "_";
     private static final String RECEIVER_PARAMETER_NAME = "$receiver";
     private static final String CLASSES_OBJECT_NAME = "_c";
-    private static final String THROW_NPE_FUN_NAME = "throwNPE";
+    public static final JsNameRef THROW_NPE_FUN_NAME_REF = new JsNameRef("throwNPE", KOTLIN_OBJECT_NAME_REF);
 
     @NotNull
     public static String getReceiverParameterName() {
@@ -107,7 +109,7 @@ public final class Namer {
     private final JsName isTypeName;
 
     private Namer(@NotNull JsScope rootScope) {
-        kotlinName = rootScope.declareName(KOTLIN_OBJECT_NAME);
+        kotlinName = rootScope.declareName("Kotlin");
         kotlinScope = new JsScope(rootScope, "Kotlin standard object");
         traitName = kotlinScope.declareName(TRAIT_OBJECT_NAME);
 
@@ -140,13 +142,8 @@ public final class Namer {
     }
 
     @NotNull
-    public JsExpression throwNPEFunctionCall() {
-        return new JsInvocation(new JsNameRef(THROW_NPE_FUN_NAME, kotlinObject()));
-    }
-
-    @NotNull
-    private JsNameRef kotlin(@NotNull JsName name) {
-        return new JsNameRef(name, kotlinObject());
+    private static JsNameRef kotlin(@NotNull JsName name) {
+        return new JsNameRef(name, KOTLIN_OBJECT_NAME_REF);
     }
 
     @NotNull
