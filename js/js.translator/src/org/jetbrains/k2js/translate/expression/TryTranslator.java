@@ -64,8 +64,12 @@ public final class TryTranslator {
 
     @NotNull
     private static List<JsCatch> translateCatches(JetTryExpression expression, TranslationContext context) {
-        JsCatch jsCatch = new JsCatch(context.scope(), "e");
         List<JetCatchClause> clauses = expression.getCatchClauses();
+        if (clauses.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        JsCatch jsCatch = new JsCatch(context.scope(), "e");
         if (clauses.size() == 1) {
             JetExpression catchBody = clauses.get(0).getCatchBody();
             assert catchBody != null;
