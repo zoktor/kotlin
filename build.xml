@@ -157,6 +157,7 @@
     </target>
 
   <target name="jslib">
+    <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask" classpath="js/closure-compiler.jar"/>
     <jar jarfile="${kotlin-home}/lib/kotlin-jslib.jar">
       <fileset dir="${basedir}/js/js.libraries/src">
         <include name="core/**"/>
@@ -167,44 +168,20 @@
       </fileset>
       <zipfileset file="${kotlin-home}/build.txt" prefix="META-INF"/>
     </jar>
-    <java classname="com.google.javascript.jscomp.CommandLineRunner" failonerror="true">
-      <classpath>
-        <pathelement location="${basedir}\js\js.tests\testLib\closure-compiler.jar"/>
-      </classpath>
-      <arg value="--formatting"/>
-      <arg value="PRETTY_PRINT"/>
-      <arg value="--language_in"/>
-      <arg value="ECMASCRIPT5_STRICT"/>
-      <arg value="--compilation_level"/>
-      <arg value="SIMPLE_OPTIMIZATIONS"/>
-      <arg value="--js"/>
-      <arg value="${basedir}/js/js.translator/testFiles/kotlin_lib_ecma5.js"/>
-      <arg value="--js"/>
-      <arg value="${basedir}/js/js.translator/testFiles/kotlin_lib.js"/>
-      <arg value="--js"/>
-      <arg value="${basedir}/js/js.translator/testFiles/maps.js"/>
-      <arg value="--js_output_file"/>
-      <arg value="${kotlin-home}/lib/kotlinEcma5.js"/>
-    </java>
-    <java classname="com.google.javascript.jscomp.CommandLineRunner" failonerror="true">
-      <classpath>
-        <pathelement location="${basedir}/js/js.tests/testLib/closure-compiler.jar"/>
-      </classpath>
-      <arg value="--formatting"/>
-      <arg value="PRETTY_PRINT"/>
-      <arg value="--language_in"/>
-      <arg value="ECMASCRIPT3"/>
-      <arg value="--compilation_level"/>
-      <arg value="SIMPLE_OPTIMIZATIONS"/>
-      <arg value="--js"/>
-      <arg value="${basedir}/js/js.translator/testFiles/kotlin_lib_ecma3.js"/>
-      <arg value="--js"/>
-      <arg value="${basedir}/js/js.translator/testFiles/kotlin_lib.js"/>
-      <arg value="--js"/>
-      <arg value="${basedir}/js/js.translator/testFiles/maps.js"/>
-      <arg value="--js_output_file"/>
-      <arg value="${kotlin-home}/lib/kotlinEcma3.js"/>
-    </java>
+    <jscomp compilationLevel="simple" warning="verbose" languageIn="ES5_STRICT" prettyPrint="true" output="${kotlin-home}/lib/kotlinEcma5.js">
+      <sources dir="${basedir}/js/js.translator/testFiles">
+        <file name="kotlin_lib_ecma5.js"/>
+        <file name="kotlin_lib.js"/>
+        <file name="maps.js"/>
+      </sources>
+    </jscomp>
+    <jscomp compilationLevel="simple" prettyPrint="true" output="${kotlin-home}/lib/kotlinEcma3.js">
+      <sources dir="${basedir}/js/js.translator/testFiles">
+        <file name="kotlin_lib_ecma3.js"/>
+        <file name="kotlin_lib.js"/>
+        <file name="maps.js"/>
+      </sources>
+    </jscomp>
   </target>
 
     <target name="compiler">
