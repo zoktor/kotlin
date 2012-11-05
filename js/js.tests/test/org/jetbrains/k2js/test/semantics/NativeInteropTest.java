@@ -16,7 +16,6 @@
 
 package org.jetbrains.k2js.test.semantics;
 
-import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.k2js.config.EcmaVersion;
 import org.jetbrains.k2js.test.SingleFileTranslationTest;
@@ -38,7 +37,7 @@ public final class NativeInteropTest extends SingleFileTranslationTest {
     @NotNull
     @Override
     protected List<String> additionalJSFiles(@NotNull EcmaVersion ecmaVersion) {
-        List<String> result = Lists.newArrayList(super.additionalJSFiles(ecmaVersion));
+        List<String> result = super.additionalJSFiles(ecmaVersion);
         result.add(pathToTestFiles() + NATIVE + "/" + getTestName(true) + ".js");
         //result.addAll(JsTestUtils.getAllFilesInDir(pathToTestFiles() + NATIVE));
         return result;
