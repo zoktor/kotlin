@@ -93,8 +93,6 @@ public final class Namer {
     }
 
     @NotNull
-    private final JsName kotlinName;
-    @NotNull
     private final JsScope kotlinScope;
     @NotNull
     private final JsName className;
@@ -109,7 +107,7 @@ public final class Namer {
     private final JsName isTypeName;
 
     private Namer(@NotNull JsScope rootScope) {
-        kotlinName = rootScope.declareName("Kotlin");
+        rootScope.declareName("Kotlin");
         kotlinScope = new JsScope(rootScope, "Kotlin standard object");
         traitName = kotlinScope.declareName(TRAIT_OBJECT_NAME);
 
@@ -146,14 +144,10 @@ public final class Namer {
         return new JsNameRef(name, KOTLIN_OBJECT_NAME_REF);
     }
 
+    @SuppressWarnings("MethodMayBeStatic")
     @NotNull
     public JsExpression kotlin(@NotNull String name) {
-        return kotlin(kotlinScope.declareName(name));
-    }
-
-    @NotNull
-    public JsNameRef kotlinObject() {
-        return kotlinName.makeRef();
+        return new JsNameRef(name, KOTLIN_OBJECT_NAME_REF);
     }
 
     @NotNull

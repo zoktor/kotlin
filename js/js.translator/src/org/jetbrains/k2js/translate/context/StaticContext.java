@@ -239,11 +239,8 @@ public final class StaticContext {
         else if (descriptor instanceof ConstructorDescriptor) {
             return getQualifierForDescriptor(((ConstructorDescriptor) descriptor).getContainingDeclaration());
         }
-        else if (isLibraryObject(descriptor)) {
-            return namer.kotlinObject();
-        }
-        else if (standardClasses.isStandardObject(descriptor)) {
-            return namer.kotlinObject();
+        else if (isLibraryObject(descriptor) || standardClasses.isStandardObject(descriptor)) {
+            return Namer.KOTLIN_OBJECT_NAME_REF;
         }
 
         JsNameRef qualifier = qualifierMap.get(descriptor);
