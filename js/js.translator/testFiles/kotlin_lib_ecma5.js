@@ -194,10 +194,7 @@ var Kotlin = Object.create(null, {
         return Kotlin.createClass(parent || null, initializer, descriptors);
     };
 
-    Kotlin.defineModule = function (id, declaration) {
-        if (id in Kotlin.modules) {
-            throw new Error("Module " + id + " is already defined");
-        }
+    Kotlin.doDefineModule = function (id, declaration) {
         Kotlin.modules[id] = Object.freeze(declaration);
     };
 })();

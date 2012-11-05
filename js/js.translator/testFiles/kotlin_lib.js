@@ -479,6 +479,13 @@
         }
         return obj1;
     };
+
+    Kotlin.defineModule = function (id, definitionFunction) {
+        if (id in Kotlin.modules) {
+            throw new Error("Module " + id + " is already defined");
+        }
+        Kotlin.doDefineModule(id, definitionFunction())
+    }
 })();
 
 Kotlin.assignOwner = function(f, o) {

@@ -40,18 +40,13 @@ public final class NamespaceDeclarationTranslator extends AbstractTranslator {
     private final Map<NamespaceDescriptor,NamespaceTranslator> descriptorToTranslator =
             new LinkedHashMap<NamespaceDescriptor, NamespaceTranslator>();
 
-    public static List<JsStatement> translateFiles(@NotNull Collection<JetFile> files, @NotNull TranslationContext context) {
-        return new NamespaceDeclarationTranslator(files, context).translate();
-    }
-
-    private NamespaceDeclarationTranslator(@NotNull Iterable<JetFile> files, @NotNull TranslationContext context) {
+    public NamespaceDeclarationTranslator(@NotNull Iterable<JetFile> files, @NotNull TranslationContext context) {
         super(context);
 
         this.files = files;
     }
 
-    @NotNull
-    private List<JsStatement> translate() {
+    public void translate(List<JsStatement> result) {
         // predictable order
         Map<NamespaceDescriptor, List<JsExpression>> descriptorToDefineInvocation = new THashMap<NamespaceDescriptor, List<JsExpression>>();
         JsObjectLiteral rootNamespaceDefinition = null;
@@ -72,18 +67,11 @@ public final class NamespaceDeclarationTranslator extends AbstractTranslator {
         }
 
         if (rootNamespaceDefinition == null) {
-            return Collections.emptyList();
+            return;
         }
 
         JsVars vars = new JsVars(true);
-        List<JsStatement> result;
-        if (context().isEcma5()) {
-            result = Collections.<JsStatement>singletonList(vars);
-        }
-        else {
-            result = new ArrayList<JsStatement>();
-            result.add(vars);
-        }
+        result.add(vars);
 
         context().classDeclarationTranslator().generateDeclarations();
         for (NamespaceTranslator translator : descriptorToTranslator.values()) {
@@ -92,7 +80,6 @@ public final class NamespaceDeclarationTranslator extends AbstractTranslator {
 
         vars.addIfHasInitializer(context().classDeclarationTranslator().getDeclaration());
         vars.addIfHasInitializer(getDeclaration(rootNamespaceDefinition));
-        return result;
     }
 
     private JsObjectLiteral getRootPackage(Map<NamespaceDescriptor, List<JsExpression>> descriptorToDefineInvocation,

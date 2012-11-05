@@ -36,7 +36,6 @@ import java.util.List;
 public final class JsAstUtils {
     private static final JsNameRef DEFINE_PROPERTY = new JsNameRef("defineProperty");
     public static final JsNameRef CREATE_OBJECT = new JsNameRef("create");
-    private static final JsNameRef EMPTY_REF = new JsNameRef("");
 
     private static final JsNameRef VALUE = new JsNameRef("value");
     private static final JsPropertyInitializer WRITABLE = new JsPropertyInitializer(new JsNameRef("writable"), JsLiteral.TRUE);
@@ -263,13 +262,6 @@ public final class JsAstUtils {
             @NotNull JsExpression value
     ) {
         return createDataDescriptor(value, writable, AnnotationsUtils.isEnumerable(descriptor));
-    }
-
-    @NotNull
-    public static JsFunction createPackage(@NotNull List<JsStatement> to, @NotNull JsScope scope) {
-        JsFunction packageBlockFunction = createFunctionWithEmptyBody(scope);
-        to.add(new JsInvocation(EMPTY_REF, new JsInvocation(packageBlockFunction)).makeStmt());
-        return packageBlockFunction;
     }
 
     @NotNull

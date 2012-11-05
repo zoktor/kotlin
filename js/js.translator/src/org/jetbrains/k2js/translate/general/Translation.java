@@ -39,7 +39,6 @@ import org.jetbrains.k2js.translate.expression.PatternTranslator;
 import org.jetbrains.k2js.translate.reference.CallBuilder;
 import org.jetbrains.k2js.translate.test.JSTestGenerator;
 import org.jetbrains.k2js.translate.test.JSTester;
-import org.jetbrains.k2js.translate.utils.JsAstUtils;
 import org.jetbrains.k2js.translate.utils.dangerous.DangerousData;
 import org.jetbrains.k2js.translate.utils.dangerous.DangerousTranslator;
 
@@ -115,22 +114,33 @@ public final class Translation {
     }
 
     @NotNull
-    private static JsProgram doGenerateAst(@NotNull BindingContext bindingContext, @NotNull Collection<JetFile> files,
+    private static JsProgram doGenerateAst(
+            @NotNull BindingContext bindingContext, @NotNull Collection<JetFile> files,
             @NotNull MainCallParameters mainCallParameters,
-            @NotNull Config config) throws MainFunctionNotFoundException {
+            @NotNull Config config
+    ) throws MainFunctionNotFoundException {
         StaticContext staticContext = StaticContext.generateStaticContext(bindingContext, config.getTarget());
+        JsFunction definitionFunction = generateDefinitionFunction(staticContext, files, config, mainCallParameters);
         JsProgram program = staticContext.getProgram();
-        JsBlock block = program.getGlobalBlock();
+        program.getGlobalBlock().getStatements().add(new JsInvocation(new JsNameRef("defineModule", Namer.KOTLIN_OBJECT_NAME_REF),
+                                                                      program.getStringLiteral(config.getModuleId()),
+                                                                      definitionFunction).makeStmt());
+        return program;
+    }
 
-        JsFunction rootFunction = JsAstUtils.createPackage(block.getStatements(), program.getScope());
-        JsBlock rootBlock = rootFunction.getBody();
-        List<JsStatement> statements = rootBlock.getStatements();
-        statements.add(program.getStringLiteral("use strict").makeStmt());
+    private static JsFunction generateDefinitionFunction(
+            StaticContext staticContext,
+            Collection<JetFile> files,
+            Config config,
+            MainCallParameters mainCallParameters
+    ) throws MainFunctionNotFoundException {
+        JsFunction definitionFunction = new JsFunction(staticContext.getProgram().getScope(), new JsBlock());
+        List<JsStatement> statements = definitionFunction.getBody().getStatements();
+        statements.add(staticContext.getProgram().getStringLiteral("use strict").makeStmt());
 
-        TranslationContext context = TranslationContext.rootContext(staticContext, rootFunction);
+        TranslationContext context = TranslationContext.rootContext(staticContext, definitionFunction);
         staticContext.initTranslators(context);
-        statements.addAll(NamespaceDeclarationTranslator.translateFiles(files, context));
-        defineModule(context, statements, config.getModuleId());
+        new NamespaceDeclarationTranslator(files, context).translate(statements);
 
         if (mainCallParameters.shouldBeGenerated()) {
             JsStatement statement = generateCallToMain(context, files, mainCallParameters.arguments());
@@ -138,16 +148,9 @@ public final class Translation {
                 statements.add(statement);
             }
         }
-        mayBeGenerateTests(files, config, rootBlock, context);
-        return context.program();
-    }
-
-    private static void defineModule(@NotNull TranslationContext context, @NotNull List<JsStatement> statements, @NotNull String moduleId) {
-        JsName rootNamespaceName = context.scope().findName(Namer.getRootNamespaceName());
-        if (rootNamespaceName != null) {
-            statements.add(new JsInvocation(context.namer().kotlin("defineModule"), context.program().getStringLiteral(moduleId),
-                                            rootNamespaceName.makeRef()).makeStmt());
-        }
+        mayBeGenerateTests(files, config, definitionFunction.getBody(), context);
+        statements.add(new JsReturn(new JsNameRef(Namer.getRootNamespaceName())));
+        return definitionFunction;
     }
 
     private static void mayBeGenerateTests(@NotNull Collection<JetFile> files, @NotNull Config config,
