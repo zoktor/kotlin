@@ -496,7 +496,10 @@ Kotlin.ComplexHashMap = Kotlin.HashMap;
 
 Kotlin.Set = Kotlin.$createClass(Kotlin.Collection);
 
-Kotlin.PrimitiveHashSet = Kotlin.$createClass(Kotlin.AbstractCollection, {
+Kotlin.PrimitiveHashSet = Kotlin.$createClass(Kotlin.AbstractCollection, /** @lends Kotlin.PrimitiveHashSet.prototype */ {
+    /**
+     * @constructor
+     */
     initialize: function () {
         this.$size = 0;
         this.map = {};
