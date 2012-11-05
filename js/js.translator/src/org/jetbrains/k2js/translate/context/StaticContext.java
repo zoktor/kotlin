@@ -239,7 +239,8 @@ public final class StaticContext {
         else if (descriptor instanceof ConstructorDescriptor) {
             return getQualifierForDescriptor(((ConstructorDescriptor) descriptor).getContainingDeclaration());
         }
-        else if (isLibraryObject(descriptor) || standardClasses.isStandardObject(descriptor)) {
+
+        if (isLibraryObject(descriptor) || standardClasses.isStandardObject(descriptor)) {
             return Namer.KOTLIN_OBJECT_NAME_REF;
         }
 

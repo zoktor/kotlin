@@ -200,5 +200,7 @@ public final class MiscTest extends AbstractExpressionTest {
         fooBoxTest();
     }
 
-
+    public void testJavaExceptionAsJsError() throws Exception {
+        fooBoxTest();
+    }
 }

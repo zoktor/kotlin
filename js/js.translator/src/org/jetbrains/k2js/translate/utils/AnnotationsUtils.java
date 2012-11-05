@@ -98,11 +98,12 @@ public final class AnnotationsUtils {
         return false;
     }
 
-    public static boolean hasAnnotationOrInsideAnnotatedClass(@NotNull DeclarationDescriptor descriptor,
+    private static boolean hasAnnotationOrInsideAnnotatedClass(@NotNull DeclarationDescriptor descriptor,
             @NotNull PredefinedAnnotation annotation) {
         return getAnnotationOrInsideAnnotatedClass(descriptor, annotation.getFQName()) != null;
     }
 
+    @Nullable
     public static AnnotationDescriptor getAnnotationOrInsideAnnotatedClass(@NotNull DeclarationDescriptor descriptor, @NotNull String fqn) {
         AnnotationDescriptor annotationDescriptor = getAnnotationByName(descriptor, fqn);
         if (annotationDescriptor != null) {

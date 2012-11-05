@@ -16,88 +16,103 @@
 
 package org.jetbrains.k2js.translate.expression;
 
-import com.google.dart.compiler.backend.js.ast.JsBlock;
-import com.google.dart.compiler.backend.js.ast.JsCatch;
-import com.google.dart.compiler.backend.js.ast.JsName;
-import com.google.dart.compiler.backend.js.ast.JsTry;
-import com.intellij.util.SmartList;
+import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.ClassifierDescriptor;
+import org.jetbrains.jet.lang.descriptors.ConstructorDescriptor;
+import org.jetbrains.jet.lang.descriptors.VariableDescriptor;
 import org.jetbrains.jet.lang.psi.*;
+import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.lang.resolve.BindingContextUtils;
 import org.jetbrains.k2js.translate.context.TranslationContext;
-import org.jetbrains.k2js.translate.general.AbstractTranslator;
-import org.jetbrains.k2js.translate.general.Translation;
+import org.jetbrains.k2js.translate.utils.JsAstUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import static org.jetbrains.k2js.translate.general.Translation.translateAsStatement;
 import static org.jetbrains.k2js.translate.utils.JsAstUtils.convertToBlock;
 
 /**
  * @author Pavel Talanov
  */
-//TODO: not tested at all
-//TODO: not implemented catch logic
-public final class TryTranslator extends AbstractTranslator {
-
-    @NotNull
-    public static JsTry translate(@NotNull JetTryExpression expression,
-                                  @NotNull TranslationContext context) {
-        return (new TryTranslator(expression, context)).translate();
+public final class TryTranslator {
+    private TryTranslator() {
     }
 
     @NotNull
-    private final JetTryExpression expression;
-
-    private TryTranslator(@NotNull JetTryExpression expression,
-                          @NotNull TranslationContext context) {
-        super(context);
-        this.expression = expression;
+    public static JsTry translate(@NotNull JetTryExpression expression, @NotNull TranslationContext context) {
+        return new JsTry(translateTryBlock(expression, context),
+                         translateCatches(expression, context),
+                         translateFinallyBlock(expression, context));
     }
 
-    private JsTry translate() {
-        return new JsTry(translateTryBlock(), translateCatches(), translateFinallyBlock());
-    }
 
     @Nullable
-    private JsBlock translateFinallyBlock() {
+    private static JsBlock translateFinallyBlock(JetTryExpression expression, TranslationContext context) {
         JetFinallySection finallyBlock = expression.getFinallyBlock();
-        if (finallyBlock == null) return null;
-
-        return convertToBlock(Translation.translateAsStatement(finallyBlock.getFinalExpression(), context()));
+        return finallyBlock != null ? convertToBlock(translateAsStatement(finallyBlock.getFinalExpression(), context)) : null;
     }
 
     @NotNull
-    private JsBlock translateTryBlock() {
-        return convertToBlock(Translation.translateAsStatement(expression.getTryBlock(), context()));
+    private static JsBlock translateTryBlock(JetTryExpression expression, TranslationContext context) {
+        return convertToBlock(translateAsStatement(expression.getTryBlock(), context));
     }
 
     @NotNull
-    private List<JsCatch> translateCatches() {
-        List<JsCatch> result = new SmartList<JsCatch>();
-        for (JetCatchClause catchClause : expression.getCatchClauses()) {
-            result.add(translateCatchClause(catchClause));
+    private static List<JsCatch> translateCatches(JetTryExpression expression, TranslationContext context) {
+        JsCatch jsCatch = new JsCatch(context.scope(), "e");
+        List<JetCatchClause> clauses = expression.getCatchClauses();
+        if (clauses.size() == 1) {
+            JetExpression catchBody = clauses.get(0).getCatchBody();
+            assert catchBody != null;
+            jsCatch.setBody(new JsBlock(translateAsStatement(catchBody, context)));
         }
-        return result;
-    }
+        else if (clauses.size() > 1) {
+            JsIf prevIf = null;
+            for (JetCatchClause clause : clauses) {
+                JetExpression catchBody = clause.getCatchBody();
+                JetParameter catchParameter = clause.getCatchParameter();
+                assert catchParameter != null && catchBody != null;
 
-    @NotNull
-    private JsCatch translateCatchClause(@NotNull JetCatchClause catchClause) {
-        JetParameter catchParameter = catchClause.getCatchParameter();
-        assert catchParameter != null : "Valid catch must have a parameter.";
+                VariableDescriptor descriptor =
+                        BindingContextUtils.getNotNull(context.bindingContext(), BindingContext.VALUE_PARAMETER, catchParameter);
+                ClassifierDescriptor classDescriptor = descriptor.getType().getConstructor().getDeclarationDescriptor();
+                String errorName = null;
+                if (classDescriptor instanceof ClassDescriptor) {
+                    Collection<ConstructorDescriptor> constructors = ((ClassDescriptor) classDescriptor).getConstructors();
+                    for (ConstructorDescriptor constructor : constructors) {
+                        if (constructor.isPrimary() && context.intrinsics().getFunctionIntrinsics().getIntrinsic(constructor).exists()) {
+                            errorName = classDescriptor.getName().getName();
+                            break;
+                        }
+                    }
+                }
 
-        JsName parameterName = context().getNameForElement(catchParameter);
-        JsCatch result = new JsCatch(context().scope(), parameterName.getIdent());
-        result.setBody(translateCatchBody(catchClause));
-        return result;
-    }
+                JsIf ifStatement = new JsIf();
+                if (errorName != null) {
+                    ifStatement.setIfExpression(JsAstUtils.equality(new JsNameRef("name", jsCatch.getParameter().getName().makeRef()),
+                                                                    context.program().getStringLiteral(errorName)));
+                }
+                else {
+                    // todo is check
+                    throw new UnsupportedOperationException("catch clause translator");
+                }
 
-    @NotNull
-    private JsBlock translateCatchBody(@NotNull JetCatchClause catchClause) {
-        JetExpression catchBody = catchClause.getCatchBody();
-        if (catchBody == null) {
-            return convertToBlock(program().getEmptyStatement());
+                ifStatement.setThenStatement(translateAsStatement(catchBody, context));
+                if (prevIf == null) {
+                    prevIf = ifStatement;
+                    jsCatch.setBody(new JsBlock(prevIf));
+                }
+                else {
+                    prevIf.setElseStatement(ifStatement);
+                    prevIf = ifStatement;
+                }
+            }
         }
-        return convertToBlock(Translation.translateAsStatement(catchBody, context()));
+        return Collections.singletonList(jsCatch);
     }
-
 }

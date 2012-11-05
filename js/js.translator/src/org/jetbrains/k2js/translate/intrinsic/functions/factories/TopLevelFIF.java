@@ -19,12 +19,11 @@ package org.jetbrains.k2js.translate.intrinsic.functions.factories;
 import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
-import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
-import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
+import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetQualifiedExpression;
 import org.jetbrains.jet.lang.psi.JetReferenceExpression;
+import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
@@ -43,9 +42,9 @@ import org.jetbrains.k2js.translate.utils.BindingUtils;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
 import org.jetbrains.k2js.translate.utils.JsDescriptorUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static org.jetbrains.k2js.translate.intrinsic.functions.basic.FunctionIntrinsic.CallParametersAwareFunctionIntrinsic;
 import static org.jetbrains.k2js.translate.intrinsic.functions.patterns.PatternBuilder.pattern;
 import static org.jetbrains.k2js.translate.utils.TranslationUtils.generateInvocationArguments;
 
@@ -136,7 +135,7 @@ public final class TopLevelFIF extends CompositeFIF {
                                    ? KotlinBuiltIns.getInstance().getFunction(parameterCount)
                                    : KotlinBuiltIns.getInstance().getExtensionFunction(parameterCount));
                 }
-            }, new CallParametersAwareFunctionIntrinsic() {
+            }, new FunctionIntrinsic() {
                 @NotNull
                 @Override
                 public JsExpression apply(
@@ -156,7 +155,8 @@ public final class TopLevelFIF extends CompositeFIF {
                         if (functionReference instanceof JsNameRef && ((JsNameRef) functionReference).getIdent().equals("invoke")) {
                             return callTranslator.explicitInvokeCall();
                         }
-                        return new JsInvocation(new JsNameRef("call", functionReference), generateInvocationArguments(thisExpression, arguments));
+                        return new JsInvocation(new JsNameRef("call", functionReference),
+                                                generateInvocationArguments(thisExpression, arguments));
                     }
                 }
             }
@@ -205,9 +205,44 @@ public final class TopLevelFIF extends CompositeFIF {
                 return new JsNameRef("s", receiver);
             }
         });
+
+        add(new DescriptorPredicate() {
+                @Override
+                public boolean apply(@NotNull FunctionDescriptor descriptor) {
+                    if (!(descriptor instanceof ConstructorDescriptor)) {
+                        return false;
+                    }
+
+                    DeclarationDescriptor packageDescriptor =
+                            ((ConstructorDescriptor) descriptor).getContainingDeclaration().getContainingDeclaration();
+                    if (packageDescriptor.getName().getName().equals("lang")) {
+                        DeclarationDescriptor javaPackage = packageDescriptor.getContainingDeclaration();
+                        if (javaPackage != null && javaPackage.getName().getName().equals("java")) {
+                            DeclarationDescriptor root = javaPackage.getContainingDeclaration();
+                            return root instanceof NamespaceDescriptor && DescriptorUtils.isRootNamespace((NamespaceDescriptor) root);
+                        }
+                    }
+
+                    return false;
+                }
+            }, new FunctionIntrinsic() {
+                @NotNull
+                @Override
+                public JsExpression apply(
+                        @NotNull CallTranslator callTranslator,
+                        @NotNull List<JsExpression> arguments,
+                        @NotNull TranslationContext context
+                ) {
+                    assert arguments.size() == 1;
+                    return new JsInvocation(Namer.NEW_EXCEPTION_FUN_NAME_REF,
+                                            Arrays.asList(arguments.get(0), context.program().getStringLiteral(
+                                                    callTranslator.getDescriptor().getContainingDeclaration().getName().getName())));
+                }
+            }
+        );
     }
 
-    private abstract static class NativeMapGetSet extends CallParametersAwareFunctionIntrinsic {
+    private abstract static class NativeMapGetSet extends FunctionIntrinsic {
         @NotNull
         protected abstract String operation();
 
@@ -252,7 +287,7 @@ public final class TopLevelFIF extends CompositeFIF {
         }
     }
 
-    private static class MapSelectImplementationIntrinsic extends CallParametersAwareFunctionIntrinsic {
+    private static class MapSelectImplementationIntrinsic extends FunctionIntrinsic {
         private final boolean isSet;
 
         private MapSelectImplementationIntrinsic(boolean isSet) {

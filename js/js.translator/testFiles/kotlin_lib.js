@@ -55,15 +55,14 @@
         return Kotlin.$new(Kotlin.NumberRange)(from, from - limit + 1, true);
     };
 
-    Kotlin.RuntimeException = Kotlin.$createClass();
-    Kotlin.NoSuchElementException = Kotlin.$createClass();
-    Kotlin.IllegalArgumentException = Kotlin.$createClass();
-    Kotlin.IllegalStateException = Kotlin.$createClass();
-    Kotlin.UnsupportedOperationException = Kotlin.$createClass();
-    Kotlin.IOException = Kotlin.$createClass();
-
     Kotlin.throwNPE = function () {
         throw new ReferenceError("reference is null");
+    };
+
+    Kotlin.newException = function (message, name) {
+        var error = new Error(message);
+        error.name = name;
+        return error;
     };
 
     function throwAbstractFunctionInvocationError(funName) {

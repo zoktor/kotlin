@@ -71,6 +71,11 @@ public final class CallTranslator extends AbstractTranslator {
     }
 
     @NotNull
+    public CallableDescriptor getDescriptor() {
+        return descriptor;
+    }
+
+    @NotNull
     public ResolvedCall<? extends CallableDescriptor> getResolvedCall() {
         return resolvedCall;
     }
