@@ -168,7 +168,7 @@
       </fileset>
       <zipfileset file="${kotlin-home}/build.txt" prefix="META-INF"/>
     </jar>
-    <jscomp compilationLevel="simple" warning="verbose" languageIn="ES5_STRICT" prettyPrint="true" output="${kotlin-home}/lib/kotlinEcma5.js">
+    <jscomp compilationLevel="simple" languageIn="ES5_STRICT" prettyPrint="true" output="${kotlin-home}/lib/kotlinEcma5.js">
       <sources dir="${basedir}/js/js.translator/testFiles">
         <file name="kotlin_lib_ecma5.js"/>
         <file name="kotlin_lib.js"/>
