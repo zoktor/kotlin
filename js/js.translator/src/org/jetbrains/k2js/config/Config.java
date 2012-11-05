@@ -73,7 +73,8 @@ public abstract class Config {
             "/jquery/ui.kt",
             "/junit/core.kt",
             "/qunit/core.kt",
-            "/stdlib/browser.kt"
+            "/stdlib/browser.kt",
+            "/requirejs.kt"
     );
 
     @NotNull

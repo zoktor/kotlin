@@ -131,7 +131,7 @@ public final class Translation {
                                        ? JsLiteral.NULL
                                        : new JsArrayLiteral(toStringLiteralList(config.getModuleDependencies(), program));
         return new JsInvocation(new JsNameRef("defineModule", Namer.KOTLIN_OBJECT_NAME_REF), program.getStringLiteral(config.getModuleId()),
-                                definitionFunction, moduleDependencies);
+                                moduleDependencies, definitionFunction);
     }
 
     private static JsFunction generateDefinitionFunction(
