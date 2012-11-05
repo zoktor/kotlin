@@ -26,6 +26,7 @@ import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -189,9 +190,9 @@ public final class JsAstUtils {
             return Collections.emptyList();
         }
 
-        List<JsExpression> result = new SmartList<JsExpression>();
-        for (String str : strings) {
-            result.add(program.getStringLiteral(str));
+        List<JsExpression> result = strings.size() == 1 ? new SmartList<JsExpression>() : new ArrayList<JsExpression>(strings.size());
+        for (String s : strings) {
+            result.add(program.getStringLiteral(s));
         }
         return result;
     }

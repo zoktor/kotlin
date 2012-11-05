@@ -480,7 +480,7 @@
         return obj1;
     };
 
-    Kotlin.defineModule = function (id, definitionFunction) {
+    Kotlin.defineModule = function (id, definitionFunction, moduleDependencies) {
         if (id in Kotlin.modules) {
             throw new Error("Module " + id + " is already defined");
         }

@@ -122,10 +122,16 @@ public final class Translation {
         StaticContext staticContext = StaticContext.generateStaticContext(bindingContext, config.getTarget());
         JsFunction definitionFunction = generateDefinitionFunction(staticContext, files, config, mainCallParameters);
         JsProgram program = staticContext.getProgram();
-        program.getGlobalBlock().getStatements().add(new JsInvocation(new JsNameRef("defineModule", Namer.KOTLIN_OBJECT_NAME_REF),
-                                                                      program.getStringLiteral(config.getModuleId()),
-                                                                      definitionFunction).makeStmt());
+        program.getGlobalBlock().getStatements().add(generateDefineModuleInvocation(config, definitionFunction, program).makeStmt());
         return program;
+    }
+
+    private static JsInvocation generateDefineModuleInvocation(Config config, JsFunction definitionFunction, JsProgram program) {
+        JsLiteral moduleDependencies = config.getModuleDependencies().isEmpty()
+                                       ? JsLiteral.NULL
+                                       : new JsArrayLiteral(toStringLiteralList(config.getModuleDependencies(), program));
+        return new JsInvocation(new JsNameRef("defineModule", Namer.KOTLIN_OBJECT_NAME_REF), program.getStringLiteral(config.getModuleId()),
+                                definitionFunction, moduleDependencies);
     }
 
     private static JsFunction generateDefinitionFunction(

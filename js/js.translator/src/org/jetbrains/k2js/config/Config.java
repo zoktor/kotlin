@@ -176,6 +176,11 @@ public abstract class Config {
     }
 
     @NotNull
+    public List<String> getModuleDependencies() {
+        return Collections.emptyList();
+    }
+
+    @NotNull
     protected abstract List<JetFile> generateLibFiles();
 
     @NotNull

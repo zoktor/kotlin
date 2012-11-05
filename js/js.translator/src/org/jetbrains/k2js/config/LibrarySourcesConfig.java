@@ -52,6 +52,8 @@ public class LibrarySourcesConfig extends Config {
     @NotNull
     private final List<String> files;
 
+    private final List<String> moduleDependencies = new ArrayList<String>();
+
     public LibrarySourcesConfig(
             @NotNull Project project,
             @NotNull String moduleId,
@@ -77,6 +79,7 @@ public class LibrarySourcesConfig extends Config {
         for (String path : files) {
             if (path.charAt(0) == '@') {
                 moduleName = path.substring(1);
+                moduleDependencies.add(moduleName);
             }
             else if (path.endsWith(".jar") || path.endsWith(".zip")) {
                 try {
@@ -109,6 +112,12 @@ public class LibrarySourcesConfig extends Config {
         }
 
         return psiFiles;
+    }
+
+    @NotNull
+    @Override
+    public List<String> getModuleDependencies() {
+        return moduleDependencies;
     }
 
     private static void addPsiFile(
