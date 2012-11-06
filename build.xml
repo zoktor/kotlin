@@ -12,6 +12,9 @@
     <property name="output.name" value="kotlin-${build.number}"/>
     <property name="idea.sdk" value="${basedir}/ideaSDK"/>
 
+    <property name="ant.build.javac.target" value="1.6"/>
+    <property name="ant.build.javac.source" value="1.6"/>
+
     <path id="classpath">
         <fileset dir="${idea.sdk}" includes="core/*.jar"/>
 
