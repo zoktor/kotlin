@@ -98,8 +98,7 @@ public final class PropertyTranslator extends AbstractTranslator {
         }
         assert accessorDescriptor != null;
         if (accessorDeclaration != null && accessorDeclaration.getBodyExpression() != null) {
-            FunctionTranslator translator = new FunctionTranslator(accessorDeclaration, accessorDescriptor, context());
-            return context().isEcma5() ? translator.translateAsEcma5PropertyDescriptor() : translator.translateAsMethod();
+            return FunctionTranslator.translate(context().isEcma5(), accessorDeclaration, accessorDescriptor, context());
         }
         else {
             return generateDefaultAccessor(accessorDescriptor,

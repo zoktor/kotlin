@@ -31,7 +31,6 @@ import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.k2js.translate.context.AliasingContext;
 import org.jetbrains.k2js.translate.context.Namer;
 import org.jetbrains.k2js.translate.context.TranslationContext;
-import org.jetbrains.k2js.translate.general.AbstractTranslator;
 import org.jetbrains.k2js.translate.general.Translation;
 import org.jetbrains.k2js.translate.utils.JsAstUtils;
 import org.jetbrains.k2js.translate.utils.TranslationUtils;
@@ -46,54 +45,52 @@ import static org.jetbrains.k2js.translate.utils.mutator.LastExpressionMutator.m
 /**
  * @author Pavel Talanov
  */
-public final class FunctionTranslator extends AbstractTranslator {
-    @NotNull
-    private final TranslationContext functionBodyContext;
-    @NotNull
-    private final JetDeclarationWithBody functionDeclaration;
-    @Nullable
-    private JsName extensionFunctionReceiverName;
-    @NotNull
-    private final JsFunction functionObject;
-    @NotNull
-    private final FunctionDescriptor descriptor;
+public final class FunctionTranslator {
+    private FunctionTranslator() {
+    }
 
-    public FunctionTranslator(@NotNull JetDeclarationWithBody functionDeclaration, @NotNull FunctionDescriptor functionDescriptor,  @NotNull TranslationContext context) {
-        super(context);
-        this.descriptor = functionDescriptor;
-        this.functionDeclaration = functionDeclaration;
-        functionObject = new JsFunction(context.scope(), new JsBlock());
+    private static JsFunction translate(@NotNull JetDeclarationWithBody expression, @NotNull FunctionDescriptor descriptor,  @NotNull TranslationContext context) {
+        JsFunction function = new JsFunction(context.scope(), new JsBlock());
 
         AliasingContext aliasingContext;
         ReceiverParameterDescriptor receiverParameter = descriptor.getReceiverParameter();
+        JsName extensionFunctionReceiverName;
         if (receiverParameter == null) {
             aliasingContext = null;
+            extensionFunctionReceiverName = null;
         }
         else {
             DeclarationDescriptor expectedReceiverDescriptor = getDeclarationDescriptorForReceiver(receiverParameter.getValue());
-            extensionFunctionReceiverName = functionObject.getScope().declareName(Namer.getReceiverParameterName());
+            extensionFunctionReceiverName = function.getScope().declareName(Namer.getReceiverParameterName());
             //noinspection ConstantConditions
-            aliasingContext = context().aliasingContext().inner(expectedReceiverDescriptor, extensionFunctionReceiverName.makeRef());
+            aliasingContext = context.aliasingContext().inner(expectedReceiverDescriptor, extensionFunctionReceiverName.makeRef());
         }
-        functionBodyContext = context().newFunctionBody(functionObject, aliasingContext, null);
 
-        functionObject.setParameters(translateParameters());
+        TranslationContext bodyContext = context.newFunctionBody(function, aliasingContext, null);
+        function.setParameters(translateParameters(descriptor, extensionFunctionReceiverName, bodyContext));
+        addBodyResult(function, translateBody(descriptor, expression, bodyContext));
+        return function;
     }
 
     @NotNull
-    public JsPropertyInitializer translateAsEcma5PropertyDescriptor() {
-        generateFunctionObject();
-        return TranslationUtils.translateFunctionAsEcma5PropertyDescriptor(functionObject, descriptor, functionBodyContext);
+    public static JsPropertyInitializer translate(
+            boolean asEs5PropertyDescriptor,
+            @NotNull JetDeclarationWithBody expression,
+            @NotNull FunctionDescriptor descriptor,
+            @NotNull TranslationContext context
+    ) {
+        JsFunction function = translate(expression, descriptor, context);
+        if (asEs5PropertyDescriptor) {
+            return TranslationUtils.translateFunctionAsEcma5PropertyDescriptor(function, descriptor, context);
+        }
+        else {
+            return new JsPropertyInitializer(context.getNameRefForDescriptor(descriptor), function);
+        }
     }
 
     @NotNull
-    public JsPropertyInitializer translateAsMethod() {
-        generateFunctionObject();
-        return new JsPropertyInitializer(context().getNameRefForDescriptor(descriptor), functionObject);
-    }
-
-    private void generateFunctionObject() {
-        addBodyResult(functionObject, translateBody(descriptor, functionDeclaration, functionBodyContext));
+    public static JsPropertyInitializer translateAsMethod(@NotNull JetDeclarationWithBody expression, @NotNull FunctionDescriptor descriptor,  @NotNull TranslationContext context) {
+        return translate(false, expression, descriptor, context);
     }
 
     static void addBodyResult(JsFunction function, JsNode node) {
@@ -106,7 +103,11 @@ public final class FunctionTranslator extends AbstractTranslator {
     }
 
     @NotNull
-    private List<JsParameter> translateParameters() {
+    private static List<JsParameter> translateParameters(
+            FunctionDescriptor descriptor,
+            JsName extensionFunctionReceiverName,
+            TranslationContext functionBodyContext
+    ) {
         if (extensionFunctionReceiverName == null && descriptor.getValueParameters().isEmpty()) {
             return Collections.emptyList();
         }
