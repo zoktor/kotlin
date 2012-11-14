@@ -25,7 +25,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
@@ -48,7 +47,6 @@ import org.jetbrains.jet.plugin.project.K2JSModuleComponent;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import static org.jetbrains.jet.compiler.runner.CompilerRunnerUtil.invokeExecMethod;
@@ -146,12 +144,18 @@ public final class K2JSCompiler implements TranslatingCompiler {
 
     @NotNull
     private static String[] constructArguments(@NotNull Module module, @NotNull File outFile) {
-        VirtualFile[] sourceFiles = getSourceFiles(module);
-
         ArrayList<String> args = Lists.newArrayList("-tags", "-verbose", "-version");
-        addPathToSourcesDir(sourceFiles, args);
+        addPathToSourcesDir(getSourceFiles(module), args);
         addOutputPath(outFile, args);
-        addLibLocationAndTarget(module, args);
+        K2JSModuleComponent jsModuleComponent = K2JSModuleComponent.getInstance(module);
+        addLibLocation(jsModuleComponent, module, args);
+
+        args.add("-target");
+        args.add(jsModuleComponent.getEcmaVersion().toString());
+
+        if (jsModuleComponent.isSourcemap()) {
+            args.add("-sourcemap");
+        }
         return ArrayUtil.toStringArray(args);
     }
 
@@ -182,9 +186,11 @@ public final class K2JSCompiler implements TranslatingCompiler {
                 .getFiles(JetFileType.INSTANCE, true);
     }
 
-    private static void addLibLocationAndTarget(@NotNull Module module, @NotNull ArrayList<String> args) {
-        Pair<List<String>, String> libLocationAndTarget = JsModuleDetector.getLibLocationAndTargetForProject(module);
-
+    private static void addLibLocation(
+            @NotNull K2JSModuleComponent jsModuleComponent,
+            @NotNull Module module,
+            @NotNull ArrayList<String> args
+    ) {
         StringBuilder sb = StringBuilderSpinAllocator.alloc();
         AccessToken token = ReadAction.start();
         try {
@@ -199,10 +205,9 @@ public final class K2JSCompiler implements TranslatingCompiler {
                 }
             }
 
-            if (libLocationAndTarget.first != null) {
-                for (String file : libLocationAndTarget.first) {
-                    sb.append(file).append(',');
-                }
+            String libPath = JsModuleDetector.getLibLocation(jsModuleComponent, module);
+            if (libPath != null) {
+                sb.append(libPath).append(',');
             }
 
             if (sb.length() > 0) {
@@ -213,16 +218,6 @@ public final class K2JSCompiler implements TranslatingCompiler {
         finally {
             token.finish();
             StringBuilderSpinAllocator.dispose(sb);
-        }
-
-        if (libLocationAndTarget.second != null) {
-            args.add("-target");
-            args.add(libLocationAndTarget.second);
-        }
-
-        K2JSModuleComponent jsModuleComponent = K2JSModuleComponent.getInstance(module);
-        if (jsModuleComponent.isSourcemap()) {
-            args.add("-sourcemap");
         }
     }
 

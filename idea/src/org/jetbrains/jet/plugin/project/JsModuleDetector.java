@@ -16,18 +16,17 @@
 
 package org.jetbrains.jet.plugin.project;
 
-import com.google.common.collect.Lists;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,26 +55,24 @@ public final class JsModuleDetector {
     }
 
     @NotNull
-    public static Pair<List<String>, String> getLibLocationAndTargetForProject(@NotNull Project project) {
+    public static List<String> getLibPathAsList(@NotNull Project project) {
         Module module = getJSModule(project);
         if (module == null) {
-            return Pair.empty();
+            return Collections.emptyList();
         }
         else {
-            return getLibLocationAndTargetForProject(module);
+            return Collections.singletonList(getLibLocation(K2JSModuleComponent.getInstance(module), module));
         }
     }
 
-    @NotNull
-    public static Pair<List<String>, String> getLibLocationAndTargetForProject(@NotNull Module module) {
-        K2JSModuleComponent jsModuleComponent = K2JSModuleComponent.getInstance(module);
-        String pathToJavaScriptLibrary = jsModuleComponent.getPathToJavaScriptLibrary();
-        String basePath = ModuleRootManager.getInstance(module).getContentRoots()[0].getPath();
-        List<String> pathsToJSLib = Lists.newArrayList();
-        if (pathToJavaScriptLibrary != null) {
-            pathsToJSLib.add(basePath + pathToJavaScriptLibrary);
+    public static String getLibLocation(K2JSModuleComponent jsModuleComponent, Module module) {
+        String libPath = jsModuleComponent.getPathToJavaScriptLibrary();
+        if (libPath == null) {
+            return null;
         }
-        return Pair.create(pathsToJSLib, jsModuleComponent.getEcmaVersion().toString());
+        else {
+            return ModuleRootManager.getInstance(module).getContentRoots()[0].getPath() + libPath;
+        }
     }
 
     @Nullable
