@@ -32,7 +32,7 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.Chunk;
 import com.intellij.util.Function;
 import com.intellij.util.StringBuilderSpinAllocator;
-import gnu.trove.THashSet;
+import com.intellij.util.containers.OrderedSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.cli.common.messages.CompilerMessageLocation;
@@ -188,12 +188,11 @@ public final class K2JSCompiler implements TranslatingCompiler {
         StringBuilder sb = StringBuilderSpinAllocator.alloc();
         AccessToken token = ReadAction.start();
         try {
-            THashSet<Module> modules = new THashSet<Module>();
+            Set<Module> modules = new OrderedSet<Module>();
             collectModuleDependencies(module, modules);
             if (!modules.isEmpty()) {
                 for (Module dependency : modules) {
                     sb.append('@').append(dependency.getName()).append(',');
-
                     for (VirtualFile file : getSourceFiles(dependency)) {
                         sb.append(file.getPath()).append(',');
                     }
