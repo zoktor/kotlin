@@ -9,18 +9,29 @@ import org.w3c.dom.*
 import java.lang.IllegalArgumentException
 import java.lang.IndexOutOfBoundsException
 
+private class NodeListIterator(private val list: NodeList) : Iterator<Node> {
+    private var i = 0
+    private val n = list.getLength()
+
+    override fun hasNext() = i < n
+
+    override fun next():Node = list.item(i++)!!
+}
+
+public inline fun NodeList.iterator(): Iterator<Node> = NodeListIterator(this)
+
 // Properties
 
 private fun emptyElementList(): List<Element> = Collections.emptyList<Element>()
 private fun emptyNodeList(): List<Node> = Collections.emptyList<Node>()
 
-var Node.text : String
-get() {
-    return textContent
-}
-set(value) {
-    textContent = value
-}
+var Node.text: String
+    get() {
+        return textContent
+    }
+    set(value) {
+        textContent = value
+    }
 
 var Element.childrenText: String
     get() {
@@ -50,24 +61,24 @@ var Element.childrenText: String
         element.addText(value)
     }
 
-var Element.id : String
-get() = this.getAttribute("id")?: ""
-set(value) {
-    this.setAttribute("id", value)
-    this.setIdAttribute("id", true)
-}
+var Element.id: String
+    get() = this.getAttribute("id")?: ""
+    set(value) {
+        this.setAttribute("id", value)
+        this.setIdAttribute("id", true)
+    }
 
-var Element.style : String
-get() = this.getAttribute("style")?: ""
-set(value) {
-    this.setAttribute("style", value)
-}
+var Element.style: String
+    get() = this.getAttribute("style")?: ""
+    set(value) {
+        this.setAttribute("style", value)
+    }
 
-var Element.classes : String
-get() = this.getAttribute("class")?: ""
-set(value) {
-    this.setAttribute("class", value)
-}
+var Element.classes: String
+    get() = this.getAttribute("class")?: ""
+    set(value) {
+        this.setAttribute("class", value)
+    }
 
 /** Returns true if the element has the given CSS class style in its 'class' attribute */
 fun Element.hasClass(cssClass: String): Boolean {
@@ -92,12 +103,12 @@ inline fun Element?.childElements(name: String): List<Element> {
 }
 
 /** The descendent elements of this document */
-val Document?.elements : List<Element>
-get() = this?.getElementsByTagName("*").toElementList()
+val Document?.elements: List<Element>
+    get() = this?.getElementsByTagName("*").toElementList()
 
 /** The descendant elements of this elements */
-val Element?.elements : List<Element>
-get() = this?.getElementsByTagName("*").toElementList()
+val Element?.elements: List<Element>
+    get() = this?.getElementsByTagName("*").toElementList()
 
 
 /** Returns all the descendant elements given the local element name */
@@ -259,9 +270,9 @@ fun Node.clear(): Unit {
 }
 
 /** Returns an [[Iterator]] over the next siblings of this node */
-fun Node.nextSiblings() : Iterator<Node> = NextSiblingIterator(this)
+fun Node.nextSiblings(): Iterator<Node> = NextSiblingIterator(this)
 
-class NextSiblingIterator(var node: Node) : AbstractIterator<Node>() {
+class NextSiblingIterator(var node: Node): AbstractIterator<Node>() {
 
     override fun computeNext(): Unit {
         val nextValue = node.nextSibling
@@ -275,9 +286,9 @@ class NextSiblingIterator(var node: Node) : AbstractIterator<Node>() {
 }
 
 /** Returns an [[Iterator]] over the next siblings of this node */
-fun Node.previousSiblings() : Iterator<Node> = PreviousSiblingIterator(this)
+fun Node.previousSiblings(): Iterator<Node> = PreviousSiblingIterator(this)
 
-class PreviousSiblingIterator(var node: Node) : AbstractIterator<Node>() {
+class PreviousSiblingIterator(var node: Node): AbstractIterator<Node>() {
 
     override fun computeNext(): Unit {
         val nextValue = node.previousSibling
@@ -301,24 +312,24 @@ inline fun Element.attribute(name: String): String {
     return this.getAttribute(name) ?: ""
 }
 
-val NodeList?.head : Node?
-get() = if (this != null && this.length > 0) this.item(0) else null
+val NodeList?.head: Node?
+    get() = if (this != null && this.length > 0) this.item(0) else null
 
-val NodeList?.first : Node?
-get() = this.head
+val NodeList?.first: Node?
+    get() = this.head
 
-val NodeList?.tail : Node?
-get() {
-    if (this == null) {
-        return null
-    } else {
-        val s = this.length
-        return if (s > 0) this.item(s - 1) else null
+val NodeList?.tail: Node?
+    get() {
+        if (this == null) {
+            return null
+        } else {
+            val s = this.length
+            return if (s > 0) this.item(s - 1) else null
+        }
     }
-}
 
-val NodeList?.last : Node?
-get() = this.tail
+val NodeList?.last: Node?
+    get() = this.tail
 
 
 /** Converts the node list to an XML String */
