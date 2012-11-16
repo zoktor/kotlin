@@ -39,7 +39,7 @@ public final class JsModuleDetector {
     }
 
     public static boolean isJsModule(@NotNull Module module) {
-        return K2JSModuleComponent.getInstance(module).isJavaScriptModule();
+        return KotlinJsBuildConfigurationManager.getInstance(module).isJavaScriptModule();
     }
 
     public static boolean isJsModule(@NotNull JetFile file) {
@@ -61,11 +61,11 @@ public final class JsModuleDetector {
             return Collections.emptyList();
         }
         else {
-            return Collections.singletonList(getLibLocation(K2JSModuleComponent.getInstance(module), module));
+            return Collections.singletonList(getLibLocation(KotlinJsBuildConfigurationManager.getInstance(module), module));
         }
     }
 
-    public static String getLibLocation(K2JSModuleComponent jsModuleComponent, Module module) {
+    public static String getLibLocation(KotlinJsBuildConfigurationManager jsModuleComponent, Module module) {
         String libPath = jsModuleComponent.getPathToJavaScriptLibrary();
         if (libPath == null) {
             return null;

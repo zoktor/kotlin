@@ -42,7 +42,7 @@ import org.jetbrains.jet.compiler.runner.CompilerRunnerUtil;
 import org.jetbrains.jet.compiler.runner.OutputItemsCollectorImpl;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.plugin.project.JsModuleDetector;
-import org.jetbrains.jet.plugin.project.K2JSModuleComponent;
+import org.jetbrains.jet.plugin.project.KotlinJsBuildConfigurationManager;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -147,7 +147,7 @@ public final class K2JSCompiler implements TranslatingCompiler {
         ArrayList<String> args = Lists.newArrayList("-tags", "-verbose", "-version");
         addPathToSourcesDir(getSourceFiles(module), args);
         addOutputPath(outFile, args);
-        K2JSModuleComponent jsModuleComponent = K2JSModuleComponent.getInstance(module);
+        KotlinJsBuildConfigurationManager jsModuleComponent = KotlinJsBuildConfigurationManager.getInstance(module);
         addLibLocation(jsModuleComponent, module, args);
 
         args.add("-target");
@@ -187,7 +187,7 @@ public final class K2JSCompiler implements TranslatingCompiler {
     }
 
     private static void addLibLocation(
-            @NotNull K2JSModuleComponent jsModuleComponent,
+            @NotNull KotlinJsBuildConfigurationManager jsModuleComponent,
             @NotNull Module module,
             @NotNull ArrayList<String> args
     ) {

@@ -20,11 +20,9 @@ import jet.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.plugin.PluginTestCaseBase;
 import org.jetbrains.jet.plugin.compiler.K2JSCompiler;
-import org.jetbrains.jet.plugin.project.K2JSModuleComponent;
+import org.jetbrains.jet.plugin.project.KotlinJsBuildConfigurationManager;
 
-import static org.jetbrains.jet.plugin.compilerMessages.Message.error;
-import static org.jetbrains.jet.plugin.compilerMessages.Message.stats;
-import static org.jetbrains.jet.plugin.compilerMessages.Message.warning;
+import static org.jetbrains.jet.plugin.compilerMessages.Message.*;
 
 /**
  * @author Pavel Talanov
@@ -66,7 +64,7 @@ public final class K2JSCompilerMessagingTest extends IDECompilerMessagingTest {
     }
 
     public void testLib() {
-        K2JSModuleComponent component = myModule.getComponent(K2JSModuleComponent.class);
+        KotlinJsBuildConfigurationManager component = myModule.getComponent(KotlinJsBuildConfigurationManager.class);
         component.setJavaScriptModule(true);
         component.setPathToJavaScriptLibrary("/lib.zip");
         doTest(new Function1<MessageChecker, Void>() {

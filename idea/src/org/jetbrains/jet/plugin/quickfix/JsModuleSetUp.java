@@ -35,8 +35,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.PsiModificationTrackerImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.plugin.project.K2JSModuleComponent;
-import org.jetbrains.jet.utils.KotlinPaths;
+import org.jetbrains.jet.plugin.project.KotlinJsBuildConfigurationManager;
 import org.jetbrains.jet.utils.PathUtil;
 
 import java.io.File;
@@ -99,7 +98,7 @@ public final class JsModuleSetUp {
     }
 
     private static void setUpK2JSModuleComponent(@NotNull Module module) {
-        K2JSModuleComponent jsModuleComponent = K2JSModuleComponent.getInstance(module);
+        KotlinJsBuildConfigurationManager jsModuleComponent = KotlinJsBuildConfigurationManager.getInstance(module);
         jsModuleComponent.setJavaScriptModule(true);
         jsModuleComponent.setPathToJavaScriptLibrary("/lib/" + PathUtil.JS_LIB_JAR_NAME);
     }
@@ -110,10 +109,9 @@ public final class JsModuleSetUp {
     }
 
     private static boolean copyJsLibFiles(@NotNull File rootDir) {
-        KotlinPaths paths = PathUtil.getKotlinPathsForIdeaPlugin();
-        File jsLibJarPath = paths.getJsLibJarPath();
-        File jsLibJsPath = paths.getJsLibJsPath();
-        if (!jsLibJarPath.exists() || !jsLibJsPath.exists()) {
+        File jsLibJarPath = PathUtil.getDefaultJsLibJarPath();
+        File jsLibJsPath = PathUtil.getDefaultJsLibJsPath();
+        if ((jsLibJarPath == null) || (jsLibJsPath == null)) {
             notifyFailure("JavaScript library not found. Make sure plugin is installed properly.");
             return false;
         }

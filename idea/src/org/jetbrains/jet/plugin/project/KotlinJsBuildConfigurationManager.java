@@ -20,8 +20,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleComponent;
-import com.intellij.openapi.roots.impl.storage.ClasspathStorage;
+import com.intellij.openapi.module.ModuleServiceManager;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,18 +29,11 @@ import org.jetbrains.k2js.config.EcmaVersion;
 /**
  * @author Pavel Talanov
  */
-@State(
-        name = "K2JSModule",
-        storages = @Storage(
-          id = ClasspathStorage.DEFAULT_STORAGE,
-          file = "$MODULE_FILE$"
-        )
-)
-public final class K2JSModuleComponent implements ModuleComponent, PersistentStateComponent<K2JSModuleComponent> {
-
+@State(name = "K2JSModule", storages = @Storage(file = "$MODULE_FILE$"))
+public final class KotlinJsBuildConfigurationManager implements PersistentStateComponent<KotlinJsBuildConfigurationManager> {
     @NotNull
-    public static K2JSModuleComponent getInstance(@NotNull Module module) {
-        return module.getComponent(K2JSModuleComponent.class);
+    public static KotlinJsBuildConfigurationManager getInstance(@NotNull Module module) {
+        return ModuleServiceManager.getService(module, KotlinJsBuildConfigurationManager.class);
     }
 
     private boolean isJavaScriptModule;
@@ -50,15 +42,9 @@ public final class K2JSModuleComponent implements ModuleComponent, PersistentSta
     private String pathToJavaScriptLibrary;
 
     @NotNull
-    private EcmaVersion ecmaVersion;
+    private EcmaVersion ecmaVersion = EcmaVersion.defaultVersion();
 
     private boolean sourcemap;
-
-    public K2JSModuleComponent() {
-        this.isJavaScriptModule = false;
-        this.pathToJavaScriptLibrary = null;
-        this.ecmaVersion = EcmaVersion.defaultVersion();
-    }
 
     @NotNull
     public EcmaVersion getEcmaVersion() {
@@ -95,43 +81,12 @@ public final class K2JSModuleComponent implements ModuleComponent, PersistentSta
     }
 
     @Override
-    public void projectOpened() {
-        //do nothing
-    }
-
-    @Override
-    public void projectClosed() {
-        //do nothing
-    }
-
-    @Override
-    public void moduleAdded() {
-        //do nothing
-    }
-
-    @Override
-    public void initComponent() {
-        //do nothing
-    }
-
-    @Override
-    public void disposeComponent() {
-        //do nothing
-    }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return "Kotlin to JavaScript module configuration";
-    }
-
-    @Override
-    public K2JSModuleComponent getState() {
+    public KotlinJsBuildConfigurationManager getState() {
         return this;
     }
 
     @Override
-    public void loadState(K2JSModuleComponent state) {
+    public void loadState(KotlinJsBuildConfigurationManager state) {
         XmlSerializerUtil.copyBean(state, this);
     }
 }
