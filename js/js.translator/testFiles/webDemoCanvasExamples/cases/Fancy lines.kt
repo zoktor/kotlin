@@ -6,8 +6,8 @@ Note that only a subset of the api is supported for now.
 
 package fancylines
 
-import js.dom.html5.*
-import js.dom.html.window
+import html.*
+import html.window
 import js.jquery.*
 
 fun main(args: Array<String>) {

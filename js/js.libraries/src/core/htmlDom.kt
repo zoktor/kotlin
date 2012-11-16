@@ -1,12 +1,9 @@
-package js.dom.html
+package html
 
 import org.w3c.dom.*
 
-native
-public val window: Window = noImpl
-
-native
-public var document: HTMLDocument = noImpl
+public native val window: Window = noImpl
+public native val document: HTMLDocument = noImpl
 
 public native trait Object {
 }

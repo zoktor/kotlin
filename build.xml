@@ -166,8 +166,11 @@
         <include name="core/**"/>
         <include name="jquery/**"/>
         <include name="dom/**"/>
-        <include name="html5/**"/>
         <include name="stdlib/TuplesCode.kt"/>
+      </fileset>
+      <fileset dir="${basedir}/libraries/stdlib-js">
+        <include name="generated/**"/>
+        <include name="src/**"/>
       </fileset>
       <zipfileset file="${kotlin-home}/build.txt" prefix="META-INF"/>
     </jar>

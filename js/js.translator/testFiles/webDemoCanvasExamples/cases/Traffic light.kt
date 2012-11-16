@@ -1,13 +1,13 @@
 package traffic
 
 import java.util.ArrayList
-import js.dom.html5.CanvasContext
-import js.dom.html5.HTMLCanvasElement
+import html.CanvasContext
+import html.HTMLCanvasElement
 
-import js.dom.html.HTMLImageElement
-import js.dom.html.window
+import html.HTMLImageElement
+import html.window
 import js.jquery.*
-import js.dom.html.HTMLElement
+import html.HTMLElement
 
 fun getImage(path: String): HTMLImageElement {
     val image = window.document.createElement("img") as HTMLImageElement

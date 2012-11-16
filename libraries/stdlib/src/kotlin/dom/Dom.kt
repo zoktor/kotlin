@@ -19,6 +19,7 @@ private class NodeListIterator(private val list: NodeList) : Iterator<Node> {
 }
 
 public inline fun NodeList.iterator(): Iterator<Node> = NodeListIterator(this)
+public inline fun Node.iterator(): Iterator<Node> = getChildNodes()!!.iterator()
 
 // Properties
 

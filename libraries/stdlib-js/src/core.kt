@@ -1,4 +1,4 @@
-package js;
+package js
 
 native
 public val noImpl: Nothing = throw Exception()

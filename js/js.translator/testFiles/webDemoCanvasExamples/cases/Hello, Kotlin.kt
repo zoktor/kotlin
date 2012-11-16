@@ -3,8 +3,8 @@
 */
 package hello
 
-import js.dom.html5.*
-import js.dom.html.window
+import html.*
+import html.window
 import js.jquery.*
 
 val canvas: HTMLCanvasElement
