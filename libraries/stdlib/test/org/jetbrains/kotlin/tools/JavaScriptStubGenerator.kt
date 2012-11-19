@@ -14,9 +14,9 @@ private fun Element.attribute(name: String): String? {
     return if (value.isEmpty()) null else value
 }
 
-fun generateApi(packageName: String, idlFile: File, outFile: File) {
+fun generateApi(packageName: String, idlFile: File, outFile: File, ignoredClasses: Set<String>? = null) {
     val generator = JavaScriptStubGenerator(packageName)
-    generator.generate(idlFile)
+    generator.generate(idlFile, ignoredClasses)
     generator.writeTo(outFile)
 }
 
@@ -36,11 +36,14 @@ class JavaScriptStubGenerator(packageName: String) {
         return null
     }
 
-    fun generate(idlFile: File) {
+    fun generate(idlFile: File, ignoredClasses: Set<String>? = null) {
         val document = parseXml(idlFile)
         for (val node in document.getDocumentElement()!!.iterator().filter { it is Element && it.getTagName() == "class" }) {
             val element = node as Element
             currentClassName = element.attribute("name")!!
+            if (ignoredClasses != null && ignoredClasses.contains(currentClassName)) {
+                continue
+            }
 
             val endOffset = classNameToEndOffset.get(currentClassName)
             val builder: StringBuilder
