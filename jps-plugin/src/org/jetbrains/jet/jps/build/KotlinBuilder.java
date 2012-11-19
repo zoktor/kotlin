@@ -21,8 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.jet.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.jet.cli.common.messages.MessageCollector;
-import org.jetbrains.jet.compiler.runner.*;
-import org.jetbrains.jet.utils.PathUtil;
+import org.jetbrains.jet.compiler.runner.CompilerEnvironment;
+import org.jetbrains.jet.compiler.runner.KotlinCompilerRunner;
+import org.jetbrains.jet.compiler.runner.OutputItemsCollectorImpl;
+import org.jetbrains.jet.compiler.runner.SimpleOutputItem;
 import org.jetbrains.jps.ModuleChunk;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
 import org.jetbrains.jps.builders.java.JavaSourceRootDescriptor;
@@ -36,10 +38,10 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.jetbrains.jet.cli.common.messages.CompilerMessageSeverity.ERROR;
-import static org.jetbrains.jet.cli.common.messages.CompilerMessageSeverity.EXCEPTION;
 
 public class KotlinBuilder extends ModuleLevelBuilder {
 
+    private static final String KOTLIN_COMPILER_NAME = "Kotlin";
     private static final String KOTLIN_BUILDER_NAME = "Kotlin Builder";
 
     protected KotlinBuilder() {
@@ -59,6 +61,10 @@ public class KotlinBuilder extends ModuleLevelBuilder {
             DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget> dirtyFilesHolder,
             OutputConsumer outputConsumer
     ) throws ProjectBuildException, IOException {
+        String skipCompilation = System.getProperty("kotlin.compiler.skip");
+        if (skipCompilation.isEmpty() || Boolean.valueOf(skipCompilation)) {
+            return ExitCode.OK;
+        }
 
         MessageCollector messageCollector = new MessageCollectorAdapter(context);
 
@@ -72,11 +78,8 @@ public class KotlinBuilder extends ModuleLevelBuilder {
         ModuleBuildTarget representativeTarget = chunk.representativeTarget();
 
         // For non-incremental build: take all sources
-        if (!KotlinSourceFileCollector.hasDirtyFiles(dirtyFilesHolder)) {
-            return ExitCode.NOTHING_DONE;
-        }
         List<File> sourceFiles = KotlinSourceFileCollector.getAllKotlinSourceFiles(representativeTarget);
-        //List<File> sourceFiles = KotlinSourceFileCollector.getDirtySourceFiles(dirtyFilesHolder);
+        //List<File> sourceFiles = getDirtySourceFiles(dirtyFilesHolder);
 
         if (sourceFiles.isEmpty()) {
             return ExitCode.NOTHING_DONE;
@@ -86,7 +89,7 @@ public class KotlinBuilder extends ModuleLevelBuilder {
 
         File outputDir = representativeTarget.getOutputDir();
 
-        CompilerEnvironment environment = CompilerEnvironment.getEnvironmentFor(PathUtil.getKotlinPathsForJpsPluginOrJpsTests(), outputDir);
+        CompilerEnvironment environment = CompilerEnvironment.getEnvironmentFor(outputDir);
         if (!environment.success()) {
             environment.reportErrorsTo(messageCollector);
             return ExitCode.ABORT;
@@ -135,14 +138,10 @@ public class KotlinBuilder extends ModuleLevelBuilder {
                 @NotNull String message,
                 @NotNull CompilerMessageLocation location
         ) {
-            String prefix = "";
-            if (severity == EXCEPTION) {
-                prefix = CompilerRunnerConstants.INTERNAL_ERROR_PREFIX;
-            }
             context.processMessage(new CompilerMessage(
-                    CompilerRunnerConstants.KOTLIN_COMPILER_NAME,
+                    KOTLIN_COMPILER_NAME,
                     kind(severity),
-                    prefix + message,
+                    message,
                     location.getPath(),
                     -1, -1, -1,
                     location.getLine(),
