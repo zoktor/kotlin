@@ -69,10 +69,13 @@ fun main(args: Array<String>) {
 
     val jsGeneratedDir = File("../stdlib-js/generated")
     val stubDir = File("/Users/develar/Documents/idea/plugins/JavaScriptLanguage/src/com/intellij/lang/javascript/index/predefined")
-    generateApi(File(stubDir, "EcmaScript5.xml"), File(jsGeneratedDir, "ecmaScript5.kt"), "js")
-    generateApi(File(stubDir, "DHTML.xml"), File(jsGeneratedDir, "html.kt"), "html")
-    generateApi(File(stubDir, "DOMEvents.xml"), File(jsGeneratedDir, "domEvents.kt"), "html")
-    generateApi(File(stubDir, "HTML5.xml"), File(jsGeneratedDir, "html5.kt"), "html")
+    generateApi("js", File(stubDir, "EcmaScript5.xml"), File(jsGeneratedDir, "ecmaScript5.kt"))
+
+    val jsGenerator = JavaScriptStubGenerator("html")
+    jsGenerator.generate(File(stubDir, "DHTML.xml"))
+    jsGenerator.generate(File(stubDir, "DOMEvents.xml"))
+    jsGenerator.generate(File(stubDir, "HTML5.xml"))
+    jsGenerator.writeTo(File(jsGeneratedDir, "html5.kt"))
     if (true) {
         return
     }

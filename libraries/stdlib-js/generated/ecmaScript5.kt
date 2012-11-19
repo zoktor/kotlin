@@ -8,13 +8,13 @@ public native trait Object {
 	public class object {
 		public fun isExtensible(): Boolean = noImpl
 		public fun preventExtensions(): Unit = noImpl
-		public fun getOwnPropertyDescriptor(): Object = noImpl
+		public fun getOwnPropertyDescriptor(): Any = noImpl
 		public fun defineProperty(): Unit = noImpl
 		public fun defineProperties(): Unit = noImpl
-		public fun keys(): Array = noImpl
-		public fun getOwnPropertyNames(): Array = noImpl
+		public fun keys(): Array<Any> = noImpl
+		public fun getOwnPropertyNames(): Array<Any> = noImpl
 		public fun create(): Unit = noImpl
-		public fun getPrototypeOf(): Object = noImpl
+		public fun getPrototypeOf(): Any = noImpl
 		public fun seal(): Unit = noImpl
 		public fun isSealed(): Boolean = noImpl
 		public fun freeze(): Unit = noImpl
@@ -23,14 +23,14 @@ public native trait Object {
 }
 
 public native trait Array {
-	public fun reduce(): Object
-	public fun reduceRight(): Object
+	public fun reduce(): Any
+	public fun reduceRight(): Any
 	public fun indexOf(): Int
 	public fun lastIndexOf(): Int
 	public fun every(): Boolean
-	public fun filter(): Array
+	public fun filter(): Array<Any>
 	public fun forEach(): Unit
-	public fun map(): Array
+	public fun map(): Array<Any>
 	public fun some(): Boolean
 	public fun isArray(): Boolean
 }
