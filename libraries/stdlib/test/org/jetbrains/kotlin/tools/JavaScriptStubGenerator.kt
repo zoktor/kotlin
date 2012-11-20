@@ -51,9 +51,6 @@ class JavaScriptStubGenerator(packageName: String) {
             if (currentClassName == "window") {
                 currentClassName = "Window"
             }
-            else if (currentClassName == "document") {
-                currentClassName = "Document"
-            }
 
             val endOffset = classNameToEndOffset.get(currentClassName)
             val builder: StringBuilder
@@ -90,9 +87,16 @@ class JavaScriptStubGenerator(packageName: String) {
             if (endOffset == null) {
                 classNameToEndOffset.put(currentClassName!!, builder.length())
                 builder.append("\n}")
-                if (element.attribute("exposeAsProperty") == "true") {
-                    builder.append("\n\npublic native val ").append(Character.toLowerCase(currentClassName!![0]))
-                    builder.append(currentClassName!!, 1, currentClassName!!.length())
+                val exposeAsProperty = element.attribute("exposeAsProperty")
+                if (exposeAsProperty != null && exposeAsProperty != "false") {
+                    builder.append("\n\npublic native val ")
+                    if (exposeAsProperty == "true") {
+                        builder.append(Character.toLowerCase(currentClassName!![0]))
+                        builder.append(currentClassName!!, 1, currentClassName!!.length())
+                    }
+                    else {
+                        builder.append(exposeAsProperty)
+                    }
                     builder.append(": ").append(currentClassName).append(" = noImpl")
                 }
             }
@@ -190,6 +194,11 @@ class JavaScriptStubGenerator(packageName: String) {
                     }
 
                     val parameterElement = parameterNode as Element
+                    val rest = parameterElement.attribute("rest") == "true"
+                    if (rest) {
+                        builder.append("vararg ")
+                    }
+
                     val parameterName = getName(parameterElement)
                     var typeName: String
                     if (parameterName == multiTypeParameterName) {
@@ -214,7 +223,10 @@ class JavaScriptStubGenerator(packageName: String) {
                         if (enclose) {
                             builder.append(')')
                         }
-                        builder.append("? = null")
+                        builder.append("?")
+                        if (!rest) {
+                            builder.append(" = null")
+                        }
                     }
                 }
 
@@ -273,7 +285,7 @@ class JavaScriptStubGenerator(packageName: String) {
             "int" -> "Int"
             "byte" -> "Byte"
             "window" -> "Window"
-            "document" -> "Document"
+
             "Error" -> "java.lang.Exception"
             "void", null -> "Unit"
             "Function" -> "()->Unit"

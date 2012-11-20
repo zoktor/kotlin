@@ -29,7 +29,7 @@ import java.io.File;
 
 public class PathUtil {
 
-    public static final String JS_LIB_JAR_NAME = "kotlin-jslib.jar";
+    public static final String JS_LIB_JAR_NAME = "kotlin-js-lib.zip";
     public static final String JS_LIB_JS_NAME = "kotlin-es3.js";
     public static final String JDK_ANNOTATIONS_JAR = "kotlin-jdk-annotations.jar";
 
