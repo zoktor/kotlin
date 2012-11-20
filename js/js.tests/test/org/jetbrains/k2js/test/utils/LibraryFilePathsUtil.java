@@ -36,7 +36,7 @@ public final class LibraryFilePathsUtil {
         return Lists.transform(Config.LIB_FILE_NAMES, new Function<String, String>() {
             @Override
             public String apply(@Nullable String s) {
-                return Config.LIBRARIES_LOCATION + s;
+                return Config.LIBRARIES_LOCATION + '/' + s;
             }
         });
     }
@@ -48,13 +48,13 @@ public final class LibraryFilePathsUtil {
         Iterable<String> names = Config.LIB_FILE_NAMES_DEPENDENT_ON_STDLIB;
         for (String libFileName : names) {
             System.out.println("Compiling " + libFileName);
-            additionalKotlinFiles.add(Config.LIBRARIES_LOCATION + libFileName);
+            additionalKotlinFiles.add(Config.LIBRARIES_LOCATION + '/' + libFileName);
         }
 
         // lets add the standard Kotlin library files
         for (String libFileName : Config.STDLIB_FILE_NAMES) {
             System.out.println("Compiling " + libFileName);
-            additionalKotlinFiles.add(Config.STDLIB_LOCATION + libFileName);
+            additionalKotlinFiles.add(Config.STDLIB_LOCATION + '/' + libFileName);
         }
         return additionalKotlinFiles;
     }

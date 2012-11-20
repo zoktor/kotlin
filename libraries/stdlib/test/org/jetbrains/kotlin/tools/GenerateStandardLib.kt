@@ -68,7 +68,7 @@ fun main(args: Array<String>) {
     }
     val outDir = File(srcDir, "../generated")
 
-    val jsGeneratedDir = File("../stdlib-js/generated")
+    val jsGeneratedDir = File("../../js/js.libraries/generated")
     val stubDir = File("/Users/develar/Documents/idea/plugins/JavaScriptLanguage/src/com/intellij/lang/javascript/index/predefined")
     val ignoredEsClasses = HashSet<String>()
     ignoredEsClasses.add("Object")
@@ -78,19 +78,23 @@ fun main(args: Array<String>) {
     ignoredEsClasses.add("JSON")
     generateApi("js", File(stubDir, "EcmaScript5.xml"), File(jsGeneratedDir, "ecmaScript5.kt"), ignoredEsClasses)
 
-    val jsGenerator = JavaScriptStubGenerator("html")
-    jsGenerator.generate(File(stubDir, "DHTML.xml"))
-    jsGenerator.generate(File(stubDir, "DOMEvents.xml"))
-    jsGenerator.generate(File(stubDir, "HTML5.xml"))
-    jsGenerator.writeTo(File(jsGeneratedDir, "html5.kt"))
-    if (true) {
-        return
-    }
+    val domGenerator = JavaScriptStubGenerator("org.w3c.dom")
+    domGenerator.generate(File(stubDir, "DOMCore.xml"))
+    domGenerator.generate(File(stubDir, "DOMEvents.xml"))
+    domGenerator.generate(File(stubDir, "DOMTraversalAndRange.xml"))
+    domGenerator.writeTo(File(jsGeneratedDir, "dom.kt"))
 
-    val jsCoreDir = File(srcDir, "../../../../js/js.libraries/src/core")
-    require(jsCoreDir.exists())
-    generateDomAPI(File(jsCoreDir, "dom.kt"))
-    generateDomEventsAPI(File(jsCoreDir, "domEvents.kt"))
+    val htmlGenerator = JavaScriptStubGenerator("html")
+    htmlGenerator.append("\n\nimport org.w3c.dom.*")
+    htmlGenerator.generate(File(stubDir, "DHTML.xml"), ignoredEsClasses)
+    htmlGenerator.generate(File(stubDir, "HTML5.xml"))
+    htmlGenerator.writeTo(File(jsGeneratedDir, "html5.kt"))
+
+    //generateDomAPI(File(jsGeneratedDir, "dom.kt"))
+
+    if (true) {
+            return
+        }
 
     val otherArrayNames = arrayList("Boolean", "Byte", "Char", "Short", "Int", "Long", "Float", "Double")
 

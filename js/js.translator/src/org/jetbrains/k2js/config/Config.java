@@ -56,31 +56,30 @@ public abstract class Config {
 
     @NotNull
     public static final List<String> LIB_FILES_WITH_DECLARATIONS = Arrays.asList(
-            "/core/annotations.kt",
-            "/core/core.kt",
-            "/core/date.kt",
-            "/core/dom.kt",
-            "/core/javaio.kt",
-            "/core/javalang.kt",
-            "/core/javautil.kt",
-            "/core/json.kt",
-            "/core/kotlin.kt",
-            "/core/math.kt",
-            "/core/string.kt",
-            "/core/htmlDom.kt",
-            "/html5/canvas.kt",
-            "/jquery/common.kt",
-            "/jquery/ui.kt",
-            "/junit/core.kt",
-            "/qunit/core.kt",
-            "/stdlib/browser.kt",
-            "/requirejs.kt"
+            "src/annotations.kt",
+            "src/core.kt",
+            "generated/ecmaScript5.kt",
+            "generated/dom.kt",
+            "src/core/javaio.kt",
+            "src/javalang.kt",
+            "src/core/javautil.kt",
+            "src/core/json.kt",
+            "src/core/kotlin.kt",
+            "src/core/math.kt",
+            "src/core/string.kt",
+            "generated/html5.kt",
+            "src/jquery/common.kt",
+            "src/jquery/ui.kt",
+            "src/junit/core.kt",
+            "src/qunit/core.kt",
+            "src/stdlib/browser.kt",
+            "src/requirejs.kt"
     );
 
     @NotNull
     public static final List<String> LIB_FILES_WITH_CODE = Arrays.asList(
-            "/stdlib/TuplesCode.kt",
-            "/core/javautilCode.kt"
+            "src/stdlib/TuplesCode.kt",
+            "src/core/javautilCode.kt"
     );
 
     @NotNull
@@ -96,37 +95,37 @@ public abstract class Config {
      */
     @NotNull
     public static final List<String> LIB_FILE_NAMES_DEPENDENT_ON_STDLIB = Arrays.asList(
-            "/core/stringsCode.kt",
-            "/stdlib/domCode.kt",
-            "/stdlib/jutilCode.kt",
-            "/stdlib/JUMapsCode.kt",
-            "/stdlib/testCode.kt"
+            "src/core/stringsCode.kt",
+            "src/stdlib/domCode.kt",
+            "src/stdlib/jutilCode.kt",
+            "src/stdlib/JUMapsCode.kt",
+            "src/stdlib/testCode.kt"
     );
 
-    public static final String LIBRARIES_LOCATION = "js/js.libraries/src";
+    public static final String LIBRARIES_LOCATION = "js/js.libraries";
 
     /**
      * The file names in the standard library to compile
      */
     @NotNull
     public static final List<String> STDLIB_FILE_NAMES = Arrays.asList(
-            "/kotlin/Preconditions.kt",
-            "/kotlin/Iterators.kt",
-            "/kotlin/JUtil.kt",
-            "/kotlin/Collections.kt",
-            "/kotlin/Maps.kt",
-            "/kotlin/Iterables.kt",
-            "/kotlin/IterablesLazy.kt",
-            "/kotlin/IterablesSpecial.kt",
-            "/generated/ArraysFromIterables.kt",
-            "/generated/ArraysFromIterablesLazy.kt",
-            "/generated/ArraysFromCollections.kt",
-            "/generated/IteratorsFromIterables.kt",
-            "/kotlin/support/AbstractIterator.kt",
-            "/kotlin/Standard.kt",
-            "/kotlin/Strings.kt",
-            "/kotlin/dom/Dom.kt",
-            "/kotlin/test/Test.kt"
+            "kotlin/Preconditions.kt",
+            "kotlin/Iterators.kt",
+            "kotlin/JUtil.kt",
+            "kotlin/Collections.kt",
+            "kotlin/Maps.kt",
+            "kotlin/Iterables.kt",
+            "kotlin/IterablesLazy.kt",
+            "kotlin/IterablesSpecial.kt",
+            "generated/ArraysFromIterables.kt",
+            "generated/ArraysFromIterablesLazy.kt",
+            "generated/ArraysFromCollections.kt",
+            "generated/IteratorsFromIterables.kt",
+            "kotlin/support/AbstractIterator.kt",
+            "kotlin/Standard.kt",
+            "kotlin/Strings.kt",
+            "kotlin/dom/Dom.kt",
+            "kotlin/test/Test.kt"
     );
 
     /**

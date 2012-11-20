@@ -38,23 +38,6 @@ fun generateDomAPI(file: File): Unit {
     writeClassesFile(file, packageName, imports, classes)
 }
 
-fun generateDomEventsAPI(file: File): Unit {
-    val packageName = "org.w3c.dom.events"
-    val imports = "import org.w3c.dom.*\nimport org.w3c.dom.views.*\n"
-
-
-    val classes: List<Class<*>> = arrayList(javaClass<DocumentEvent>(), javaClass<Event>(),
-            // TODO see domEventsCode.kt we manually hand craft this for now
-            // to get the implementation in JS
-            //
-            // javaClass<EventListener>(),
-            javaClass<EventTarget>(),
-            javaClass<MouseEvent>(), javaClass<MutationEvent>(),
-            javaClass<UIEvent>())
-
-    writeClassesFile(file, packageName, imports, classes)
-}
-
 private fun writeClassesFile(file: File, packageName: String, imports: String, classes: List<Class<*>>): Unit {
     write(file) {
 
@@ -89,92 +72,85 @@ import js.noImpl
 
         for (klass in classes) {
             val interfaces = klass.getInterfaces()
-            val extends = if (interfaces != null && interfaces.size == 1) ": ${interfaces[0]?.getSimpleName()}" else ""
+            val extends = if (interfaces.size == 1) ": ${interfaces[0]?.getSimpleName()}" else ""
 
             println("native public trait ${klass.getSimpleName()}$extends {")
 
             val methods = klass.getDeclaredMethods()
-            if (methods != null) {
-                // lets figure out the properties versus methods
-                val validMethods = ArrayList<Method>()
-                val properties = TreeMap<String, PropertyKind>()
-                for (method in methods) {
-                    if (method != null) {
-                        val name = method.getName() ?: ""
-                        fun propertyName(): String {
-                            val answer = name.substring(3).decapitalize()
-                            return if (answer == "type") {
-                                "`type`"
-                            } else answer
-                        }
-                        fun propertyType() = simpleTypeName(method.getReturnType())
-                        fun propertyKind(method: Method): PropertyKind {
-                            val propName = propertyName()
-                            return properties.getOrPut(propName) { PropertyKind(propName, "val", method) }
-                        }
-
-                        val params = method.getParameterTypes()!!
-                        val paramSize = params.size
-                        if (name.size > 3) {
-                            if (name.startsWith("get") && paramSize == 0) {
-                                propertyKind(method).typeName = propertyType()
-                            } else if (name.startsWith("set") && paramSize == 1) {
-                                propertyKind(method).kind = "var"
-                            } else {
-                                validMethods.add(method)
-                            }
-                        } else {
-                            validMethods.add(method)
-                        }
-                    }
+            // lets figure out the properties versus methods
+            val validMethods = ArrayList<Method>()
+            val properties = TreeMap<String, PropertyKind>()
+            for (method in methods) {
+                val name = method.getName() ?: ""
+                fun propertyName(): String {
+                    val answer = name.substring(3).decapitalize()
+                    return if (answer == "type") {
+                        "`type`"
+                    } else answer
                 }
-                
-                for (pk in properties.values()!!) {
-                    // some properties might not have a getter defined
-                    // so lets ignore those
+                fun propertyType() = simpleTypeName(method.getReturnType())
+                fun propertyKind(method: Method): PropertyKind {
+                    val propName = propertyName()
+                    return properties.getOrPut(propName) { PropertyKind(propName, "val", method) }
+                }
 
-                    val typeName = pk.typeName
-                    if (typeName == null) {
-                        validMethods.add(pk.method)
+                val params = method.getParameterTypes()!!
+                val paramSize = params.size
+                if (name.size > 3) {
+                    if (name.startsWith("get") && paramSize == 0) {
+                        propertyKind(method).typeName = propertyType()
+                    } else if (name.startsWith("set") && paramSize == 1) {
+                        propertyKind(method).kind = "var"
                     } else {
-                        println("    public ${pk.kind} ${pk.name}: ${typeName}")
+                        validMethods.add(method)
                     }
-                }
-                for (method in validMethods) {
-                    val parameterTypes = method.getParameterTypes()!!
-
-                    // TODO in java 7 its not easy with reflection to get the parameter argument name...
-                    var counter = 0
-                    val parameters = parameterTypes.map{ "arg${++counter}: ${parameterTypeName(it)}" }.makeString(", ")
-                    val returnType = simpleTypeName(method.getReturnType())
-                    println("    public fun ${method.getName()}($parameters): $returnType = js.noImpl")
+                } else {
+                    validMethods.add(method)
                 }
             }
+
+            for (pk in properties.values()!!) {
+                // some properties might not have a getter defined
+                // so lets ignore those
+
+                val typeName = pk.typeName
+                if (typeName == null) {
+                    validMethods.add(pk.method)
+                } else {
+                    println("    public ${pk.kind} ${pk.name}: ${typeName}")
+                }
+            }
+            for (method in validMethods) {
+                val parameterTypes = method.getParameterTypes()!!
+
+                // TODO in java 7 its not easy with reflection to get the parameter argument name...
+                var counter = 0
+                val parameters = parameterTypes.map{ "arg${++counter}: ${parameterTypeName(it)}" }.makeString(", ")
+                val returnType = simpleTypeName(method.getReturnType())
+                println("    public fun ${method.getName()}($parameters): $returnType = js.noImpl")
+            }
+
             val fields = klass.getDeclaredFields()
-            if (fields != null) {
-                if (fields.notEmpty()) {
-                    println("")
-                    println("    public class object {")
-                    for (field in fields) {
-                        if (field != null) {
-                            val modifiers = field.getModifiers()
-                            if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+            if (fields.notEmpty()) {
+                println("")
+                println("    public class object {")
+                for (field in fields) {
+                    val modifiers = field.getModifiers()
+                    if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+                        try {
+                            val value = field.get(null)
+                            if (value != null) {
                                 val fieldType = simpleTypeName(field.getType())
-                                try {
-                                    val value = field.get(null)
-                                    if (value != null) {
-                                        val fieldType = simpleTypeName(field.getType())
-                                        println("        public val ${field.getName()}: $fieldType = $value")
-                                    }
-                                } catch (e: Exception) {
-                                    println("Caught: $e")
-                                    e.printStackTrace()
-                                }
+                                println("        public val ${field.getName()}: $fieldType = $value")
                             }
                         }
+                        catch (e: Exception) {
+                            println("Caught: $e")
+                            e.printStackTrace()
+                        }
                     }
-                    println("    }")
                 }
+                println("    }")
             }
             println("}")
             println("")

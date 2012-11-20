@@ -130,8 +130,9 @@ public final class TranslationUtils {
         List<JetFile> libFiles = Lists.newArrayList();
         PsiManager psiManager = PsiManager.getInstance(project);
         VirtualFileSystem fileSystem = VirtualFileManager.getInstance().getFileSystem(StandardFileSystems.FILE_PROTOCOL);
+        VirtualFile rootFile = root == null ? null : fileSystem.findFileByPath(root);
         for (String libFileName : list) {
-            VirtualFile virtualFile = fileSystem.findFileByPath(root == null ? libFileName : (root + libFileName));
+            VirtualFile virtualFile = rootFile == null ? fileSystem.findFileByPath(libFileName) : rootFile.findFileByRelativePath(libFileName);
             assert virtualFile != null;
             PsiFile psiFile = psiManager.findFile(virtualFile);
             libFiles.add((JetFile) psiFile);

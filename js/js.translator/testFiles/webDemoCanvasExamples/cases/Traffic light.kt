@@ -1,13 +1,8 @@
 package traffic
 
 import java.util.ArrayList
-import html.CanvasContext
-import html.HTMLCanvasElement
-
-import html.HTMLImageElement
-import html.window
+import html.*
 import js.jquery.*
-import html.HTMLElement
 
 fun getImage(path: String): HTMLImageElement {
     val image = window.document.createElement("img") as HTMLImageElement
@@ -20,7 +15,7 @@ val canvas: HTMLCanvasElement
         return window.document.getElementsByTagName("canvas").item(0)!! as HTMLCanvasElement
     }
 
-val context: CanvasContext
+val context: CanvasRenderingContext2D
     get() {
         return canvas.getContext("2d")!!
     }
@@ -455,7 +450,7 @@ abstract class Shape() {
     abstract fun draw()
 
     // a couple of helper extension methods we'll be using in the derived classes
-    fun CanvasContext.shadowed(shadowOffset: Vector, alpha: Double, render: CanvasContext.() -> Unit) {
+    fun CanvasRenderingContext2D.shadowed(shadowOffset: Vector, alpha: Double, render: CanvasRenderingContext2D.() -> Unit) {
         save()
         shadowColor = "rgba(100, 100, 100, $alpha)"
         shadowBlur = 5.0
@@ -465,7 +460,7 @@ abstract class Shape() {
         restore()
     }
 
-    fun CanvasContext.fillPath(constructPath: CanvasContext.() -> Unit) {
+    fun CanvasRenderingContext2D.fillPath(constructPath: CanvasRenderingContext2D.() -> Unit) {
         beginPath()
         constructPath()
         closePath()
