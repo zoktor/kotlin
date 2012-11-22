@@ -43,7 +43,7 @@ public native trait DOMImplementationSource {
 public native trait DOMImplementation {
 	public fun hasFeature(feature: String, version: String): Boolean
 	public fun createDocumentType(qualifiedName: String, publicId: String, systemId: String): DocumentType
-	public fun createDocument(namespaceURI: String, qualifiedName: String, doctype: DocumentType): Document
+	public fun createDocument(namespaceURI: String?, qualifiedName: String?, doctype: DocumentType?): Document
 	public fun getFeature(feature: String, version: String): Any
 }
 

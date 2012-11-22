@@ -19,6 +19,18 @@ import javax.xml.transform.stream.StreamResult
 import org.w3c.dom.*
 import org.xml.sax.InputSource
 
+private class NodeListIterator(private val list: NodeList) : Iterator<Node> {
+    private var i = 0
+    private val n = list.getLength()
+
+    override fun hasNext() = i < n
+
+    override fun next():Node = list.item(i++)!!
+}
+
+public inline fun NodeList.iterator(): Iterator<Node> = NodeListIterator(this)
+public inline fun Node.iterator(): Iterator<Node> = getChildNodes()!!.iterator()
+
 // JavaScript style properties - TODO could auto-generate these
 val Node.nodeName: String
 get() = getNodeName() ?: ""

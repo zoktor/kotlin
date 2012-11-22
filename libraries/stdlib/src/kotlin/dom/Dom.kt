@@ -9,18 +9,6 @@ import org.w3c.dom.*
 import java.lang.IllegalArgumentException
 import java.lang.IndexOutOfBoundsException
 
-private class NodeListIterator(private val list: NodeList) : Iterator<Node> {
-    private var i = 0
-    private val n = list.getLength()
-
-    override fun hasNext() = i < n
-
-    override fun next():Node = list.item(i++)!!
-}
-
-public inline fun NodeList.iterator(): Iterator<Node> = NodeListIterator(this)
-public inline fun Node.iterator(): Iterator<Node> = getChildNodes()!!.iterator()
-
 // Properties
 
 private fun emptyElementList(): List<Element> = Collections.emptyList<Element>()
