@@ -26,6 +26,7 @@ class JavaScriptStubGenerator(packageName: String) {
     private val propertyDuplicateGuard = HashSet<String>()
 
     private var currentClassName: String? = null
+    private var methodParamMandatoryByDefault = false
 
     private fun findConstructor(classElement: Element): Element? {
         for (val node in classElement.getChildNodes()!!) {
@@ -40,9 +41,26 @@ class JavaScriptStubGenerator(packageName: String) {
         builder.append(string)
     }
 
+    private fun processConstructor(parentElement: Element, builder: StringBuilder) {
+        builder.append('(')
+        var first = true
+        for (val node in parentElement.iterator().filter { checkElement(it, "param") }) {
+            if (first) {
+                first = false
+            }
+            else {
+                builder.append(", ")
+            }
+
+            val element = node as Element
+            processParameter(element, getType(element), builder)
+        }
+        builder.append(')')
+    }
+
     fun generate(idlFile: File, ignoredClasses: Set<String>? = null) {
         val document = parseXml(idlFile)
-        for (val node in document.getDocumentElement()!!.iterator().filter { it is Element && it.getTagName() == "class" }) {
+        for (val node in document.getDocumentElement()!!.iterator().filter { it is Element && (it.getTagName() == "class" || it.getTagName() == "trait") }) {
             val element = node as Element
             currentClassName = element.attribute("name")!!
             if (ignoredClasses != null && ignoredClasses.contains(currentClassName)) {
@@ -52,25 +70,41 @@ class JavaScriptStubGenerator(packageName: String) {
                 currentClassName = "Window"
             }
 
+            var isTrait = element.getTagName() == "trait"
+            methodParamMandatoryByDefault = isTrait || element.getAttribute("paramPolicyMandatory") == "true"
+
             val endOffset = classNameToEndOffset.get(currentClassName)
             val builder: StringBuilder
             if (endOffset == null) {
                 builder = this.builder
-                builder.append("\n\npublic native trait ").append(currentClassName)
-                val constructor = findConstructor(element)
-                if (constructor != null) {
 
+                val constructor = findConstructor(element)
+                if (constructor == null) {
+                    isTrait = true
                 }
 
+                builder.append("\n\npublic native ")
+                if (element.attribute("open") == "true") {
+                    builder.append("open ")
+                }
+                builder.append(if (isTrait) "trait" else "class").append(' ').append(currentClassName)
+                if (constructor != null) {
+                    processConstructor(constructor, builder)
+                }
                 val extends = element.attribute("extends")
                 if (extends != null) {
                     builder.append(" : ").append(getType(extends))
+                    if (!isTrait) {
+                        append("()")
+                    }
                 }
                 builder.append(" {")
             }
             else {
                 builder = StringBuilder()
                 builder.append("\n")
+
+                isTrait = true
             }
 
             val static = element.iterator().filter { it is Element && it.getTagName() == "static" }
@@ -82,7 +116,7 @@ class JavaScriptStubGenerator(packageName: String) {
 
                 assert(!static.hasNext())
             }
-            processMembers(element, false, hasStaticMemebers, "\t", builder)
+            processMembers(element, !isTrait, hasStaticMemebers, "\t", builder)
 
             if (endOffset == null) {
                 classNameToEndOffset.put(currentClassName!!, builder.length())
@@ -124,7 +158,7 @@ class JavaScriptStubGenerator(packageName: String) {
 
     private fun checkElement(element: Node, tagName: String) = element is Element && element.getTagName() == tagName && element.attribute("deprecated") == null && element.attribute("browser") != "IE"
 
-    fun processMembers(element: Element, static: Boolean, hasMembersBefore: Boolean, indent: String, builder: StringBuilder) {
+    fun processMembers(element: Element, bodyRequired: Boolean, hasMembersBefore: Boolean, indent: String, builder: StringBuilder) {
         val nodes = element.getChildNodes()!!
         val properties = nodes.iterator().filter { checkElement(it, "property") && propertyDuplicateGuard.add(currentClassName + "." + (it as Element).attribute("name")!!) }
         val methods = nodes.iterator().filter { checkElement(it, "method") }
@@ -134,14 +168,14 @@ class JavaScriptStubGenerator(packageName: String) {
             builder.append('\n')
         }
 
-        processProperties(properties, indent, builder)
+        processProperties(properties, bodyRequired, indent, builder)
         if (insertNewLineSeparator) {
             builder.append('\n')
         }
-        processMethods(methods, static, indent, builder)
+        processMethods(methods, bodyRequired, indent, builder)
     }
 
-    private fun processProperties(nodes: Iterator<Node>, indent: String, builder: StringBuilder) {
+    private fun processProperties(nodes: Iterator<Node>, bodyRequired: Boolean, indent: String, builder: StringBuilder) {
         for (val node in nodes) {
             val element = node as Element
             builder.append("\n${indent}public va")
@@ -149,7 +183,7 @@ class JavaScriptStubGenerator(packageName: String) {
             builder.append(if (readOnly) 'l' else 'r')
             builder.append(' ').appendName(element).appendType(element)
 
-            val value = element.attribute("value")
+            val value = element.attribute("value") ?: (if (bodyRequired) "noImpl" else null)
             if (value != null) {
                 builder.append(" = ").append(value)
             }
@@ -175,7 +209,7 @@ class JavaScriptStubGenerator(packageName: String) {
 
                 if (typeName.indexOf('|') != -1) {
                     multiTypeParameterName = getName(parameter as Element)
-                    multiTypeParameterTypes = typeName.split('|')
+                    multiTypeParameterTypes = typeName.split('|') as Array<String>
                     break
                 }
             }
@@ -194,11 +228,6 @@ class JavaScriptStubGenerator(packageName: String) {
                     }
 
                     val parameterElement = parameterNode as Element
-                    val rest = parameterElement.attribute("rest") == "true"
-                    if (rest) {
-                        builder.append("vararg ")
-                    }
-
                     val parameterName = getName(parameterElement)
                     var typeName: String
                     if (parameterName == multiTypeParameterName) {
@@ -212,22 +241,7 @@ class JavaScriptStubGenerator(packageName: String) {
                             typeName = typeName.substring(0, typeName.indexOf('|'))
                         }
                     }
-                    builder.appendName(parameterElement).append(": ")
-                    val optional = parameterElement.getAttribute("mandatory") != "true"
-                    val enclose = optional && typeName.indexOf('(') != -1
-                    if (enclose) {
-                        builder.append('(')
-                    }
-                    builder.append(typeName)
-                    if (optional) {
-                        if (enclose) {
-                            builder.append(')')
-                        }
-                        builder.append("?")
-                        if (!rest) {
-                            builder.append(" = null")
-                        }
-                    }
+                    processParameter(parameterElement, typeName, builder)
                 }
 
                 builder.append(')').appendType(element, "returnType")
@@ -239,20 +253,25 @@ class JavaScriptStubGenerator(packageName: String) {
         }
     }
 
-    private fun processParameters(nodes: Iterator<Node>, builder: StringBuilder) {
-        var first = true
-        for (val node in nodes) {
-            if (first) {
-                first = false
+    private fun processParameter(element: Element, typeName: String, builder: StringBuilder) {
+        val rest = element.attribute("rest") == "true"
+        if (rest) {
+            builder.append("vararg ")
+        }
+        builder.appendName(element).append(": ")
+        val optional = if (methodParamMandatoryByDefault) element.getAttribute("optional") == "true" else element.getAttribute("mandatory") != "true"
+        val enclose = optional && typeName.indexOf('(') != -1
+        if (enclose) {
+            builder.append('(')
+        }
+        builder.append(typeName)
+        if (optional) {
+            if (enclose) {
+                builder.append(')')
             }
-            else {
-                builder.append(", ")
-            }
-
-            val element = node as Element
-            builder.appendName(element).appendType(element)
-            if (element.getAttribute("mandatory") != "true") {
-                builder.append('?')
+            builder.append("?")
+            if (!rest) {
+                builder.append(" = null")
             }
         }
     }

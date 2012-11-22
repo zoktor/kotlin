@@ -333,7 +333,7 @@ public native trait EventTarget {
 	public fun addEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean? = null): Unit
 	public fun removeEventListener(`type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
 	public fun removeEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean? = null): Unit
-	public fun dispatchEvent(evt: Event): Boolean
+	public fun dispatchEvent(event: Event): Boolean
 	public fun addEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean? = null, evtGroup: Any? = null): Unit
 	public fun removeEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
 	public fun willTriggerNS(namespaceURI: String, `type`: String): Boolean
@@ -341,7 +341,7 @@ public native trait EventTarget {
 }
 
 public native trait EventListener {
-	public fun handleEvent(evt: Event): Unit
+	public fun handleEvent(event: Event): Unit
 }
 
 public native trait EventException {
