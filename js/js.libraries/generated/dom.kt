@@ -88,7 +88,7 @@ public native trait IXMLDOMParseError {
 }
 
 public native trait Node {
-	public class object {
+	public native class object {
 		public val ELEMENT_NODE: Number = 1
 		public val ATTRIBUTE_NODE: Number = 2
 		public val TEXT_NODE: Number = 3
@@ -228,7 +228,7 @@ public native trait TypeInfo {
 }
 
 public native trait UserDataHandler {
-	public class object {
+	public native class object {
 		public val NODE_CLONED: Int = 1
 		public val NODE_IMPORTED: Int = 2
 		public val NODE_DELETED: Int = 3
@@ -304,7 +304,7 @@ public native trait ProcessingInstruction : Node {
 }
 
 public native trait Event {
-	public class object {
+	public native class object {
 		public val CAPTURING_PHASE: Int = 1
 		public val AT_TARGET: Int = 2
 		public val BUBBLING_PHASE: Int = 2
@@ -405,7 +405,7 @@ public native trait KeyboardEvent : UIEvent {
 }
 
 public native trait MutationEvent : UIEvent {
-	public class object {
+	public native class object {
 		public val MODIFICATION: Int = 1
 		public val ADDITION: Int = 2
 		public val REMOVAL: Int = 3
