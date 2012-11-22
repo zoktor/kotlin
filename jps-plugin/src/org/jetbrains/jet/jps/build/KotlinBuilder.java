@@ -63,7 +63,7 @@ public class KotlinBuilder extends ModuleLevelBuilder {
             OutputConsumer outputConsumer
     ) throws ProjectBuildException, IOException {
         String skipCompilation = System.getProperty("kotlin.compiler.skip");
-        if (skipCompilation.isEmpty() || Boolean.valueOf(skipCompilation)) {
+        if (skipCompilation != null && (skipCompilation.isEmpty() || Boolean.valueOf(skipCompilation))) {
             return ExitCode.OK;
         }
 
