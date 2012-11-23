@@ -239,7 +239,7 @@ class JavaScriptStubGenerator(packageName: String) {
                         else {
                             effectiveType = propertyType
                         }
-                        builder.append("\n${indent}\tval ").append(propertyName!!).append(": ").append(effectiveType)
+                        builder.append("\n${indent}\tpublic val ").append(propertyName!!).append(": ").append(effectiveType)
                     }
                     builder.append("\n${indent}}")
                     typeNameAppender = {

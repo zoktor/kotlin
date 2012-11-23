@@ -329,13 +329,13 @@ public native trait Event {
 }
 
 public native trait EventTarget {
-	public fun addEventListener(`type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
-	public fun addEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean? = null): Unit
+	public fun addEventListener(`type`: String, listener: EventListener, useCapture: Boolean = false): Unit
+	public fun addEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean = false): Unit
 	public fun removeEventListener(`type`: String, listener: EventListener, useCapture: Boolean = false): Unit
 	public fun removeEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean = false): Unit
 	public fun dispatchEvent(event: Event): Boolean
-	public fun addEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean? = null, evtGroup: Any? = null): Unit
-	public fun removeEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
+	public fun addEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean = false, evtGroup: Any? = null): Unit
+	public fun removeEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean = false): Unit
 	public fun willTriggerNS(namespaceURI: String, `type`: String): Boolean
 	public fun hasEventListenerNS(namespaceURI: String, `type`: String): Boolean
 }
