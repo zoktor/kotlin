@@ -174,15 +174,13 @@ public final class K2JSCompiler implements TranslatingCompiler {
                 }
 
                 if (isDirectDependency) {
-                    if (!modules.add(module)) {
-                        continue;
+                    if (modules.add(module)) {
+                        collectModuleDependencies(module, modules, false);
                     }
                 }
-                else if (!moduleEntry.isExported() || !modules.add(module)) {
-                    continue;
+                else if (modules.add(module)) {
+                    collectModuleDependencies(module, modules, false);
                 }
-
-                collectModuleDependencies(module, modules, false);
             }
         }
     }

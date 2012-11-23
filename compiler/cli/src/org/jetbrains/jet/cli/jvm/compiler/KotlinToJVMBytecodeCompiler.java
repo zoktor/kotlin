@@ -311,7 +311,7 @@ public class KotlinToJVMBytecodeCompiler {
                 environment.getConfiguration().get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY));
         final Predicate<PsiFile> filesToAnalyzeCompletely =
                 stubs ? Predicates.<PsiFile>alwaysFalse() : Predicates.<PsiFile>alwaysTrue();
-        analyzerWithCompilerReport.analyzeAndReport(
+        return analyzerWithCompilerReport.analyzeAndReport(
                 new Function0<AnalyzeExhaust>() {
                     @NotNull
                     @Override
@@ -325,8 +325,6 @@ public class KotlinToJVMBytecodeCompiler {
                     }
                 }, environment.getSourceFiles()
         );
-
-        return analyzerWithCompilerReport.hasErrors() ? null : analyzerWithCompilerReport.getAnalyzeExhaust();
     }
 
     @NotNull

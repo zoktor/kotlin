@@ -207,23 +207,19 @@ public final class AnalyzerWithCompilerReport {
         return new SyntaxErrorReport(visitor.hasErrors, visitor.onlyErrorAtEof);
     }
 
-    @Nullable
-    public AnalyzeExhaust getAnalyzeExhaust() {
-        return analyzeExhaust;
-    }
-
     public boolean hasErrors() {
         return hasErrors;
     }
 
-    public void analyzeAndReport(@NotNull Function0<AnalyzeExhaust> analyzer, @NotNull Collection<JetFile> files) {
+    @Nullable
+    public AnalyzeExhaust analyzeAndReport(@NotNull Function0<AnalyzeExhaust> analyzer, @NotNull Collection<JetFile> files) {
         reportSyntaxErrors(files);
         analyzeExhaust = analyzer.invoke();
         reportDiagnostics(analyzeExhaust.getBindingContext(), messageCollectorWrapper);
         reportIncompleteHierarchies();
         reportAlternativeSignatureErrors();
+        return hasErrors() ? null : analyzeExhaust;
     }
-
 
     private static class MyDiagnostic<E extends PsiElement> extends SimpleDiagnostic<E> {
         private String message;

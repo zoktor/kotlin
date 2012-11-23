@@ -18,10 +18,10 @@ package org.jetbrains.k2js.facade;
 
 import com.google.dart.compiler.backend.js.ast.JsProgram;
 import com.google.dart.compiler.util.TextOutputImpl;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
@@ -47,28 +47,28 @@ import static org.jetbrains.k2js.facade.FacadeUtils.parseString;
  *         An entry point of translator.
  */
 public final class K2JSTranslator {
-
     public static final String FLUSH_SYSTEM_OUT = "Kotlin.System.flush();\n";
     public static final String GET_SYSTEM_OUT = "Kotlin.System.output();\n";
 
-    public static void translateWithMainCallParametersAndSaveToFile(@NotNull MainCallParameters mainCall,
+    @NotNull
+    private final Config config;
+
+    public static void translateWithMainCallParametersAndSaveToFile(
+            @NotNull MainCallParameters mainCall,
             @NotNull List<JetFile> files,
             @NotNull String outputPath,
-            @NotNull Config config) throws TranslationException, IOException {
+            @NotNull Config config, AnalyzeExhaust exhaust
+    ) throws TranslationException, IOException {
         K2JSTranslator translator = new K2JSTranslator(config);
         File outFile = new File(outputPath);
         TextOutputImpl output = new TextOutputImpl();
         SourceMapBuilder sourceMapBuilder = config.isSourcemap() ? new SourceMap3Builder(outFile, output, new SourceMapBuilderConsumer()) : null;
-        String programCode = translator.generateProgramCode(files, mainCall, output, sourceMapBuilder);
+        String programCode = translator.generateProgramCode(files, mainCall, output, sourceMapBuilder, exhaust);
         FileUtil.writeToFile(outFile, programCode);
         if (sourceMapBuilder != null) {
             FileUtil.writeToFile(sourceMapBuilder.getOutFile(), sourceMapBuilder.build());
         }
     }
-
-    @NotNull
-    private final Config config;
-
 
     public K2JSTranslator(@NotNull Config config) {
         this.config = config;
@@ -78,46 +78,31 @@ public final class K2JSTranslator {
     @SuppressWarnings("UnusedDeclaration")
     @NotNull
     public String translateStringWithCallToMain(@NotNull String programText, @NotNull String argumentsString) throws TranslationException {
-        JetFile file = JetFileUtils.createPsiFile("test", programText, getProject());
-        String programCode = generateProgramCode(file, MainCallParameters.mainWithArguments(parseString(argumentsString))) + "\n";
+        JetFile file = JetFileUtils.createPsiFile("test", programText, config.getProject());
+        String programCode = generateProgramCode(Collections.singletonList(file),
+                                                 MainCallParameters.mainWithArguments(parseString(argumentsString))) + "\n";
         return FLUSH_SYSTEM_OUT + programCode + GET_SYSTEM_OUT;
-    }
-
-    @NotNull
-    public String generateProgramCode(@NotNull JetFile file, @NotNull MainCallParameters mainCallParameters) throws TranslationException {
-        return generateProgramCode(Collections.singletonList(file), mainCallParameters);
     }
 
     @NotNull
     public String generateProgramCode(@NotNull List<JetFile> files, @NotNull MainCallParameters mainCallParameters)
             throws TranslationException {
-        return generateProgramCode(files, mainCallParameters, new TextOutputImpl(), null);
+        KotlinBuiltIns.initialize(config.getProject());
+        return generateProgramCode(files, mainCallParameters, new TextOutputImpl(), null, null);
     }
 
     @NotNull
-    public String generateProgramCode(
+    private String generateProgramCode(
             @NotNull List<JetFile> files,
             @NotNull MainCallParameters mainCallParameters,
             @NotNull TextOutputImpl output,
-            @Nullable SourceMapBuilder sourceMapBuilder
+            @Nullable SourceMapBuilder sourceMapBuilder,
+            AnalyzeExhaust exhaust
     ) throws TranslationException {
-        JsProgram program = generateProgram(files, mainCallParameters);
+        BindingContext bindingContext = exhaust == null ? AnalyzerFacadeForJS.analyzeFilesAndCheckErrors(files, config) : exhaust.getBindingContext();
+        JsProgram program = Translation.generateAst(bindingContext, files, mainCallParameters, config);
         JsSourceGenerationVisitor sourceGenerator = new JsSourceGenerationVisitor(output, sourceMapBuilder);
         program.accept(sourceGenerator);
         return output.toString();
-    }
-
-    @NotNull
-    public JsProgram generateProgram(@NotNull List<JetFile> filesToTranslate,
-            @NotNull MainCallParameters mainCallParameters)
-            throws TranslationException {
-        KotlinBuiltIns.initialize(config.getProject());
-        BindingContext bindingContext = AnalyzerFacadeForJS.analyzeFilesAndCheckErrors(filesToTranslate, config);
-        return Translation.generateAst(bindingContext, filesToTranslate, mainCallParameters, config);
-    }
-
-    @NotNull
-    private Project getProject() {
-        return config.getProject();
     }
 }

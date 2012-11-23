@@ -84,23 +84,16 @@ public class JsConfiguration implements ModuleConfiguration {
         }
 
         if (hasPreanalyzedContextForTests()) {
-            extendScopeWithPreAnalyzedContextForTests(namespaceDescriptor, namespaceMemberScope);
+            if (isNamespaceImportedByDefault(namespaceDescriptor) || isRootNamespace(namespaceDescriptor)) {
+                FqName descriptorName = DescriptorUtils.getFQName(namespaceDescriptor).toSafe();
+                NamespaceDescriptor alreadyAnalyzedNamespace = preanalyzedContext.get(BindingContext.FQNAME_TO_NAMESPACE_DESCRIPTOR, descriptorName);
+                namespaceMemberScope.importScope(alreadyAnalyzedNamespace.getMemberScope());
+            }
         }
     }
 
     private boolean hasPreanalyzedContextForTests() {
         return preanalyzedContext != null;
-    }
-
-    /*NOTE: this code is wrong. Check it if you have tests failing for frontend reasons*/
-    @SuppressWarnings("ConstantConditions")
-    private void extendScopeWithPreAnalyzedContextForTests(@NotNull NamespaceDescriptor namespaceDescriptor,
-            @NotNull WritableScope namespaceMemberScope) {
-        if (isNamespaceImportedByDefault(namespaceDescriptor) || isRootNamespace(namespaceDescriptor)) {
-            FqName descriptorName = DescriptorUtils.getFQName(namespaceDescriptor).toSafe();
-            NamespaceDescriptor alreadyAnalyzedNamespace = preanalyzedContext.get(BindingContext.FQNAME_TO_NAMESPACE_DESCRIPTOR, descriptorName);
-            namespaceMemberScope.importScope(alreadyAnalyzedNamespace.getMemberScope());
-        }
     }
 
     private static boolean isNamespaceImportedByDefault(@NotNull NamespaceDescriptor namespaceDescriptor) {

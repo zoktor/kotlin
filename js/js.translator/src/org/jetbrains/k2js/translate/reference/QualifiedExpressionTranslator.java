@@ -21,14 +21,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
+import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.utils.ErrorReportingUtils;
 
 import static org.jetbrains.k2js.translate.general.Translation.translateAsExpression;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getDescriptorForReferenceExpression;
-import static org.jetbrains.k2js.translate.utils.PsiUtils.getNotNullSimpleNameSelector;
-import static org.jetbrains.k2js.translate.utils.PsiUtils.getSelector;
+import static org.jetbrains.k2js.translate.utils.PsiUtils.*;
 
 /**
  * @author Pavel Talanov
@@ -61,23 +61,37 @@ public final class QualifiedExpressionTranslator {
     @NotNull
     private static JsExpression dispatchToCorrectTranslator(
             @Nullable JsExpression receiver,
-            @NotNull JetExpression selector,
+            @NotNull JetExpression expression,
             @NotNull CallType callType,
             @NotNull TranslationContext context
     ) {
-        if (PropertyAccessTranslator.canBePropertyGetterCall(selector, context)) {
-            assert selector instanceof JetSimpleNameExpression : "Selectors for properties must be simple names.";
-            return PropertyAccessTranslator.translateAsPropertyGetterCall
-                ((JetSimpleNameExpression)selector, receiver, callType, context);
+        JetSimpleNameExpression selector;
+        if (expression instanceof JetQualifiedExpression) {
+            selector = getSelectorAsSimpleName((JetQualifiedExpression) expression);
+            assert selector != null : "Only names are allowed after the dot";
         }
-        if (selector instanceof JetCallExpression) {
-            return invokeCallExpressionTranslator(receiver, selector, callType, context);
+        else if (expression instanceof JetSimpleNameExpression) {
+            selector = (JetSimpleNameExpression) expression;
+        }
+        else {
+            selector = null;
+        }
+
+        if (selector != null) {
+            DeclarationDescriptor descriptor = getDescriptorForReferenceExpression(context.bindingContext(), selector);
+            if (descriptor instanceof PropertyDescriptor) {
+                return PropertyAccessTranslator.newInstance(selector, receiver, callType, context, (PropertyDescriptor) descriptor).translateAsGet();
+            }
+        }
+
+        if (expression instanceof JetCallExpression) {
+            return invokeCallExpressionTranslator(receiver, expression, callType, context);
         }
         //TODO: never get there
-        if (selector instanceof JetSimpleNameExpression) {
-            return ReferenceTranslator.translateSimpleName((JetSimpleNameExpression)selector, context);
+        if (expression instanceof JetSimpleNameExpression) {
+            return ReferenceTranslator.translateSimpleName((JetSimpleNameExpression)expression, context);
         }
-        throw new AssertionError("Unexpected qualified expression: " + selector.getText());
+        throw new AssertionError("Unexpected qualified expression: " + expression.getText());
     }
 
     @NotNull

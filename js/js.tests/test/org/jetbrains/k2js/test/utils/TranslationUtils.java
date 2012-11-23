@@ -76,8 +76,7 @@ public final class TranslationUtils {
                     return isFileWithCode((JetFile) file);
                 }
             };
-            AnalyzeExhaust exhaust = AnalyzerFacadeForJS
-                    .analyzeFiles(allLibFiles, filesWithCode, Config.getEmptyConfig(project));
+            AnalyzeExhaust exhaust = AnalyzerFacadeForJS.analyzeFiles(allLibFiles, filesWithCode, Config.getEmptyConfig(project));
             context = exhaust.getBindingContext();
             AnalyzerFacadeForJS.checkForErrors(allLibFiles, context);
             cachedLibraryContext = new SoftReference<BindingContext>(context);

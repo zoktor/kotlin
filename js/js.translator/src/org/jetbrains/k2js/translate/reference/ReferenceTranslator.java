@@ -21,8 +21,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
+import org.jetbrains.jet.lang.descriptors.PropertyDescriptor;
 import org.jetbrains.jet.lang.descriptors.VariableDescriptor;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
+import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
 import static org.jetbrains.k2js.translate.utils.PsiUtils.isBackingFieldReference;
@@ -67,15 +69,18 @@ public final class ReferenceTranslator {
     }
 
     @NotNull
-    public static AccessTranslator getAccessTranslator(@NotNull JetSimpleNameExpression referenceExpression,
+    public static AccessTranslator getAccessTranslator(@NotNull JetSimpleNameExpression expression,
             @Nullable JsExpression receiver,
             @NotNull TranslationContext context) {
-        if (isBackingFieldReference(referenceExpression)) {
-            return BackingFieldAccessTranslator.newInstance(referenceExpression, context);
+        if (isBackingFieldReference(expression)) {
+            return BackingFieldAccessTranslator.newInstance(expression, context);
         }
-        if (PropertyAccessTranslator.canBePropertyAccess(referenceExpression, context)) {
-            return PropertyAccessTranslator.newInstance(referenceExpression, receiver, CallType.NORMAL, context);
+
+        DeclarationDescriptor descriptor = context.bindingContext().get(BindingContext.REFERENCE_TARGET, expression);
+        if (descriptor instanceof PropertyDescriptor) {
+            return PropertyAccessTranslator.newInstance(expression, receiver, CallType.NORMAL, context, (PropertyDescriptor) descriptor);
         }
-        return ReferenceAccessTranslator.newInstance(referenceExpression, context);
+        assert descriptor != null;
+        return new ReferenceAccessTranslator(descriptor, context);
     }
 }

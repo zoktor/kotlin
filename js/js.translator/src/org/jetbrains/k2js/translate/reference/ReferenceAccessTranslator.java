@@ -19,7 +19,6 @@ package org.jetbrains.k2js.translate.reference;
 import com.google.dart.compiler.backend.js.ast.JsExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
-import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.k2js.translate.context.TemporaryVariable;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 import org.jetbrains.k2js.translate.general.AbstractTranslator;
@@ -29,24 +28,15 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.jetbrains.k2js.translate.reference.ReferenceTranslator.translateAsLocalNameReference;
-import static org.jetbrains.k2js.translate.utils.BindingUtils.getDescriptorForReferenceExpression;
 
 /**
  * @author Pavel Talanov
  */
 public final class ReferenceAccessTranslator extends AbstractTranslator implements CachedAccessTranslator {
-
-    @NotNull
-    /*package*/ static ReferenceAccessTranslator newInstance(@NotNull JetSimpleNameExpression expression,
-                                                             @NotNull TranslationContext context) {
-        DeclarationDescriptor referenceDescriptor = getDescriptorForReferenceExpression(context.bindingContext(), expression);
-        return new ReferenceAccessTranslator(referenceDescriptor, context);
-    }
-
     @NotNull
     private final JsExpression reference;
 
-    private ReferenceAccessTranslator(@NotNull DeclarationDescriptor descriptor, @NotNull TranslationContext context) {
+    public ReferenceAccessTranslator(@NotNull DeclarationDescriptor descriptor, @NotNull TranslationContext context) {
         super(context);
         this.reference = translateAsLocalNameReference(descriptor, context());
     }
