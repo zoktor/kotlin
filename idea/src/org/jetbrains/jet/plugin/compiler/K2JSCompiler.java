@@ -80,7 +80,6 @@ public final class K2JSCompiler implements TranslatingCompiler {
         }
 
         MessageCollector messageCollector = new MessageCollectorAdapter(context);
-
         CompilerEnvironment environment = TranslatingCompilerUtils.getEnvironmentFor(context, module, /*tests = */ false);
         CompilerEnvironment environment = TranslatingCompilerUtils.getEnvironmentFor(context, module, /*tests = */ false);
         if (!environment.success()) {
@@ -161,7 +160,7 @@ public final class K2JSCompiler implements TranslatingCompiler {
 
     // we cannot use OrderEnumerator because it has critical bug - try https://gist.github.com/2953261, processor will never be called for module dependency
     // we don't use context.getCompileScope().getAffectedModules() because we want to know about linkage type (well, we ignore scope right now, but in future...)
-    private static void collectModuleDependencies(Module dependentModule, Set<Module> modules) {
+    private static void collectModuleDependencies(Module dependentModule, Set<Module> modules, boolean isDirectDependency) {
         for (OrderEntry entry : ModuleRootManager.getInstance(dependentModule).getOrderEntries()) {
             if (entry instanceof ModuleOrderEntry) {
                 ModuleOrderEntry moduleEntry = (ModuleOrderEntry) entry;
@@ -174,9 +173,16 @@ public final class K2JSCompiler implements TranslatingCompiler {
                     continue;
                 }
 
-                if (modules.add(module) && moduleEntry.isExported()) {
-                    collectModuleDependencies(module, modules);
+                if (isDirectDependency) {
+                    if (!modules.add(module)) {
+                        continue;
+                    }
                 }
+                else if (!moduleEntry.isExported() || !modules.add(module)) {
+                    continue;
+                }
+
+                collectModuleDependencies(module, modules, false);
             }
         }
     }
@@ -195,7 +201,7 @@ public final class K2JSCompiler implements TranslatingCompiler {
         AccessToken token = ReadAction.start();
         try {
             Set<Module> modules = new OrderedSet<Module>();
-            collectModuleDependencies(module, modules);
+            collectModuleDependencies(module, modules, true);
             if (!modules.isEmpty()) {
                 for (Module dependency : modules) {
                     sb.append('@').append(dependency.getName()).append(',');
