@@ -16,19 +16,15 @@
 
 package org.jetbrains.jet.plugin.compiler;
 
-import com.intellij.diagnostic.PluginException;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.compiler.*;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.StdFileTypes;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.startup.StartupActivity;
 import org.jetbrains.jet.plugin.JetFileType;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.Collections;
 
 import static org.jetbrains.jet.compiler.runner.CompilerRunnerConstants.INTERNAL_ERROR_PREFIX;
@@ -37,13 +33,15 @@ import static org.jetbrains.jet.compiler.runner.CompilerRunnerConstants.KOTLIN_C
 /**
  * @author yole
  */
-public class JetCompilerManager implements ProjectComponent {
+public class JetCompilerManager implements StartupActivity, DumbAware {
     private static final Logger LOG = Logger.getInstance(JetCompilerManager.class);
 
     // Comes from external make
     private static final String PREFIX_WITH_COMPILER_NAME = KOTLIN_COMPILER_NAME + ": " + INTERNAL_ERROR_PREFIX;
 
-    public JetCompilerManager(Project project, CompilerManager manager) {
+    @Override
+    public void runActivity(Project project) {
+        CompilerManager manager = CompilerManager.getInstance(project);
         manager.addTranslatingCompiler(new JetCompiler(),
                                        Collections.<FileType>singleton(JetFileType.INSTANCE),
                                        Collections.singleton(StdFileTypes.CLASS));
@@ -58,9 +56,9 @@ public class JetCompilerManager implements ProjectComponent {
                     boolean aborted, int errors, int warnings, CompileContext compileContext
             ) {
                 for (CompilerMessage error : compileContext.getMessages(CompilerMessageCategory.ERROR)) {
-                    final String message = error.getMessage();
+                    String message = error.getMessage();
                     if (message.startsWith(INTERNAL_ERROR_PREFIX) || message.startsWith(PREFIX_WITH_COMPILER_NAME)) {
-                        LOG.error(new KotlinCompilerException(message));
+                        LOG.error(message);
                     }
                 }
             }
@@ -69,64 +67,5 @@ public class JetCompilerManager implements ProjectComponent {
             public void fileGenerated(String outputRoot, String relativePath) {
             }
         }, project);
-    }
-
-    @Override
-    public void projectOpened() {
-    }
-
-    @Override
-    public void projectClosed() {
-    }
-
-    @Override
-    public void initComponent() {
-    }
-
-    @Override
-    public void disposeComponent() {
-    }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return JetCompilerManager.class.getCanonicalName();
-    }
-
-    // Extending PluginException ensures that Exception Analyzer recognizes this as a Kotlin exception
-    private static class KotlinCompilerException extends PluginException {
-        private final String text;
-
-        public KotlinCompilerException(String text) {
-            super("", PluginManager.getPluginByClassName(JetCompilerManager.class.getName()));
-            this.text = text;
-        }
-
-        @Override
-        public void printStackTrace(PrintWriter s) {
-            s.print(text);
-        }
-
-        @Override
-        public void printStackTrace(PrintStream s) {
-            s.print(text);
-        }
-
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
-
-        @Override
-        public StackTraceElement[] getStackTrace() {
-            LOG.error("Somebody called getStackTrace() on KotlinCompilerException");
-            // Return some stack trace that originates in Kotlin
-            return new UnsupportedOperationException().getStackTrace();
-        }
-
-        @Override
-        public String getMessage() {
-            return "<Exception from standalone Kotlin compiler>";
-        }
     }
 }

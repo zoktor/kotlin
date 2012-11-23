@@ -16,9 +16,6 @@
           <implementation-class>org.jetbrains.jet.plugin.JetStandardLibraryInitializer</implementation-class>
       </component>
       <component>
-          <implementation-class>org.jetbrains.jet.plugin.compiler.JetCompilerManager</implementation-class>
-      </component>
-      <component>
           <implementation-class>org.jetbrains.jet.plugin.caches.JetCacheManager</implementation-class>
       </component>
       <component>
@@ -243,5 +240,6 @@
 
     <moduleService serviceInterface="org.jetbrains.jet.plugin.project.KotlinJsBuildConfigurationManager"
                    serviceImplementation="org.jetbrains.jet.plugin.project.KotlinJsBuildConfigurationManager"/>
+    <postStartupActivity implementation="org.jetbrains.jet.plugin.compiler.JetCompilerManager"/>
   </extensions>
 </idea-plugin>
