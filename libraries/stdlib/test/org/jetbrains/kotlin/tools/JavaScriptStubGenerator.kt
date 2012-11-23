@@ -107,6 +107,11 @@ class JavaScriptStubGenerator(packageName: String) {
                         append("()")
                     }
                 }
+                val implements = element.attribute("implements")
+                if (implements != null) {
+                    builder.append(if (extends == null) " : " else ", ")
+                    builder.append(getType(implements))
+                }
                 builder.append(" {")
             }
             else {
@@ -358,6 +363,10 @@ class JavaScriptStubGenerator(packageName: String) {
             if (!rest) {
                 builder.append(" = null")
             }
+        }
+        val default = element.attribute("default")
+        if (default != null) {
+            builder.append(" = ").append(default)
         }
     }
 

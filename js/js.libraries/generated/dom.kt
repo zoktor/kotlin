@@ -87,7 +87,7 @@ public native trait IXMLDOMParseError {
 	public var errorCode: Number
 }
 
-public native trait Node {
+public native trait Node : EventTarget {
 	public native class object {
 		public val ELEMENT_NODE: Number = 1
 		public val ATTRIBUTE_NODE: Number = 2
@@ -331,8 +331,8 @@ public native trait Event {
 public native trait EventTarget {
 	public fun addEventListener(`type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
 	public fun addEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean? = null): Unit
-	public fun removeEventListener(`type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
-	public fun removeEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean? = null): Unit
+	public fun removeEventListener(`type`: String, listener: EventListener, useCapture: Boolean = false): Unit
+	public fun removeEventListener(`type`: String, listener: ()->Unit, useCapture: Boolean = false): Unit
 	public fun dispatchEvent(event: Event): Boolean
 	public fun addEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean? = null, evtGroup: Any? = null): Unit
 	public fun removeEventListenerNS(namespaceURI: String, `type`: String, listener: EventListener, useCapture: Boolean? = null): Unit
