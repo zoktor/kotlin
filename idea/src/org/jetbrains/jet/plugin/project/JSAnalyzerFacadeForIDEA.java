@@ -29,6 +29,9 @@ import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.BodiesResolveContext;
 import org.jetbrains.jet.lang.resolve.lazy.ResolveSession;
 import org.jetbrains.k2js.analyze.AnalyzerFacadeForJS;
+import org.jetbrains.k2js.config.Config;
+import org.jetbrains.k2js.config.EcmaVersion;
+import org.jetbrains.k2js.config.LibrarySourcesConfig;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +54,7 @@ public enum JSAnalyzerFacadeForIDEA implements AnalyzerFacade {
             @NotNull List<AnalyzerScriptParameter> scriptParameters,
             @NotNull Predicate<PsiFile> filesToAnalyzeCompletely
     ) {
-        return AnalyzerFacadeForJS.analyzeFiles(files, filesToAnalyzeCompletely, new IDEAConfig(project), true);
+        return AnalyzerFacadeForJS.analyzeFiles(files, filesToAnalyzeCompletely, createConfig(project), true);
     }
 
     @NotNull
@@ -64,12 +67,16 @@ public enum JSAnalyzerFacadeForIDEA implements AnalyzerFacade {
             @NotNull BodiesResolveContext bodiesResolveContext,
             @NotNull ModuleConfiguration configuration
     ) {
-        return AnalyzerFacadeForJS.analyzeBodiesInFiles(filesForBodiesResolve, new IDEAConfig(project), traceContext, bodiesResolveContext, configuration);
+        return AnalyzerFacadeForJS.analyzeBodiesInFiles(filesForBodiesResolve, createConfig(project), traceContext, bodiesResolveContext, configuration);
     }
 
     @NotNull
     @Override
     public ResolveSession getLazyResolveSession(@NotNull Project project, @NotNull Collection<JetFile> files) {
-        return AnalyzerFacadeForJS.getLazyResolveSession(files, new IDEAConfig(project));
+        return AnalyzerFacadeForJS.getLazyResolveSession(files, createConfig(project));
+    }
+
+    private static Config createConfig(@NotNull Project project) {
+        return new LibrarySourcesConfig(project, "default", JsModuleDetector.getLibPathAsList(project), EcmaVersion.defaultVersion(), false);
     }
 }
