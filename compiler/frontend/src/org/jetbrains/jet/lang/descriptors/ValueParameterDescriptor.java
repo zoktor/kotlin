@@ -37,7 +37,7 @@ public interface ValueParameterDescriptor extends VariableDescriptor, Annotated 
     /**
      * The front-end relies on this property when resolving function calls
      *
-     * @return {@code true} if the parameter has a default value, i.e. declares it or inherits
+     * @return {@code true} iff the parameter has a default value, i.e. declares it or inherits
      *         by overriding a parameter in an overridden function.
      */
     boolean hasDefaultValue();
@@ -45,7 +45,7 @@ public interface ValueParameterDescriptor extends VariableDescriptor, Annotated 
     /**
      * The back-end should relies on this property when generating function signatures
      *
-     * @return {@code true} if the parameter declares a default value, i.e. explicitly specifies it in the function header
+     * @return {@code true} iff the parameter declares a default value, i.e. explicitly specifies it in the function header
      */
     boolean declaresDefaultValue();
 
