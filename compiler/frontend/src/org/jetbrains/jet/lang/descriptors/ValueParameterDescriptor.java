@@ -37,7 +37,7 @@ public interface ValueParameterDescriptor extends VariableDescriptor, Annotated 
     /**
      * The front-end relies on this property when resolving function calls
      *
-     * @return {@code true} iff the parameter has a default value, i.e. declares it or inherits
+     * @return {@code true} if the parameter has a default value, i.e. declares it or inherits
      *         by overriding a parameter in an overridden function.
      */
     boolean hasDefaultValue();
