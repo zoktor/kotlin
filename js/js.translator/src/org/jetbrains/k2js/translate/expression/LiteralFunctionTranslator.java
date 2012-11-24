@@ -97,15 +97,9 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
 
         TranslationContext funContext = outerContext.newFunctionBody(fun, aliasingContext,
                                                                      new UsageTracker(descriptor, outerContext.usageTracker(), outerClass));
-        FunctionTranslator.addBodyResult(fun, FunctionTranslator.translateBody(descriptor, declaration, funContext));
-
-        InnerFunctionTranslator translator = null;
-        if (!asInner) {
-            translator = new InnerFunctionTranslator(descriptor, funContext, fun);
-        }
-
+        FunctionTranslator.translateBodyAndAdd(fun, descriptor, declaration, funContext);
+        JsExpression result;
         if (asInner) {
-            addRegularParameters(descriptor, fun.getParameters(), funContext, receiverName);
             if (outerClass != null) {
                 UsageTracker usageTracker = funContext.usageTracker();
                 assert usageTracker != null;
@@ -116,11 +110,11 @@ public class LiteralFunctionTranslator extends AbstractTranslator {
                     fun.setName(null);
                 }
             }
-
-            return fun;
+            result = fun;
         }
-
-        JsExpression result = translator.translate(createReference(fun), outerContext);
+        else {
+            result = new InnerFunctionTranslator(descriptor, funContext, fun).translate(createReference(fun), outerContext);
+        }
         addRegularParameters(descriptor, fun.getParameters(), funContext, receiverName);
         return result;
     }

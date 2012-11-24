@@ -83,7 +83,7 @@ public final class BindingUtils {
     }
 
     @NotNull
-    private static JetParameter getParameterForDescriptor(@NotNull BindingContext context,
+    public static JetParameter getParameterForDescriptor(@NotNull BindingContext context,
             @NotNull ValueParameterDescriptor descriptor) {
         PsiElement result = BindingContextUtils.descriptorToDeclaration(context, descriptor);
         assert result instanceof JetParameter :
@@ -181,28 +181,6 @@ public final class BindingUtils {
             return compileTimeValue.getValue();
         }
         return null;
-    }
-
-    @NotNull
-    public static JetExpression getDefaultArgument(@NotNull BindingContext context,
-            @NotNull ValueParameterDescriptor parameterDescriptor) {
-        ValueParameterDescriptor descriptorWhichDeclaresDefaultValue =
-                getOriginalDescriptorWhichDeclaresDefaultValue(context, parameterDescriptor);
-        JetParameter psiParameter = getParameterForDescriptor(context, descriptorWhichDeclaresDefaultValue);
-        JetExpression defaultValue = psiParameter.getDefaultValue();
-        assert defaultValue != null : message(context, parameterDescriptor, "No default value found in PSI");
-        return defaultValue;
-    }
-
-    private static ValueParameterDescriptor getOriginalDescriptorWhichDeclaresDefaultValue(
-            BindingContext context, @NotNull ValueParameterDescriptor parameterDescriptor) {
-        ValueParameterDescriptor result = parameterDescriptor;
-        assert result.hasDefaultValue() :
-                message(context, parameterDescriptor, "Unsupplied parameter must have default value");
-        while (!result.declaresDefaultValue()) {
-            result = result.getOverriddenDescriptors().iterator().next();
-        }
-        return result;
     }
 
     @NotNull

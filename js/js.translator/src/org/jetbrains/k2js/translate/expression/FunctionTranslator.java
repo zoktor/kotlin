@@ -39,6 +39,10 @@ import org.jetbrains.k2js.translate.utils.mutator.Mutator;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jetbrains.k2js.translate.general.Translation.translateAsExpression;
+import static org.jetbrains.k2js.translate.utils.BindingUtils.getParameterForDescriptor;
+import static org.jetbrains.k2js.translate.utils.JsAstUtils.assignment;
+import static org.jetbrains.k2js.translate.utils.JsAstUtils.equality;
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getDeclarationDescriptorForReceiver;
 import static org.jetbrains.k2js.translate.utils.mutator.LastExpressionMutator.mutateLastExpression;
 
@@ -67,7 +71,7 @@ public final class FunctionTranslator {
 
         TranslationContext bodyContext = context.newFunctionBody(function, aliasingContext, null);
         function.setParameters(translateParameters(descriptor, extensionFunctionReceiverName, bodyContext));
-        addBodyResult(function, translateBody(descriptor, expression, bodyContext));
+        translateBodyAndAdd(function, descriptor, expression, bodyContext);
         return function;
     }
 
@@ -92,12 +96,40 @@ public final class FunctionTranslator {
         return translate(false, expression, descriptor, context);
     }
 
-    static void addBodyResult(JsFunction function, JsNode node) {
+    static void translateBodyAndAdd(
+            @NotNull JsFunction function,
+            @NotNull FunctionDescriptor descriptor,
+            @NotNull JetDeclarationWithBody declaration,
+            @NotNull TranslationContext context
+    ) {
+        JsNode node = translateBody(descriptor, declaration, context);
+        List<JsStatement> statements = function.getBody().getStatements();
+
+        for (ValueParameterDescriptor valueParameter : descriptor.getValueParameters()) {
+            if (valueParameter.hasDefaultValue()) {
+                // todo check "inherits by overriding a parameter in an overridden function _in another module_"
+                ValueParameterDescriptor declarator = valueParameter;
+                if (!valueParameter.declaresDefaultValue()) {
+                    for (ValueParameterDescriptor parameterDescriptor : valueParameter.getOverriddenDescriptors()) {
+                        if (parameterDescriptor.declaresDefaultValue()) {
+                            declarator = parameterDescriptor;
+                            break;
+                        }
+                    }
+                }
+                JetExpression parameter = getParameterForDescriptor(context.bindingContext(), declarator).getDefaultValue();
+                JsNameRef parameterRef = context.getNameForDescriptor(valueParameter).makeRef();
+                assert parameter != null;
+                statements.add(new JsIf(equality(parameterRef, JsLiteral.UNDEFINED),
+                                        assignment(parameterRef, translateAsExpression(parameter, context)).makeStmt()));
+            }
+        }
+
         if (node instanceof JsBlock) {
-            function.getBody().getStatements().addAll(((JsBlock) node).getStatements());
+            statements.addAll(((JsBlock) node).getStatements());
         }
         else {
-            function.getBody().getStatements().add(JsAstUtils.convertToStatement(node));
+            statements.add(JsAstUtils.convertToStatement(node));
         }
     }
 
