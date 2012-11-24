@@ -45,7 +45,7 @@ public interface ValueParameterDescriptor extends VariableDescriptor, Annotated 
     /**
      * The back-end should relies on this property when generating function signatures
      *
-     * @return {@code true} iff the parameter declares a default value, i.e. explicitly specifies it in the function header
+     * @return {@code true} if the parameter declares a default value, i.e. explicitly specifies it in the function header
      */
     boolean declaresDefaultValue();
 
