@@ -233,9 +233,8 @@ public final class TopLevelFIF extends CompositeFIF {
                         @NotNull List<JsExpression> arguments,
                         @NotNull TranslationContext context
                 ) {
-                    assert arguments.size() == 1;
                     return new JsInvocation(Namer.NEW_EXCEPTION_FUN_NAME_REF,
-                                            Arrays.asList(arguments.get(0), context.program().getStringLiteral(
+                                            Arrays.asList(arguments.size() == 1 ? arguments.get(0) : JsLiteral.NULL, context.program().getStringLiteral(
                                                     callTranslator.getDescriptor().getContainingDeclaration().getName().getName())));
                 }
             }

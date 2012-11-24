@@ -157,7 +157,7 @@ public final class InlinedCallExpressionTranslator extends AbstractCallExpressio
     private JsExpression translateArgument(@NotNull ValueParameterDescriptor parameterDescriptor,
                                            @NotNull ResolvedValueArgument actualArgument) {
         List<JsExpression> result = new SmartList<JsExpression>();
-        translateSingleArgument(actualArgument, parameterDescriptor, result);
+        translateSingleArgument(actualArgument, result);
         assert result.size() == 1 : "We always wrap varargs in kotlin calls.";
         return result.get(0);
     }

@@ -51,7 +51,6 @@ public final class FunctionTranslator {
 
     private static JsFunction translate(@NotNull JetDeclarationWithBody expression, @NotNull FunctionDescriptor descriptor,  @NotNull TranslationContext context) {
         JsFunction function = new JsFunction(context.scope(), new JsBlock());
-
         AliasingContext aliasingContext;
         ReceiverParameterDescriptor receiverParameter = descriptor.getReceiverParameter();
         JsName extensionFunctionReceiverName;

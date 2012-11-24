@@ -21,7 +21,6 @@ import com.google.dart.compiler.backend.js.ast.JsExpression;
 import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
 import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.ValueArgument;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.k2js.translate.utils.BindingUtils.getDefaultArgument;
 import static org.jetbrains.k2js.translate.utils.BindingUtils.getResolvedCallForCallExpression;
 
 /**
@@ -63,25 +61,22 @@ public abstract class AbstractCallExpressionTranslator extends AbstractTranslato
 
     protected abstract boolean shouldWrapVarargInArray();
 
-    protected void translateSingleArgument(
-            @NotNull ResolvedValueArgument actualArgument,
-            @NotNull ValueParameterDescriptor parameterDescriptor,
-            @NotNull List<JsExpression> result
-    ) {
-        if (actualArgument instanceof VarargValueArgument) {
-            translateVarargArgument(actualArgument.getArguments(), result);
+    protected boolean translateSingleArgument(@NotNull ResolvedValueArgument argument, @NotNull List<JsExpression> result) {
+        if (argument instanceof VarargValueArgument) {
+            translateVarargArgument(argument.getArguments(), result);
         }
-        else if (actualArgument instanceof DefaultValueArgument) {
-            JetExpression defaultArgument = getDefaultArgument(bindingContext(), parameterDescriptor);
-            result.add(Translation.translateAsExpression(defaultArgument, context()));
+        else if (argument instanceof DefaultValueArgument) {
+            return true;
         }
         else {
-            ValueArgument valueArgument = ((ExpressionValueArgument) actualArgument).getValueArgument();
+            ValueArgument valueArgument = ((ExpressionValueArgument) argument).getValueArgument();
             assert valueArgument != null;
             JetExpression argumentExpression = valueArgument.getArgumentExpression();
             assert argumentExpression != null;
             result.add(Translation.translateAsExpression(argumentExpression, context()));
         }
+
+        return false;
     }
 
     private void translateVarargArgument(@NotNull List<ValueArgument> arguments, @NotNull List<JsExpression> result) {

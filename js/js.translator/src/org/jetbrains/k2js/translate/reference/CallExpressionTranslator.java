@@ -92,7 +92,7 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
     private JsExpression getCalleeExpression() {
         CallableDescriptor candidateDescriptor = resolvedCall.getCandidateDescriptor();
         if (candidateDescriptor instanceof ExpressionAsFunctionDescriptor) {
-            return translateExpressionAsFunction();
+            return Translation.translateAsExpression(getCallee(expression), context());
         }
         if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
             return translateVariableForVariableAsFunctionResolvedCall();
@@ -112,11 +112,6 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
     }
 
     @NotNull
-    private JsExpression translateExpressionAsFunction() {
-        return Translation.translateAsExpression(getCallee(expression), context());
-    }
-
-    @NotNull
     private List<JsExpression> translateArguments() {
         List<ValueParameterDescriptor> valueParameters = resolvedCall.getResultingDescriptor().getValueParameters();
         if (valueParameters.isEmpty()) {
@@ -126,8 +121,9 @@ public final class CallExpressionTranslator extends AbstractCallExpressionTransl
         List<JsExpression> result = new ArrayList<JsExpression>(valueParameters.size());
         List<ResolvedValueArgument> valueArgumentsByIndex = resolvedCall.getValueArgumentsByIndex();
         for (ValueParameterDescriptor parameterDescriptor : valueParameters) {
-            ResolvedValueArgument actualArgument = valueArgumentsByIndex.get(parameterDescriptor.getIndex());
-            translateSingleArgument(actualArgument, parameterDescriptor, result);
+            if (translateSingleArgument(valueArgumentsByIndex.get(parameterDescriptor.getIndex()), result)) {
+                break;
+            }
         }
         return result;
     }
