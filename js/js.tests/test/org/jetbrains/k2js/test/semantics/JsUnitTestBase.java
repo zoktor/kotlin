@@ -68,7 +68,7 @@ public abstract class JsUnitTestBase extends MultipleFilesTranslationTest {
         List<String> result = Lists.newArrayList();
         List<String> additionalLibraryFiles = getAdditionalLibraryFiles();
         additionalLibraryFiles.add(JS_TESTS_KT);
-        boolean removed = additionalLibraryFiles.remove(Config.LIBRARIES_LOCATION + "/src/stdlib/testCode.kt");
+        boolean removed = additionalLibraryFiles.remove(Config.LIBRARIES_LOCATION + "/stdlib/testCode.kt");
         assert removed;
         result.addAll(additionalLibraryFiles);
         return result;

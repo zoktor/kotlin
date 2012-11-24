@@ -12,12 +12,12 @@ fun getImage(path: String): HTMLImageElement {
 
 val canvas: HTMLCanvasElement
     get() {
-        return window.document.getElementsByTagName("canvas").item(0)!! as HTMLCanvasElement
+        return window.document.getElementsByTagName("canvas").item(0) as HTMLCanvasElement
     }
 
 val context: CanvasRenderingContext2D
     get() {
-        return canvas.getContext("2d")!!
+        return canvas.getContext("2d")
     }
 
 
@@ -138,18 +138,18 @@ class Border(): Shape() {
 
 class Timer(override var pos: Vector): Shape() {
     var timeLeftForChangeColor: Char = 'c'
-    var timeStartLastChangeColor = Date().getTime();
+    var timeStartLastChangeColor = Date.now();
     var timerLength = 13
 
     override fun draw() {
-        timeLeftForChangeColor = ("" + (timerLength - (Date().getTime() - timeStartLastChangeColor) / 1000)).get(0)
+        timeLeftForChangeColor = ("" + (timerLength - (Date.now() - timeStartLastChangeColor) / 1000)).get(0)
         state.context.font = "bold 9px Arial, serif"
         state.context.fillStyle = colors.black
         state.context.fillText("" + timeLeftForChangeColor, pos.x.toInt(), pos.y.toInt())
     }
 
     fun resetTimer() {
-        timeStartLastChangeColor = Date().getTime()
+        timeStartLastChangeColor = Date.now()
         timerLength = 10
     }
 }
@@ -356,8 +356,8 @@ class CanvasState(val canvas: HTMLCanvasElement) {
     val context = traffic.context
     var shapes = ArrayList<Shape>()
 
-    var width = canvas.width
-    var height = canvas.height
+    var width = canvas.width as Double
+    var height = canvas.height as Double
 
     val size: Vector
         get() = v(width, height)
@@ -426,7 +426,7 @@ class CanvasState(val canvas: HTMLCanvasElement) {
         var element: HTMLElement? = canvas
         while (element != null) {
             val el: HTMLElement = element!!
-            offset += Vector(el.offsetLeft, el.offsetTop)
+            offset += Vector(el.offsetLeft as Double, el.offsetTop as Double)
             element = el.offsetParent
         }
         return Vector(e.pageX, e.pageY) - offset

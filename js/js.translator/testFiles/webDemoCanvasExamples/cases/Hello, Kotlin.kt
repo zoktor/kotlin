@@ -12,7 +12,7 @@ val canvas: HTMLCanvasElement
         return window.document.getElementsByTagName("canvas").item(0)!! as HTMLCanvasElement
     }
 
-val context: CanvasContext
+val context: CanvasRenderingContext2D
     get() {
         return canvas.getContext("2d")!!
     }

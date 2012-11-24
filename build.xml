@@ -171,6 +171,12 @@
       </fileset>
       <zipfileset file="${kotlin-home}/build.txt" prefix="META-INF"/>
     </zip>
+    <zip destfile="${kotlin-home}/lib/kotlin-js-stdlib.zip" update="false">
+      <fileset dir="${basedir}/js/js.libraries">
+        <include name="src/stdlib/*"/>
+      </fileset>
+      <zipfileset file="${kotlin-home}/build.txt" prefix="META-INF"/>
+    </zip>
     <jscomp compilationLevel="simple" languageIn="ES5_STRICT" prettyPrint="true" output="${kotlin-home}/lib/kotlin-es5.js">
       <sources dir="${basedir}/js/js.translator/testFiles">
         <file name="kotlin_lib_ecma5.js"/>

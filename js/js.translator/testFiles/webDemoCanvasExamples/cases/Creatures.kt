@@ -4,7 +4,7 @@
 */
 package creatures
 
-import html.CanvasContext
+import html.CanvasRenderingContext2D
 import js.jquery.*
 import html.CanvasGradient
 import html.HTMLCanvasElement
@@ -25,7 +25,7 @@ val canvas: HTMLCanvasElement
         return window.document.getElementsByTagName("canvas").item(0)!! as HTMLCanvasElement
     }
 
-val context: CanvasContext
+val context: CanvasRenderingContext2D
     get() {
         return canvas.getContext("2d")!!
     }
@@ -40,7 +40,7 @@ abstract class Shape() {
     var selected: Boolean = false
 
     // a couple of helper extension methods we'll be using in the derived classes
-    fun CanvasContext.shadowed(shadowOffset: Vector, alpha: Double, render: CanvasContext.() -> Unit) {
+    fun CanvasRenderingContext2D.shadowed(shadowOffset: Vector, alpha: Double, render: CanvasRenderingContext2D.() -> Unit) {
         save()
         shadowColor = "rgba(100, 100, 100, $alpha)"
         shadowBlur = 5.0
@@ -50,7 +50,7 @@ abstract class Shape() {
         restore()
     }
 
-    fun CanvasContext.fillPath(constructPath: CanvasContext.() -> Unit) {
+    fun CanvasRenderingContext2D.fillPath(constructPath: CanvasRenderingContext2D.() -> Unit) {
         beginPath()
         constructPath()
         closePath()
@@ -123,12 +123,12 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
     override fun contains(mousePos: Vector) = pos distanceTo mousePos < radius
 
     // defining more nice extension functions
-    fun CanvasContext.circlePath(position: Vector, rad: Double) {
+    fun CanvasRenderingContext2D.circlePath(position: Vector, rad: Double) {
         arc(position.x, position.y, rad, 0.0, 2 * Math.PI, false)
     }
 
     //notice we can use an extension function we just defined inside another extension function
-    fun CanvasContext.fillCircle(position: Vector, rad: Double) {
+    fun CanvasRenderingContext2D.fillCircle(position: Vector, rad: Double) {
         fillPath {
             circlePath(position, rad)
         }
@@ -143,7 +143,7 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
         }
     }
 
-    fun drawCreature(context: CanvasContext) {
+    fun drawCreature(context: CanvasRenderingContext2D) {
         context.fillStyle = getGradient(context)
         context.fillPath {
             tailPath(context)
@@ -152,7 +152,7 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
         drawEye(context)
     }
 
-    fun getGradient(context: CanvasContext): CanvasGradient {
+    fun getGradient(context: CanvasRenderingContext2D): CanvasGradient {
         val gradientCentre = position + directionToLogo * (radius / 4)
         val gradient = context.createRadialGradient(gradientCentre.x, gradientCentre.y, 1.0, gradientCentre.x, gradientCentre.y, 2 * radius)!!
         for (colorStop in colorStops) {
@@ -161,7 +161,7 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
         return gradient
     }
 
-    fun tailPath(context: CanvasContext) {
+    fun tailPath(context: CanvasRenderingContext2D) {
         val tailDirection = - directionToLogo
         val tailPos = position + tailDirection * radius * 1.0
         val tailSize = radius * 1.6
@@ -175,7 +175,7 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
         context.lineTo(tailPos.x.toInt(), tailPos.y.toInt())
     }
 
-    fun drawEye(context: CanvasContext) {
+    fun drawEye(context: CanvasRenderingContext2D) {
         val eyePos = directionToLogo * radius * 0.6 + position
         val eyeRadius = radius / 3
         val eyeLidRadius = eyeRadius / 2
@@ -185,7 +185,7 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
         context.fillCircle(eyePos, eyeLidRadius)
     }
 
-    fun drawCreatureWithShadow(context: CanvasContext) {
+    fun drawCreatureWithShadow(context: CanvasRenderingContext2D) {
         context.shadowed(shadowOffset, 0.7) {
             context.fillStyle = getGradient(context)
             fillPath {
@@ -286,7 +286,7 @@ class CanvasState(val canvas: HTMLCanvasElement) {
     }
 }
 
-class RadialGradientGenerator(val context: CanvasContext) {
+class RadialGradientGenerator(val context: CanvasRenderingContext2D) {
     val gradients = ArrayList<Array<Pair<Double, String>>>()
     var current = 0
 

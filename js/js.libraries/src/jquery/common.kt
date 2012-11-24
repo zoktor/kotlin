@@ -2,8 +2,7 @@ package js.jquery;
 
 import org.w3c.dom.Element
 
-native
-public public class JQuery() {
+public native class JQuery() {
     public fun addClass(className : String) : JQuery = js.noImpl;
     public fun addClass(f : Element.(Int, String)->String) = js.noImpl;
 
@@ -38,9 +37,9 @@ public public class JQuery() {
     public fun slideUp() = this;
     public fun hover(handlerInOut : Element.() -> Unit) = this;
     public fun hover(handlerIn : Element.() -> Unit, handlerOut : Element.() -> Unit) = this;
-    public fun next() : JQuery = js.noImpl
-    public fun parent() : JQuery = js.noImpl
-    public fun `val`() : String? = js.noImpl
+    public fun next() : JQuery = noImpl
+    public fun parent() : JQuery = noImpl
+    public fun `val`() : String? = noImpl
 }
 
 native
@@ -55,8 +54,6 @@ native
 public class MouseClickEvent() : MouseEvent() {
     val which : Int = 0;
 }
-
-
 
 native("$")
 public fun jq(selector : String) = JQuery();

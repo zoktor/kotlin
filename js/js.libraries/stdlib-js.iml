@@ -11,6 +11,9 @@
       <sourceFolder url="file://$MODULE_DIR$/generated" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
+    <content url="file://$MODULE_DIR$/../js.translator/testFiles/webDemoCanvasExamples/cases">
+      <sourceFolder url="file://$MODULE_DIR$/../js.translator/testFiles/webDemoCanvasExamples/cases" isTestSource="false" />
+    </content>
     <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
