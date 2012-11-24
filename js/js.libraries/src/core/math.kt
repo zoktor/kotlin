@@ -1,6 +1,4 @@
-package js;
-
-import js.native
+package js
 
 //TODO: declare using number
 native

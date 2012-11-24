@@ -72,13 +72,13 @@ public abstract class Config {
             "src/jquery/ui.kt",
             "src/junit/core.kt",
             "src/qunit/core.kt",
-            "src/stdlib/browser.kt",
+            "stdlib/browser.kt",
             "src/requirejs.kt"
     );
 
     @NotNull
     public static final List<String> LIB_FILES_WITH_CODE = Arrays.asList(
-            "src/stdlib/TuplesCode.kt",
+            "stdlib/TuplesCode.kt",
             "src/core/javautilCode.kt"
     );
 
@@ -96,10 +96,10 @@ public abstract class Config {
     @NotNull
     public static final List<String> LIB_FILE_NAMES_DEPENDENT_ON_STDLIB = Arrays.asList(
             "src/core/stringsCode.kt",
-            "src/stdlib/domCode.kt",
-            "src/stdlib/jutilCode.kt",
-            "src/stdlib/JUMapsCode.kt",
-            "src/stdlib/testCode.kt"
+            "stdlib/domCode.kt",
+            "stdlib/jutilCode.kt",
+            "stdlib/JUMapsCode.kt",
+            "stdlib/testCode.kt"
     );
 
     public static final String LIBRARIES_LOCATION = "js/js.libraries";
