@@ -20,12 +20,12 @@ val context: CanvasRenderingContext2D
 
 val width: Double
     get() {
-        return canvas.width
+        return canvas.width as Double
     }
 
 val height: Double
     get() {
-        return canvas.height
+        return canvas.height as Double
     }
 
 
@@ -48,7 +48,7 @@ class HelloKotlin() {
     {
         context.font = "bold ${textHeightInPixels}px Georgia, serif"
     }
-    val textWidthInPixels = context.measureText(message)!!.width
+    val textWidthInPixels = context.measureText(message)!!.width as Double
 
     fun draw() {
         context.save()
