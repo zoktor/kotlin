@@ -265,6 +265,9 @@ class JavaScriptStubGenerator(packageName: String) {
             }
             else {
                 typeName = getType(typeName)
+                if (typeName.contains("|")) {
+                    typeName = "Any"
+                }
             }
 
             builder.append("\n${indent}public va")

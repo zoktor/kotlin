@@ -22,12 +22,12 @@ fun getImage(path: String): HTMLImageElement {
 
 val canvas: HTMLCanvasElement
     get() {
-        return window.document.getElementsByTagName("canvas").item(0)!! as HTMLCanvasElement
+        return window.document.getElementsByTagName("canvas").item(0) as HTMLCanvasElement
     }
 
 val context: CanvasRenderingContext2D
     get() {
-        return canvas.getContext("2d")!!
+        return canvas.getContext("2d")
     }
 
 abstract class Shape() {
@@ -154,7 +154,7 @@ class Creature(override var pos: Vector, val state: CanvasState): Shape() {
 
     fun getGradient(context: CanvasRenderingContext2D): CanvasGradient {
         val gradientCentre = position + directionToLogo * (radius / 4)
-        val gradient = context.createRadialGradient(gradientCentre.x, gradientCentre.y, 1.0, gradientCentre.x, gradientCentre.y, 2 * radius)!!
+        val gradient = context.createRadialGradient(gradientCentre.x.toFloat(), gradientCentre.y.toFloat(), 1.0.toFloat(), gradientCentre.x.toFloat(), gradientCentre.y.toFloat(), 2 * radius.toFloat())
         for (colorStop in colorStops) {
             gradient.addColorStop(colorStop.first, colorStop.second)
         }
@@ -201,7 +201,7 @@ class CanvasState(val canvas: HTMLCanvasElement) {
     var width = canvas.width
     var height = canvas.height
     val size: Vector
-        get() = v(width, height)
+        get() = v(width as Double, height as Double)
     val context = creatures.context
     var valid = false
     var shapes = ArrayList<Shape>()
@@ -255,7 +255,7 @@ class CanvasState(val canvas: HTMLCanvasElement) {
         var element: HTMLElement? = canvas
         while (element != null) {
             val el: HTMLElement = element!!
-            offset += Vector(el.offsetLeft, el.offsetTop)
+            offset += Vector(el.offsetLeft as Double, el.offsetTop as Double)
             element = el.offsetParent
         }
         return Vector(e.pageX, e.pageY) - offset
