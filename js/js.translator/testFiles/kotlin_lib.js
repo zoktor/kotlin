@@ -56,7 +56,9 @@
     };
 
     Kotlin.throwNPE = function () {
-        throw new ReferenceError("reference is null");
+        var error = new ReferenceError();
+        error.name = "NullPointerException";
+        throw error;
     };
 
     Kotlin.newException = function (message, name) {
