@@ -22,10 +22,10 @@ public abstract class AbstractCollection<E>() : MutableCollection<E> {
     override fun add(e: E): Boolean = js.noImpl
     override fun remove(o: Any?): Boolean = js.noImpl
 
-    override fun addAll(c: jet.Collection<out E>): Boolean = js.noImpl
-    override fun containsAll(c : jet.Collection<out Any?>) : Boolean = js.noImpl
-    override fun removeAll(c : jet.Collection<out Any?>) : Boolean = js.noImpl
-    override fun retainAll(c : jet.Collection<out Any?>) : Boolean = js.noImpl
+    override fun addAll(c: jet.Collection<E>): Boolean = js.noImpl
+    override fun containsAll(c : jet.Collection<Any?>) : Boolean = js.noImpl
+    override fun removeAll(c : jet.Collection<Any?>) : Boolean = js.noImpl
+    override fun retainAll(c : jet.Collection<Any?>) : Boolean = js.noImpl
 
     override fun clear(): Unit = js.noImpl
     override fun size(): Int = js.noImpl
@@ -34,13 +34,13 @@ public abstract class AbstractCollection<E>() : MutableCollection<E> {
     override fun equals(other : Any?) : Boolean = js.noImpl
 }
 
-native public abstract class AbstractList<E>(): AbstractCollection<E>(), MutableList<E> {
+public native abstract class AbstractList<E>(): AbstractCollection<E>(), MutableList<E> {
     override fun get(index: Int): E = js.noImpl
     override fun set(index: Int, element: E): E = js.noImpl
 
     override fun add(e: E): Boolean = js.noImpl
     override fun add(index: Int, element: E): Unit = js.noImpl
-    override fun addAll(index: Int, c: jet.Collection<out E>) : Boolean = js.noImpl
+    override fun addAll(index: Int, c: jet.Collection<E>) : Boolean = js.noImpl
 
     override fun remove(index: Int): E = js.noImpl
 
