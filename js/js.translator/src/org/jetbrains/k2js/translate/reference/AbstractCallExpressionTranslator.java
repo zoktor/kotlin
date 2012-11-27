@@ -18,6 +18,7 @@ package org.jetbrains.k2js.translate.reference;
 
 import com.google.dart.compiler.backend.js.ast.JsArrayLiteral;
 import com.google.dart.compiler.backend.js.ast.JsExpression;
+import com.google.dart.compiler.backend.js.ast.JsLiteral;
 import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,7 +67,7 @@ public abstract class AbstractCallExpressionTranslator extends AbstractTranslato
             translateVarargArgument(argument.getArguments(), result);
         }
         else if (argument instanceof DefaultValueArgument) {
-            return true;
+            result.add(JsLiteral.UNDEFINED);
         }
         else {
             ValueArgument valueArgument = ((ExpressionValueArgument) argument).getValueArgument();

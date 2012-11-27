@@ -63,7 +63,7 @@ public abstract class Config {
             "src/core/javaio.kt",
             "src/javalang.kt",
             "src/core/javautil.kt",
-            "src/core/json.kt",
+            "src/json.kt",
             "src/core/kotlin.kt",
             "src/core/math.kt",
             "src/core/string.kt",
