@@ -17,17 +17,14 @@
 package org.jetbrains.k2js.translate.context;
 
 import com.google.common.collect.Maps;
-import com.google.dart.compiler.backend.js.ast.JsName;
-import com.google.dart.compiler.backend.js.ast.JsScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
+import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.name.FqNameUnsafe;
 import org.jetbrains.jet.lang.resolve.name.Name;
 
 import java.util.Map;
-
-import static org.jetbrains.jet.lang.resolve.DescriptorUtils.getFQName;
 
 /**
  * @author Pavel Talanov
@@ -93,54 +90,28 @@ public final class StandardClasses {
     }
 
     @NotNull
-    public static StandardClasses bindImplementations(@NotNull JsScope kotlinObjectScope) {
-        StandardClasses standardClasses = new StandardClasses(kotlinObjectScope);
-        declareJetObjects(standardClasses);
-        return standardClasses;
-    }
-
-    private static void declareJetObjects(@NotNull StandardClasses standardClasses) {
+    public static StandardClasses bindImplementations() {
+        StandardClasses standardClasses = new StandardClasses();
         standardClasses.declare().forFQ("jet.Iterator").kotlinClass("Iterator");
 
         standardClasses.declare().forFQ("jet.IntRange").kotlinClass("NumberRange")
                 .methods("iterator", "contains").properties("start", "size", "end", "reversed");
 
         standardClasses.declare().forFQ("java.util.Collections.<no name provided>.max").kotlinFunction("collectionsMax");
+        return standardClasses;
     }
 
-
     @NotNull
-    private final JsScope kotlinScope;
-
-
-    @NotNull
-    private final Map<FqNameUnsafe, JsName> standardObjects = Maps.newHashMap();
-
-    @NotNull
-    private final Map<FqNameUnsafe, JsScope> scopeMap = Maps.newHashMap();
-
-    private StandardClasses(@NotNull JsScope kotlinScope) {
-        this.kotlinScope = kotlinScope;
-    }
-
-    private void declareTopLevelObjectInScope(@NotNull JsScope scope, @NotNull Map<FqNameUnsafe, JsName> map,
-                                              @NotNull FqNameUnsafe fullQualifiedName, @NotNull String name) {
-        JsName declaredName = scope.declareName(name);
-        map.put(fullQualifiedName, declaredName);
-        scopeMap.put(fullQualifiedName, new JsScope(scope, "scope for " + name));
-    }
+    private final Map<FqNameUnsafe, String> standardObjects = Maps.newHashMap();
 
     private void declareKotlinObject(@NotNull FqNameUnsafe fullQualifiedName, @NotNull String kotlinLibName) {
-        declareTopLevelObjectInScope(kotlinScope, standardObjects, fullQualifiedName, kotlinLibName);
+        standardObjects.put(fullQualifiedName, kotlinLibName);
     }
 
     private void declareInner(@NotNull FqNameUnsafe fullQualifiedClassName,
                               @NotNull String shortMethodName,
                               @NotNull String javascriptName) {
-        JsScope classScope = scopeMap.get(fullQualifiedClassName);
-        assert classScope != null;
-        FqNameUnsafe fullQualifiedMethodName = fullQualifiedClassName.child(Name.guess(shortMethodName));
-        standardObjects.put(fullQualifiedMethodName, classScope.declareName(javascriptName));
+        standardObjects.put(fullQualifiedClassName.child(Name.guess(shortMethodName)), javascriptName);
     }
 
     private void declareMethods(@NotNull FqNameUnsafe classFQName,
@@ -158,12 +129,12 @@ public final class StandardClasses {
     }
 
     public boolean isStandardObject(@NotNull DeclarationDescriptor descriptor) {
-        return standardObjects.containsKey(getFQName(descriptor));
+        return standardObjects.containsKey(DescriptorUtils.getFQName(descriptor));
     }
 
     @NotNull
-    public JsName getStandardObjectName(@NotNull DeclarationDescriptor descriptor) {
-        return standardObjects.get(getFQName(descriptor));
+    public String getStandardObjectName(@NotNull DeclarationDescriptor descriptor) {
+        return standardObjects.get(DescriptorUtils.getFQName(descriptor));
     }
 
     @NotNull

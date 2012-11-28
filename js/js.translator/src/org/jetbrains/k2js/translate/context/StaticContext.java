@@ -53,10 +53,8 @@ public final class StaticContext {
 
     public static StaticContext generateStaticContext(@NotNull BindingContext bindingContext, @NotNull EcmaVersion ecmaVersion) {
         JsProgram program = new JsProgram("main");
-        Namer namer = Namer.newInstance(program.getRootScope());
-        Intrinsics intrinsics = new Intrinsics();
-        StandardClasses standardClasses = StandardClasses.bindImplementations(namer.getKotlinScope());
-        return new StaticContext(program, bindingContext, namer, intrinsics, standardClasses, ecmaVersion);
+        return new StaticContext(program, bindingContext, Namer.newInstance(program.getRootScope()), new Intrinsics(),
+                                 StandardClasses.bindImplementations(), ecmaVersion);
     }
 
     @NotNull
@@ -181,7 +179,7 @@ public final class StaticContext {
         }
 
         if (standardClasses.isStandardObject(descriptor)) {
-            return standardClasses.getStandardObjectName(descriptor).makeRef();
+            return new JsNameRef(standardClasses.getStandardObjectName(descriptor));
         }
 
         for (PredefinedAnnotation annotation : PredefinedAnnotation.values()) {
