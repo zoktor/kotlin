@@ -64,7 +64,7 @@ public final class K2JSCompilerMessagingTest extends IDECompilerMessagingTest {
     }
 
     public void testLib() {
-        KotlinJsBuildConfigurationManager component = myModule.getComponent(KotlinJsBuildConfigurationManager.class);
+        KotlinJsBuildConfigurationManager component = KotlinJsBuildConfigurationManager.getInstance(myModule);
         component.setJavaScriptModule(true);
         component.setPathToJavaScriptLibrary("/lib.zip");
         doTest(new Function1<MessageChecker, Void>() {

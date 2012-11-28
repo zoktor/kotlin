@@ -16,12 +16,14 @@
 
 package org.jetbrains.jet.plugin.compilerMessages;
 
+import com.intellij.ide.startup.impl.StartupManagerImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.PlatformTestCase;
@@ -35,6 +37,11 @@ import java.io.IOException;
  * @author Pavel Talanov
  */
 public abstract class IDECompilerMessagingTest extends PlatformTestCase {
+    @Override
+    protected void runStartupActivities() {
+        super.runStartupActivities();
+        ((StartupManagerImpl) StartupManager.getInstance(myProject)).runPostStartupActivitiesFromExtensions();
+    }
 
     protected void performTest(@NotNull Function1<MessageChecker, Void> whatToExpect,
             @NotNull TranslatingCompiler compiler, @NotNull String testDataPath) {
