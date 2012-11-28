@@ -95,6 +95,7 @@ public abstract class Config {
      */
     @NotNull
     public static final List<String> LIB_FILE_NAMES_DEPENDENT_ON_STDLIB = Arrays.asList(
+            "stdlib/TuplesCode.kt",
             "src/core/stringsCode.kt",
             "stdlib/domCode.kt",
             "stdlib/jutilCode.kt",

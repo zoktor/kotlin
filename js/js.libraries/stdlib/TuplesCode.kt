@@ -1,7 +1,7 @@
 package kotlin
 
 // TODO: make it a data class
-public class Pair<A, B> (
+public class Pair<out A, out B> (
         public val first: A,
         public val second: B
 ) {
@@ -9,7 +9,6 @@ public class Pair<A, B> (
     public fun component2(): B = second
 
     public fun toString(): String = "($first, $second)"
-
 }
 
 public class Triple<A, B, C> (
