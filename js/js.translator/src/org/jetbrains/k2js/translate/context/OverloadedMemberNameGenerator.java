@@ -93,6 +93,7 @@ final class OverloadedMemberNameGenerator {
 
         Collection<FunctionDescriptor> functions = memberScope.getFunctions(function.getName());
         String name = function.getName().getName();
+        final String originalName = name;
         if (functions.size() <= 1) {
             return name;
         }
@@ -111,7 +112,7 @@ final class OverloadedMemberNameGenerator {
                         counter++;
                     }
                 }
-                currentName = counter == -1 ? name : name + '$' + counter;
+                currentName = counter == -1 ? originalName : originalName + '$' + counter;
                 counter++;
             }
             else {
