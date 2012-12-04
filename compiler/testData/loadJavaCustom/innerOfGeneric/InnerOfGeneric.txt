@@ -1,0 +1,8 @@
+namespace test
+
+public open class test.InnerOfGeneric : java.lang.Object {
+    public final /*constructor*/ fun <init>(): test.InnerOfGeneric
+    public abstract trait test.InnerOfGeneric.S</*0*/ E : jet.Any?> : java.lang.Object {
+        public abstract fun iterator(): jet.MutableIterator<E>?
+    }
+}

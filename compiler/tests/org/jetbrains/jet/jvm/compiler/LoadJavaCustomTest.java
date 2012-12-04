@@ -111,4 +111,10 @@ public final class LoadJavaCustomTest extends KotlinTestWithEnvironment {
         doTest(dir + "/expected.txt",
                javaDir + "/MyEnum.java");
     }
+
+    public void testInnerOfGeneric() throws Exception {
+        String dir = PATH + "/innerOfGeneric/";
+        doTest(dir + "InnerOfGeneric.txt",
+               dir + "InnerOfGeneric.java");
+    }
 }
