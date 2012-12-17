@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class TypeConstructorImpl extends AnnotatedImpl implements TypeConstructor {
     private final List<TypeParameterDescriptor> parameters;
-    private Collection<JetType> supertypes;
+    private final Collection<JetType> supertypes;
     private final String debugName;
     private final boolean sealed;
 
