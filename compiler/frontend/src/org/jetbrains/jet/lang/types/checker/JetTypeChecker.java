@@ -34,7 +34,6 @@ public class JetTypeChecker {
     }
 
     public boolean isSubtypeOf(@NotNull JetType subtype, @NotNull JetType supertype) {
-//        return new TypeCheckingProcedure().run(subtype, supertype);
         return TYPE_CHECKER.isSubtypeOf(subtype, supertype);
     }
 
