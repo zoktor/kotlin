@@ -25,6 +25,7 @@ import org.jetbrains.jet.compiler.runner.CompilerEnvironment;
 import org.jetbrains.jet.compiler.runner.KotlinCompilerRunner;
 import org.jetbrains.jet.compiler.runner.OutputItemsCollectorImpl;
 import org.jetbrains.jet.compiler.runner.SimpleOutputItem;
+import org.jetbrains.jet.utils.PathUtil;
 import org.jetbrains.jps.ModuleChunk;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
 import org.jetbrains.jps.builders.java.JavaSourceRootDescriptor;
@@ -89,7 +90,7 @@ public class KotlinBuilder extends ModuleLevelBuilder {
 
         File outputDir = representativeTarget.getOutputDir();
 
-        CompilerEnvironment environment = CompilerEnvironment.getEnvironmentFor(outputDir);
+        CompilerEnvironment environment = CompilerEnvironment.getEnvironmentFor(PathUtil.getCompilerPathForJpsPlugin(), outputDir);
         if (!environment.success()) {
             environment.reportErrorsTo(messageCollector);
             return ExitCode.ABORT;

@@ -69,6 +69,19 @@ public class PathUtil {
         return new KotlinPathsFromHomeDir(new File("dist/kotlinc"));
     }
 
+    public static File getCompilerPathForJpsPlugin() {
+        File plugin_jar_path = new File(getJarPathForClass(PathUtil.class));
+
+        if (!plugin_jar_path.exists()) return null;
+
+        if (plugin_jar_path.getName().equals("kotlin-jps-plugin.jar")) {
+            File pluginHome = plugin_jar_path.getParentFile().getParentFile().getParentFile();
+            File answer = new File(pluginHome, "kotlinc");
+            return answer.exists() ? answer : null;
+        }
+
+        return null;
+    }
     @NotNull
     private static File getCompilerPathForCompilerJar() {
         File jar = getPathUtilJar();
