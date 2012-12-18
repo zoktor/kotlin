@@ -84,6 +84,7 @@ public final class K2JSCompiler implements TranslatingCompiler {
         MessageCollector messageCollector = new MessageCollectorAdapter(context);
 
         CompilerEnvironment environment = TranslatingCompilerUtils.getEnvironmentFor(context, module, /*tests = */ false);
+        CompilerEnvironment environment = TranslatingCompilerUtils.getEnvironmentFor(context, module, /*tests = */ false);
         if (!environment.success()) {
             environment.reportErrorsTo(messageCollector);
             return;

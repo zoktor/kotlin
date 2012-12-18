@@ -1857,6 +1857,35 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
     }
 
+    @Nullable
+    private static JetSuperExpression getSuperCallExpression(Call call) {
+        ReceiverValue explicitReceiver = call.getExplicitReceiver();
+        if (explicitReceiver instanceof ExpressionReceiver) {
+            JetExpression receiverExpression = ((ExpressionReceiver) explicitReceiver).getExpression();
+            if (receiverExpression instanceof JetSuperExpression) {
+                return (JetSuperExpression) receiverExpression;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isSuperCall(Call call) {
+        return getSuperCallExpression(call) != null;
+    }
+
+    // Find the first parent of the current context which corresponds to a subclass of a given class
+    private CodegenContext getParentContextSubclassOf(ClassDescriptor descriptor) {
+        CodegenContext c = context;
+        while (true) {
+            if ((c instanceof ClassContext || c instanceof AnonymousClassContext) &&
+                    DescriptorUtils.isSubclass(c.getThisDescriptor(), descriptor)) {
+                return c;
+            }
+            c = c.getParentContext();
+            assert c != null;
+        }
+    }
+
     private StackValue returnValueAsStackValue(FunctionDescriptor fd, Type callReturnType) {
         if (callReturnType != Type.VOID_TYPE) {
             JetType type = fd.getReturnType();
