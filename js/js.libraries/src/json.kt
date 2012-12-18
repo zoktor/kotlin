@@ -1,6 +1,6 @@
 package js
 
-public native class Json() {
+public native open class Json() {
     public fun <T> get(propertyName: String): T = noImpl
     public fun set(propertyName: String, value: Any?): Unit = noImpl
 }
