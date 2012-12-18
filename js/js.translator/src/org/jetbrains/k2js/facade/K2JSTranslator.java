@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.types.lang.JetStandardLibrary;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.js.compiler.SourceMapBuilder;
 import org.jetbrains.k2js.analyze.AnalyzerFacadeForJS;
 import org.jetbrains.k2js.config.Config;
@@ -110,7 +110,7 @@ public final class K2JSTranslator {
     public JsProgram generateProgram(@NotNull List<JetFile> filesToTranslate,
             @NotNull MainCallParameters mainCallParameters)
             throws TranslationException {
-        JetStandardLibrary.initialize(config.getProject());
+        KotlinBuiltIns.initialize(config.getProject());
         BindingContext bindingContext = AnalyzerFacadeForJS.analyzeFilesAndCheckErrors(filesToTranslate, config);
         return Translation.generateAst(bindingContext, filesToTranslate, mainCallParameters, config);
     }
