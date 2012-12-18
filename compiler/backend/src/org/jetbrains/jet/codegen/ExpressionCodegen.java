@@ -48,7 +48,6 @@ import org.jetbrains.jet.lang.resolve.BindingContextUtils;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.AutoCastReceiver;
 import org.jetbrains.jet.lang.resolve.calls.model.*;
-import org.jetbrains.jet.lang.resolve.calls.util.CallMaker;
 import org.jetbrains.jet.lang.resolve.calls.util.ExpressionAsFunctionDescriptor;
 import org.jetbrains.jet.lang.resolve.constants.CompileTimeConstant;
 import org.jetbrains.jet.lang.resolve.java.AsmTypeConstants;
@@ -59,7 +58,6 @@ import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.checker.JetTypeChecker;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.jet.lexer.JetTokens;
-import org.jetbrains.jet.renderer.DescriptorRenderer;
 
 import java.util.*;
 
@@ -357,6 +355,10 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
     public StackValue visitIfExpression(JetIfExpression expression, StackValue receiver) {
         return generateIfExpression(expression, false);
     }
+
+    /* package */ StackValue generateIfExpression(JetIfExpression expression, boolean isStatement) {
+        Type asmType = isStatement ? Type.VOID_TYPE : expressionType(expression);
+        StackValue condition = gen(expression.getCondition());
 
     /* package */ StackValue generateIfExpression(JetIfExpression expression, boolean isStatement) {
         Type asmType = isStatement ? Type.VOID_TYPE : expressionType(expression);
@@ -986,8 +988,12 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
 
             Label end = new Label();
             v.goTo(end);
+            Label end = new Label();
+            v.goTo(end);
 
             markLineNumber(ifExpression);
+            v.mark(elseLabel);
+            StackValue.putTuple0Instance(v);
             v.mark(elseLabel);
             StackValue.putTuple0Instance(v);
 
@@ -3250,6 +3256,8 @@ The "returned" value of try expression with no finally is either the last expres
             if (!isStatement) {
                 v.store(savedValue, expectedAsmType);
             }
+                v.store(savedValue, expectedAsmType);
+            }
 
             myFrameMap.leave(descriptor);
 
@@ -3289,6 +3297,9 @@ The "returned" value of try expression with no finally is either the last expres
         v.mark(end);
 
         if (!isStatement) {
+            v.load(savedValue, expectedAsmType);
+            myFrameMap.leaveTemp(expectedAsmType);
+        }
             v.load(savedValue, expectedAsmType);
             myFrameMap.leaveTemp(expectedAsmType);
         }
