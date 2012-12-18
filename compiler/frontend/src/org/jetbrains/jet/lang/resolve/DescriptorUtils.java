@@ -402,6 +402,28 @@ public class DescriptorUtils {
                || propertyDescriptor.getContainingDeclaration() instanceof NamespaceDescriptor;
     }
 
+    @Nullable
+    public static JetType getReceiverParameterType(@Nullable ReceiverParameterDescriptor receiverParameterDescriptor) {
+        if (receiverParameterDescriptor == null) {
+            return null;
+        }
+        return receiverParameterDescriptor.getType();
+    }
+
+    @NotNull
+    public static ReceiverValue safeGetValue(@Nullable ReceiverParameterDescriptor receiverParameterDescriptor) {
+        if (receiverParameterDescriptor == null) {
+            return ReceiverValue.NO_RECEIVER;
+        }
+        return receiverParameterDescriptor.getValue();
+    }
+
+
+    public static boolean isExternallyAccessible(PropertyDescriptor propertyDescriptor) {
+        return propertyDescriptor.getVisibility() != Visibilities.PRIVATE || isClassObject(propertyDescriptor.getContainingDeclaration())
+               || propertyDescriptor.getContainingDeclaration() instanceof NamespaceDescriptor;
+    }
+
     @NotNull
     public static JetType getVarargParameterType(@NotNull JetType elementType) {
         return getVarargParameterType(elementType, Variance.INVARIANT);

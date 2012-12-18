@@ -1686,6 +1686,12 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             : descriptor.getVisibility() == Visibilities.PRIVATE ? INVOKESPECIAL : INVOKEVIRTUAL;
     }
 
+    private static int getOpcodeForPropertyDescriptorWithoutAccessor(PropertyDescriptor descriptor) {
+        return isOverrideForTrait(descriptor)
+            ? INVOKEINTERFACE
+            : descriptor.getVisibility() == Visibilities.PRIVATE ? INVOKESPECIAL : INVOKEVIRTUAL;
+    }
+
     private static boolean isOverrideForTrait(CallableMemberDescriptor propertyDescriptor) {
         if (propertyDescriptor.getKind() == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
             final Set<? extends CallableMemberDescriptor> overriddenDescriptors = propertyDescriptor.getOverriddenDescriptors();
