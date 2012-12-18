@@ -27,8 +27,8 @@ import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCallWithTrace;
 import org.jetbrains.jet.lang.resolve.calls.model.VariableAsFunctionResolvedCall;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ClassReceiver;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExtensionReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverDescriptor;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ThisReceiverDescriptor;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ThisReceiver;
 import org.jetbrains.k2js.translate.context.TranslationContext;
 
 import static org.jetbrains.k2js.translate.utils.JsDescriptorUtils.getDeclarationDescriptorForReceiver;
@@ -80,7 +80,7 @@ public final class CallParametersResolver implements CallParameters {
         if (extensionCall) {
             receiver = qualifier != null
                        ? qualifier
-                       : context.getThisObject(((ThisReceiverDescriptor) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
+                       : context.getThisObject(((ThisReceiver) resolvedCall.getReceiverArgument()).getDeclarationDescriptor());
         }
         else {
             receiver = null;
@@ -116,7 +116,7 @@ public final class CallParametersResolver implements CallParameters {
 
     @Nullable
     private JsExpression resolveThisObject() {
-        ReceiverDescriptor thisObject = resolvedCall.getThisObject();
+        ReceiverValue thisObject = resolvedCall.getThisObject();
         if (!thisObject.exists()) {
             return null;
         }

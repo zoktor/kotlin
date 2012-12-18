@@ -28,7 +28,7 @@ import org.jetbrains.jet.lang.psi.JetReferenceExpression;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverDescriptor;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.k2js.translate.context.TranslationContext;
@@ -65,7 +65,7 @@ public final class TopLevelFIF extends CompositeFIF {
         @Nullable
         @Override
         protected ExpressionReceiver getExpressionReceiver(@NotNull ResolvedCall<?> resolvedCall) {
-            ReceiverDescriptor result = resolvedCall.getThisObject();
+            ReceiverValue result = resolvedCall.getThisObject();
             return result instanceof ExpressionReceiver ? (ExpressionReceiver) result : null;
         }
 
@@ -89,7 +89,7 @@ public final class TopLevelFIF extends CompositeFIF {
         @Nullable
         @Override
         protected ExpressionReceiver getExpressionReceiver(@NotNull ResolvedCall<?> resolvedCall) {
-            ReceiverDescriptor result = resolvedCall.getReceiverArgument();
+            ReceiverValue result = resolvedCall.getReceiverArgument();
             return result instanceof ExpressionReceiver ? (ExpressionReceiver) result : null;
         }
 

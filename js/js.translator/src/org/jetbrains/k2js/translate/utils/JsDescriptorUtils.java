@@ -23,7 +23,7 @@ import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
 import org.jetbrains.jet.lang.resolve.name.Name;
-import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverDescriptor;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.JetType;
 import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
@@ -84,16 +84,16 @@ public final class JsDescriptorUtils {
     //TODO: why callable descriptor
     @Nullable
     public static DeclarationDescriptor getExpectedThisDescriptor(@NotNull CallableDescriptor callableDescriptor) {
-        ReceiverDescriptor expectedThisObject = callableDescriptor.getExpectedThisObject();
+        ReceiverParameterDescriptor expectedThisObject = callableDescriptor.getExpectedThisObject();
         if (!expectedThisObject.exists()) {
             return null;
         }
-        return getDeclarationDescriptorForReceiver(expectedThisObject);
+        return getDeclarationDescriptorForReceiver(expectedThisObject.getValue());
     }
 
     @NotNull
     public static DeclarationDescriptor getDeclarationDescriptorForReceiver
-            (@NotNull ReceiverDescriptor receiverParameter) {
+            (@NotNull ReceiverValue receiverParameter) {
         DeclarationDescriptor declarationDescriptor =
                 receiverParameter.getType().getConstructor().getDeclarationDescriptor();
         //TODO: WHY assert?
@@ -103,11 +103,11 @@ public final class JsDescriptorUtils {
 
     @Nullable
     public static DeclarationDescriptor getExpectedReceiverDescriptor(@NotNull CallableDescriptor callableDescriptor) {
-        ReceiverDescriptor receiverParameter = callableDescriptor.getReceiverParameter();
+        ReceiverParameterDescriptor receiverParameter = callableDescriptor.getReceiverParameter();
         if (!receiverParameter.exists()) {
             return null;
         }
-        return getDeclarationDescriptorForReceiver(receiverParameter);
+        return getDeclarationDescriptorForReceiver(receiverParameter.getValue());
     }
 
     //TODO: maybe we have similar routine
