@@ -740,6 +740,11 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
                 doTest("compiler/testData/diagnostics/tests/cast/IsErasedAllowForSupertypeCheckWithCovariance.kt");
             }
             
+            @TestMetadata("IsErasedAllowForTypeParameterWithConstraints.kt")
+            public void testIsErasedAllowForTypeParameterWithConstraints() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/cast/IsErasedAllowForTypeParameterWithConstraints.kt");
+            }
+            
             @TestMetadata("IsErasedAllowForTypeWithConstraints.kt")
             public void testIsErasedAllowForTypeWithConstraints() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/cast/IsErasedAllowForTypeWithConstraints.kt");
@@ -749,7 +754,12 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
             public void testIsErasedAllowForTypeWithInconsistentTypeParameterError() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/cast/IsErasedAllowForTypeWithInconsistentTypeParameterError.kt");
             }
-
+            
+            @TestMetadata("IsErasedAllowForTypeWithIrrelevantMixin.kt")
+            public void testIsErasedAllowForTypeWithIrrelevantMixin() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/cast/IsErasedAllowForTypeWithIrrelevantMixin.kt");
+            }
+            
             @TestMetadata("IsErasedAllowForTypeWithTwoSameTypeSubstitutions.kt")
             public void testIsErasedAllowForTypeWithTwoSameTypeSubstitutions() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/cast/IsErasedAllowForTypeWithTwoSameTypeSubstitutions.kt");
@@ -799,7 +809,12 @@ public class JetDiagnosticsTestGenerated extends AbstractDiagnosticsTestWithEage
             public void testIsErasedDisallowForOverridenVariance() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/cast/IsErasedDisallowForOverridenVariance.kt");
             }
-
+            
+            @TestMetadata("IsErasedDisallowForTypeWithConstraints.kt")
+            public void testIsErasedDisallowForTypeWithConstraints() throws Exception {
+                doTest("compiler/testData/diagnostics/tests/cast/IsErasedDisallowForTypeWithConstraints.kt");
+            }
+            
             @TestMetadata("IsErasedDisallowFromAny.kt")
             public void testIsErasedDisallowFromAny() throws Exception {
                 doTest("compiler/testData/diagnostics/tests/cast/IsErasedDisallowFromAny.kt");
