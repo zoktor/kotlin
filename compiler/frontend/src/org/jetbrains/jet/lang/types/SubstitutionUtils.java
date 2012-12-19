@@ -33,8 +33,11 @@ import java.util.Map;
  * @author abreslav
  */
 public class SubstitutionUtils {
+    private SubstitutionUtils() {
+    }
+
     @NotNull
-    public static Map<TypeConstructor, TypeProjection> buildSubstitutionContext(@NotNull  JetType context) {
+    public static Map<TypeConstructor, TypeProjection> buildSubstitutionContext(@NotNull JetType context) {
         return buildSubstitutionContext(context.getConstructor().getParameters(), context.getArguments());
     }
 
@@ -75,7 +78,11 @@ public class SubstitutionUtils {
     }
 
     // we use the mutability of the substitution map here
-    private static void fillInDeepSubstitutor(@NotNull JetType context, @NotNull TypeSubstitutor substitutor, @NotNull Map<TypeConstructor, TypeProjection> substitution, @Nullable Multimap<TypeConstructor, TypeProjection> fullSubstitution) {
+    private static void fillInDeepSubstitutor(
+            @NotNull JetType context,
+            @NotNull TypeSubstitutor substitutor,
+            @NotNull Map<TypeConstructor, TypeProjection> substitution,
+            @Nullable Multimap<TypeConstructor, TypeProjection> fullSubstitution) {
         List<TypeParameterDescriptor> parameters = context.getConstructor().getParameters();
         List<TypeProjection> arguments = context.getArguments();
 
