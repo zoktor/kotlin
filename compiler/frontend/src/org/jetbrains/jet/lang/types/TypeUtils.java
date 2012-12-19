@@ -324,8 +324,8 @@ public class TypeUtils {
 
     /**
      * Erase all type arguments, replacing them with unsubstituted versions:
-     * 1. List&lt;String&gt; -> List&lt;E&gt;
-     * 2. Map&lt;String, Int&gt; -> Map&lt;K, V&gt;
+     * 1. {@literal List<String -> List<E>}
+     * 2. {@literal Map<String, Int> -> Map<K, V>}
      */
     @NotNull
     public static JetType makeUnsubstitutedType(ClassDescriptor classDescriptor, JetScope unsubstitutedMemberScope) {
