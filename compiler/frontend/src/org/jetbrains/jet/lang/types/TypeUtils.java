@@ -24,7 +24,10 @@ import com.google.common.collect.Sets;
 import com.intellij.util.Processor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.descriptors.*;
+import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.ClassifierDescriptor;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
+import org.jetbrains.jet.lang.descriptors.TypeParameterDescriptor;
 import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.jet.lang.resolve.calls.inference.ConstraintResolutionListener;
 import org.jetbrains.jet.lang.resolve.calls.inference.ConstraintSystemSolution;
@@ -319,6 +322,11 @@ public class TypeUtils {
         return type;
     }
 
+    /**
+     * Erase all type arguments, replacing them with unsubstituted versions:
+     * 1. List&lt;String&gt; -> List&lt;E&gt;
+     * 2. Map&lt;String, Int&gt; -> Map&lt;K, V&gt;
+     */
     @NotNull
     public static JetType makeUnsubstitutedType(ClassDescriptor classDescriptor, JetScope unsubstitutedMemberScope) {
         if (ErrorUtils.isError(classDescriptor)) {
@@ -496,6 +504,25 @@ public class TypeUtils {
             if (identityEqualsOrContainsAsArgument(projection.getType(), argumentType)) return true;
         }
         return false;
+    }
+
+    public static Map<JetType, TypeParameterDescriptor> buildDeclaredTypesToParameterMapping(TypeConstructor constructor) {
+        Map<JetType, TypeParameterDescriptor> resultMap = Maps.newHashMap();
+
+        for (TypeParameterDescriptor parameter : constructor.getParameters()) {
+            ClassifierDescriptor classifierDescriptor = parameter.getTypeConstructor().getDeclarationDescriptor();
+            if (classifierDescriptor == null) {
+                throw new IllegalStateException("buildDeclaredTypesToParameterMapping is not supported for " + parameter.getTypeConstructor().getClass());
+            }
+
+            JetType parameterType = classifierDescriptor.getDefaultType();
+            resultMap.put(parameterType, parameter);
+        }
+
+        assert resultMap.size() == constructor.getParameters().size():
+                "All types defined by parameters should get unique type and be listed in result map";
+
+        return resultMap;
     }
 
     @NotNull

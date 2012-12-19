@@ -36,7 +36,7 @@ private fun <T> countTo(n: Int): (T) -> Boolean {
  */
 // TODO: Specify type of the exception
 public inline fun <T> Iterable<T>.first() : T {
-  if (this is AbstractList<T>) {
+  if (this is AbstractList<out T>) {
     return this.get(0)
   }
 
@@ -78,7 +78,7 @@ public fun <T> Iterable<T>.last() : T {
  * method will be used.
  */
 public fun <T> Iterable<T>.contains(item : T) : Boolean {
-  if (this is java.util.AbstractCollection<T>) {
+  if (this is java.util.AbstractCollection<out T>) {
     return this.contains(item);
   }
 

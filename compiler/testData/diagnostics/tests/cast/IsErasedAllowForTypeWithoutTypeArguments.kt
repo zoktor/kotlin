@@ -1,0 +1,4 @@
+open class Base<A>
+class Some: Base<Int>()
+
+fun <A> f(a: Base<A>) = a is Some
