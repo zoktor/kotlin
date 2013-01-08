@@ -22,7 +22,10 @@ import org.jetbrains.annotations.NotNull;
  * @author abreslav
  */
 public class TypeProjection {
+    @NotNull
     private final Variance projection;
+
+    @NotNull
     private final JetType type;
 
     public TypeProjection(@NotNull Variance projection, @NotNull JetType type) {
@@ -30,7 +33,7 @@ public class TypeProjection {
         this.type = type;
     }
 
-    public TypeProjection(JetType type) {
+    public TypeProjection(@NotNull JetType type) {
         this(Variance.INVARIANT, type);
     }
 
@@ -46,10 +49,7 @@ public class TypeProjection {
 
     @Override
     public String toString() {
-        if (projection == Variance.INVARIANT) {
-            return type.toString();
-        }
-        return projection + " " + type;
+        return projection == Variance.INVARIANT ? type.toString() : projection + " " + type;
     }
 
     @Override
@@ -59,16 +59,11 @@ public class TypeProjection {
 
         TypeProjection that = (TypeProjection) o;
 
-        if (projection != that.projection) return false;
-        if (type != null ? !type.equals(that.type) : that.type != null) return false;
-
-        return true;
+        return that.projection == projection && type.equals(that.type);
     }
 
     @Override
     public int hashCode() {
-        int result = projection != null ? projection.hashCode() : 0;
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        return result;
+        return 31 * projection.hashCode() + type.hashCode();
     }
 }
