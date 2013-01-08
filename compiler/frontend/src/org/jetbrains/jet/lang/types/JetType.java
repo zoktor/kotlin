@@ -28,8 +28,12 @@ import java.util.List;
  * @see JetTypeChecker#isSubtypeOf(JetType, JetType)
  */
 public interface JetType extends Annotated {
-    @NotNull TypeConstructor getConstructor();
-    @NotNull List<TypeProjection> getArguments();
+    @NotNull
+    TypeConstructor getConstructor();
+
+    @NotNull
+    List<TypeProjection> getArguments();
+
     boolean isNullable();
 
     @NotNull
