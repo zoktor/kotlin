@@ -45,13 +45,14 @@ import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.lang.resolve.scopes.RedeclarationHandler;
 import org.jetbrains.jet.lang.resolve.scopes.WritableScope;
 import org.jetbrains.jet.lang.resolve.scopes.WritableScopeImpl;
-import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.jet.test.util.NamespaceComparator;
 
 import java.io.*;
 import java.util.*;
 
 public abstract class AbstractDescriptorSerializationTest extends KotlinTestWithEnvironment {
+
+    public static final Name TEST_PACKAGE_NAME = Name.identifier("test");
 
     @Override
     protected JetCoreEnvironment createEnvironment() {
@@ -64,7 +65,7 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
                 JetTestUtils.createFile(ktFile.getName(), FileUtil.loadFile(ktFile), getProject())
         ), getEnvironment());
 
-        NamespaceDescriptor testNamespace = moduleDescriptor.getNamespace(FqName.topLevel(Name.identifier("test")));
+        NamespaceDescriptor testNamespace = moduleDescriptor.getNamespace(FqName.topLevel(TEST_PACKAGE_NAME));
         assert testNamespace != null;
 
         JavaDescriptorResolver javaDescriptorResolver = new InjectorForJavaDescriptorResolver(
@@ -133,9 +134,9 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
         );
 
         for (ProtoBuf.Class proto : classProtos) {
-            FqName fqName = new FqName("test." + classResolver.getNameResolver().getName(proto.getName()));
-            ClassDescriptor descriptor = classResolver.findClass(fqName);
-            assert descriptor != null : "Class not loaded: " + fqName;
+            Name className = classResolver.getNameResolver().getName(proto.getName());
+            ClassDescriptor descriptor = classResolver.findClass(new ClassId(FqName.topLevel(TEST_PACKAGE_NAME), FqName.topLevel(className)));
+            assert descriptor != null : "Class not loaded: " + "test." + className;
             namespace.getMemberScope().addClassifierDescriptor(descriptor);
         }
 
@@ -165,7 +166,7 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
                 new NamespaceDescriptorImpl(module, Collections.<AnnotationDescriptor>emptyList(), JetPsiUtil.ROOT_NAMESPACE_NAME);
         module.setRootNamespace(rootNamespace);
         NamespaceDescriptorImpl test =
-                new NamespaceDescriptorImpl(rootNamespace, Collections.<AnnotationDescriptor>emptyList(), Name.identifier("test"));
+                new NamespaceDescriptorImpl(rootNamespace, Collections.<AnnotationDescriptor>emptyList(), TEST_PACKAGE_NAME);
         test.initialize(new WritableScopeImpl(JetScope.EMPTY, test, RedeclarationHandler.DO_NOTHING, "members of test namespace"));
         return test;
     }
@@ -200,7 +201,7 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
         private final NameResolver nameResolver;
         private final Map<Name, ProtoBuf.Class> classProtos;
 
-        private final MemoizedFunctionToNullable<FqName, ClassDescriptor> classes;
+        private final MemoizedFunctionToNullable<ClassId, ClassDescriptor> classes;
 
         public ClassResolverImpl(
                 @NotNull ClassResolver parentResolver,
@@ -217,11 +218,11 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
             this.nameResolver = new NameResolver(simpleNames, qualifiedNames, this);
             this.classProtos = toMap(classProtos);
 
-            this.classes = new MemoizedFunctionToNullableImpl<FqName, ClassDescriptor>() {
+            this.classes = new MemoizedFunctionToNullableImpl<ClassId, ClassDescriptor>() {
                 @Nullable
                 @Override
-                protected ClassDescriptor doCompute(@NotNull FqName fqName) {
-                    return resolveClass(fqName);
+                protected ClassDescriptor doCompute(@NotNull ClassId classId) {
+                    return resolveClass(classId);
                 }
             };
         }
@@ -241,14 +242,15 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
         }
 
         @Nullable
-        private ClassDescriptor resolveClass(@NotNull FqName fqName) {
+        private ClassDescriptor resolveClass(@NotNull ClassId classId) {
+            FqName fqName = classId.asSingleFqName();
             if (!parentFqName.equals(fqName.parent())) {
-                return parentResolver.findClass(fqName);
+                return parentResolver.findClass(classId);
             }
 
             ProtoBuf.Class classProto = classProtos.get(fqName.shortName());
             if (classProto == null) {
-                return parentResolver.findClass(fqName);
+                return parentResolver.findClass(classId);
             }
 
             return new DeserializedClassDescriptor(parentForClasses, nameResolver, this, classProto, null);
@@ -256,8 +258,8 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
 
         @Nullable
         @Override
-        public ClassDescriptor findClass(@NotNull FqName fqName) {
-            return classes.fun(fqName);
+        public ClassDescriptor findClass(@NotNull ClassId classId) {
+            return classes.fun(classId);
         }
     }
 
@@ -270,24 +272,31 @@ public abstract class AbstractDescriptorSerializationTest extends KotlinTestWith
 
         @Nullable
         @Override
-        public ClassDescriptor findClass(@NotNull FqName fqName) {
-            ClassDescriptor classDescriptor = javaDescriptorResolver.resolveClass(fqName);
-            if (classDescriptor != null) {
-                return classDescriptor;
+        public ClassDescriptor findClass(@NotNull ClassId classId) {
+            ClassDescriptor javaClassDescriptor = javaDescriptorResolver.resolveClass(classId.asSingleFqName());
+            if (javaClassDescriptor != null) {
+                return javaClassDescriptor;
             }
-            FqName current = fqName;
-            while (!current.isRoot()) {
-                NamespaceDescriptor namespace = getNamespace(current);
-                if (namespace != null) {
-                    ClassDescriptor classifier = (ClassDescriptor) namespace.getMemberScope().getClassifier(current.shortName());
-                    if (classifier == null) {
-                        throw new IllegalStateException("Class not found: " + fqName);
-                    }
-                    return classifier;
+            NamespaceDescriptor packageDescriptor = getNamespace(classId.getPackageFqName());
+            if (packageDescriptor == null) {
+                throw new IllegalStateException("Package not found: " + classId);
+            }
+
+            JetScope scope = packageDescriptor.getMemberScope();
+            for (Iterator<Name> iterator = classId.getRelativeClassName().pathSegments().iterator(); iterator.hasNext(); ) {
+                Name name = iterator.next();
+                ClassifierDescriptor classifier = scope.getClassifier(name);
+                if (classifier == null) {
+                    throw new IllegalStateException("Class not found: " + classId);
                 }
-                current = current.parent();
+                ClassDescriptor classDescriptor = (ClassDescriptor) classifier;
+                if (!iterator.hasNext()) {
+                    return classDescriptor;
+                }
+                scope = classDescriptor.getUnsubstitutedInnerClassesScope();
             }
-            throw new IllegalStateException("Class not found: " + fqName);
+
+            throw new IllegalStateException("Class not found: " + classId);
         }
 
         @Nullable
