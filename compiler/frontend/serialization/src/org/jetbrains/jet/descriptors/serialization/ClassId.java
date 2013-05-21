@@ -2,6 +2,7 @@ package org.jetbrains.jet.descriptors.serialization;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.jet.lang.resolve.name.Name;
 
 public final class ClassId {
     private final FqName packageFqName;
@@ -21,6 +22,11 @@ public final class ClassId {
     @NotNull
     public FqName getRelativeClassName() {
         return relativeClassName;
+    }
+
+    @NotNull
+    public ClassId createNestedClassId(@NotNull Name name) {
+        return new ClassId(getPackageFqName(), relativeClassName.child(name));
     }
 
     public FqName asSingleFqName() {
