@@ -119,7 +119,7 @@ public class TypeDeserializer {
         TypeConstructor typeConstructor = typeConstructor(constructorProto);
         if (typeConstructor == null) {
             String message = constructorProto.getKind() == ProtoBuf.Type.Constructor.Kind.CLASS
-                             ? nameResolver.getClassId(id).asSingleFqName().getFqName()
+                             ? nameResolver.getClassId(id).asSingleFqName().asString()
                              : "Unknown type parameter " + id;
             typeConstructor = ErrorUtils.createErrorType(message).getConstructor();
         }

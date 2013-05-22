@@ -79,7 +79,7 @@ public class NameTable {
     }
 
     public int getSimpleNameIndex(@NotNull Name name) {
-        return simpleNames.intern(name.getName());
+        return simpleNames.intern(name.asString());
     }
 
     public int getFqNameIndex(@NotNull ClassDescriptor classDescriptor) {
