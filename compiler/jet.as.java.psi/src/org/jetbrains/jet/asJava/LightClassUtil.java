@@ -80,7 +80,7 @@ public class LightClassUtil {
 
     @NotNull
     public static URL getBuiltInsDirResourceUrl() {
-        String pathToAny = "/" + KotlinBuiltIns.BUILT_INS_DIR + "/" + DEFINITION_OF_ANY;
+        String pathToAny = "/" + KotlinBuiltIns.BUILT_INS_PACKAGE_NAME_STRING + "/" + DEFINITION_OF_ANY;
         URL url = KotlinBuiltIns.class.getResource(pathToAny);
         if (url == null) {
             throw new IllegalStateException("Built-ins not found in the classpath: " + pathToAny);
