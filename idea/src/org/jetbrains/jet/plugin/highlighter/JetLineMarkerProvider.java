@@ -236,7 +236,7 @@ public class JetLineMarkerProvider implements LineMarkerProvider {
 
         if (!(element instanceof JetNamedFunction || element instanceof JetProperty)) return null;
 
-        BindingContext bindingContext = WholeProjectAnalyzerFacade.analyzeProjectWithCacheOnAFile(file).getBindingContext();
+        BindingContext bindingContext = WholeProjectAnalyzerFacade.getLazyResolveSessionForFile(file).getBindingContext();
 
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, element);
         if (!(descriptor instanceof CallableMemberDescriptor)) {
@@ -279,7 +279,7 @@ public class JetLineMarkerProvider implements LineMarkerProvider {
         JetFile file = (JetFile)elt.getContainingFile();
         assert file != null;
 
-        BindingContext bindingContext = WholeProjectAnalyzerFacade.analyzeProjectWithCacheOnAFile(file).getBindingContext();
+        BindingContext bindingContext = WholeProjectAnalyzerFacade.getLazyResolveSessionForFile(file).getBindingContext();
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, elt);
         if (!(descriptor instanceof CallableMemberDescriptor)) {
             return;
