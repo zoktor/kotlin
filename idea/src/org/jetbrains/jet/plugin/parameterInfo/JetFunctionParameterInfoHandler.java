@@ -40,6 +40,7 @@ import org.jetbrains.jet.lang.types.checker.JetTypeChecker;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.jet.plugin.codeInsight.TipsManager;
 import org.jetbrains.jet.plugin.project.AnalyzerFacadeWithCache;
+import org.jetbrains.jet.plugin.project.WholeProjectAnalyzerFacade;
 import org.jetbrains.jet.renderer.DescriptorRenderer;
 
 import java.awt.*;
@@ -210,7 +211,6 @@ public class JetFunctionParameterInfoHandler implements
         FunctionDescriptor functionDescriptor = (FunctionDescriptor) descriptor;
 
         JetFile file = (JetFile) argumentList.getContainingFile();
-        BindingContext bindingContext = AnalyzerFacadeWithCache.analyzeFileWithCache(file).getBindingContext();
         List<ValueParameterDescriptor> valueParameters = functionDescriptor.getValueParameters();
         List<JetValueArgument> valueArguments = argumentList.getArguments();
 
@@ -232,6 +232,11 @@ public class JetFunctionParameterInfoHandler implements
 
         if (valueParameters.size() == 0) {
             builder.append(CodeInsightBundle.message("parameter.info.no.parameters"));
+        }
+
+        BindingContext bindingContext = null;
+        if (!namedMode) {
+             bindingContext = AnalyzerFacadeWithCache.analyzeFileWithCache(file).getBindingContext();
         }
 
         for (int i = 0; i < valueParameters.size(); ++i) {
@@ -381,7 +386,7 @@ public class JetFunctionParameterInfoHandler implements
             return null;
         }
 
-        BindingContext bindingContext = AnalyzerFacadeWithCache.analyzeFileWithCache((JetFile) file).getBindingContext();
+        BindingContext bindingContext = WholeProjectAnalyzerFacade.getContextForExpression(callNameExpression);
         JetScope scope = bindingContext.get(BindingContext.RESOLUTION_SCOPE, callNameExpression);
         DeclarationDescriptor placeDescriptor = null;
         if (scope != null) {
