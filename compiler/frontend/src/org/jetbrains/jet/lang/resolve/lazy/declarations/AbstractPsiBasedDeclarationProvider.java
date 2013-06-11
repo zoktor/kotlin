@@ -40,6 +40,7 @@ public abstract class AbstractPsiBasedDeclarationProvider implements Declaration
         private final Multimap<Name, JetNamedFunction> functions = HashMultimap.create();
         private final Multimap<Name, JetProperty> properties = HashMultimap.create();
         private final Multimap<Name, JetClassOrObject> classesAndObjects = ArrayListMultimap.create(); // order matters here
+        // private final Multimap<FqName, JetSimpleNameExpression> packages = HashMultimap.create();
 
         public void putToIndex(@NotNull JetDeclaration declaration) {
             if (declaration instanceof JetClassInitializer) {
@@ -66,9 +67,23 @@ public abstract class AbstractPsiBasedDeclarationProvider implements Declaration
             }
         }
 
+        //public void putToIndex(@NotNull JetNamespaceHeader header) {
+        //    FqName fqName = header.getFqName();
+        //    packages.put(fqName, header.getLastPartExpression());
+        //
+        //    for (JetSimpleNameExpression simpleName : Lists.reverse(header.getParentNamespaceNames())) {
+        //        fqName = fqName.parent();
+        //
+        //        assert !fqName.isRoot() : "Not enough segments for qualified name";
+        //
+        //        packages.put(fqName, simpleName);
+        //    }
+        //}
+        //
+        //public Multimap<FqName, JetSimpleNameExpression> getPackages() { return packages; }
     }
 
-    private final NotNullLazyValue<Index> index;
+    protected final NotNullLazyValue<Index> index;
 
     public AbstractPsiBasedDeclarationProvider(@NotNull StorageManager storageManager) {
         index = storageManager.createLazyValue(new Computable<Index>() {

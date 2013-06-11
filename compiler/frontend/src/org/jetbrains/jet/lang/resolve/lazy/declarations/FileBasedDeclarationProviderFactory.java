@@ -18,23 +18,25 @@ package org.jetbrains.jet.lang.resolve.lazy.declarations;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.intellij.openapi.util.Computable;
+import com.intellij.psi.NavigatablePsiElement;
 import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetNamespaceHeader;
+import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.resolve.lazy.data.JetClassLikeInfo;
 import org.jetbrains.jet.lang.resolve.lazy.storage.MemoizedFunctionToNullable;
 import org.jetbrains.jet.lang.resolve.lazy.storage.NotNullLazyValue;
 import org.jetbrains.jet.lang.resolve.lazy.storage.StorageManager;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.jet.util.QualifiedNamesUtil;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public class FileBasedDeclarationProviderFactory implements DeclarationProviderFactory {
@@ -86,16 +88,16 @@ public class FileBasedDeclarationProviderFactory implements DeclarationProviderF
             }
 
             FqName packageFqName = new FqName(header.getQualifiedName());
-            addMeAndParentPackages(index, packageFqName);
+            addMeAndParentPackages(index, packageFqName, file);
             index.filesByPackage.put(packageFqName, file);
         }
         return index;
     }
 
-    private static void addMeAndParentPackages(@NotNull Index index, @NotNull FqName name) {
+    private static void addMeAndParentPackages(@NotNull Index index, @NotNull FqName name, JetFile file) {
         index.declaredPackages.add(name);
         if (!name.isRoot()) {
-            addMeAndParentPackages(index, name.parent());
+            addMeAndParentPackages(index, name.parent(), file);
         }
     }
 
@@ -112,6 +114,33 @@ public class FileBasedDeclarationProviderFactory implements DeclarationProviderF
             @Override
             public boolean apply(FqName fqName) {
                 return !fqName.isRoot() && fqName.parent().equals(parent);
+            }
+        });
+    }
+
+    /*package*/ Collection<NavigatablePsiElement> getNameByPackage(@NotNull final FqName fqName) {
+        final int fqNameSize = QualifiedNamesUtil.numberOfSegments(fqName);
+
+        return ContainerUtil.mapNotNull(index.compute().declaredPackages, new Function<FqName, NavigatablePsiElement>() {
+            @Override
+            public NavigatablePsiElement fun(FqName declaredFqName) {
+                if (declaredFqName.asString().startsWith(fqName.asString())) {
+                    if (fqName.isRoot()) {
+                        return Iterables.getFirst(index.compute().filesByPackage.get(fqName), null);
+                    }
+
+                    JetFile firstFile = Iterables.getFirst(index.compute().filesByPackage.get(fqName), null);
+
+                    if (firstFile != null) {
+                        JetNamespaceHeader header = firstFile.getNamespaceHeader();
+                        assert header != null : "File has some package name, so header can't be null";
+
+                        List<JetSimpleNameExpression> names = header.getParentNamespaceNames();
+                        return (names.size() >= fqNameSize) ? names.get(fqNameSize - 1) : header.getLastPartExpression();
+                    }
+                }
+
+                return null;
             }
         });
     }

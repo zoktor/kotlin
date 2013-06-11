@@ -16,23 +16,25 @@
 
 package org.jetbrains.jet.plugin.stubindex.resolve;
 
+import com.google.common.collect.Iterables;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.NavigatablePsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.asJava.LightClassGenerationSupport;
-import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.lang.psi.JetNamedFunction;
-import org.jetbrains.jet.lang.psi.JetProperty;
+import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.lazy.declarations.PackageMemberDeclarationProvider;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.plugin.stubindex.JetAllPackagesIndex;
 import org.jetbrains.jet.plugin.stubindex.JetTopLevelFunctionsFqnNameIndex;
 import org.jetbrains.jet.plugin.stubindex.JetTopLevelPropertiesFqnNameIndex;
+import org.jetbrains.jet.util.QualifiedNamesUtil;
 
 import java.util.Collection;
+import java.util.List;
 
 public class StubPackageMemberDeclarationProvider extends AbstractStubDeclarationProvider implements PackageMemberDeclarationProvider {
     private final FqName fqName;
@@ -73,6 +75,40 @@ public class StubPackageMemberDeclarationProvider extends AbstractStubDeclaratio
                 Collection<JetFile> files = JetAllPackagesIndex.getInstance().get(packageFqName, project, searchScope);
                 if (files.isEmpty()) return null;
                 return new FqName(packageFqName);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    public Collection<NavigatablePsiElement> getPackageDeclarations(final FqName name) {
+        final String fqNameStr = name.asString();
+        final int fqNameSize = QualifiedNamesUtil.numberOfSegments(name);
+
+        Collection<String> allPackagesInProject = JetAllPackagesIndex.getInstance().getAllKeys(project);
+        return ContainerUtil.mapNotNull(allPackagesInProject, new Function<String, NavigatablePsiElement>() {
+            @Override
+            public NavigatablePsiElement fun(String packageFqName) {
+                if (name.isRoot()) {
+                    return Iterables.getFirst(JetAllPackagesIndex.getInstance().get(packageFqName, project, searchScope), null);
+                }
+
+
+                if (packageFqName.startsWith(fqNameStr)) {
+                    Collection<JetFile> files = JetAllPackagesIndex.getInstance().get(packageFqName, project, searchScope);
+
+                    JetFile firstFile = Iterables.getFirst(files, null);
+
+                    if (firstFile != null) {
+                        JetNamespaceHeader header = firstFile.getNamespaceHeader();
+                        assert header != null : "File has some package name, so header can't be null";
+
+                        List<JetSimpleNameExpression> names = header.getParentNamespaceNames();
+                        return (names.size() >= fqNameSize) ? names.get(fqNameSize - 1) : header.getLastPartExpression();
+                    }
+                }
+
+                return null;
             }
         });
     }

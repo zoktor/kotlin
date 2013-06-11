@@ -78,6 +78,14 @@ public final class QualifiedNamesUtil {
         return new FqName(fqNameStr.substring(fqNameStr.indexOf('.'), fqNameStr.length()));
     }
 
+    public static int numberOfSegments(@NotNull FqName fqName) {
+        if (fqName.isRoot()) {
+            return 0;
+        }
+
+        return 1 + numberOfSegments(fqName.parent());
+    }
+
     @NotNull
     public static FqName combine(@NotNull FqName first, @NotNull Name second) {
         return first.child(second);
