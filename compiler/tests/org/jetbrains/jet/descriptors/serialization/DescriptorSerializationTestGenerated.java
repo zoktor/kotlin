@@ -58,6 +58,11 @@ public class DescriptorSerializationTestGenerated extends AbstractDescriptorSeri
             doTest("compiler/testData/loadKotlin/class/ClassInnerClass.kt");
         }
         
+        @TestMetadata("ClassMemberConflict.kt")
+        public void testClassMemberConflict() throws Exception {
+            doTest("compiler/testData/loadKotlin/class/ClassMemberConflict.kt");
+        }
+        
         @TestMetadata("ClassOutParam.kt")
         public void testClassOutParam() throws Exception {
             doTest("compiler/testData/loadKotlin/class/ClassOutParam.kt");
@@ -151,6 +156,11 @@ public class DescriptorSerializationTestGenerated extends AbstractDescriptorSeri
         @TestMetadata("NamedObject.kt")
         public void testNamedObject() throws Exception {
             doTest("compiler/testData/loadKotlin/class/NamedObject.kt");
+        }
+        
+        @TestMetadata("NamedObjectInClass.kt")
+        public void testNamedObjectInClass() throws Exception {
+            doTest("compiler/testData/loadKotlin/class/NamedObjectInClass.kt");
         }
         
         @TestMetadata("NamedObjectInClassObject.kt")
@@ -257,6 +267,26 @@ public class DescriptorSerializationTestGenerated extends AbstractDescriptorSeri
         @TestMetadata("ClassObjectExtendsTraitWithTP.kt")
         public void testClassObjectExtendsTraitWithTP() throws Exception {
             doTest("compiler/testData/loadKotlin/classObject/ClassObjectExtendsTraitWithTP.kt");
+        }
+        
+        @TestMetadata("classObjectInClassStaticFields.kt")
+        public void testClassObjectInClassStaticFields() throws Exception {
+            doTest("compiler/testData/loadKotlin/classObject/classObjectInClassStaticFields.kt");
+        }
+        
+        @TestMetadata("classObjectInTraitStaticFields.kt")
+        public void testClassObjectInTraitStaticFields() throws Exception {
+            doTest("compiler/testData/loadKotlin/classObject/classObjectInTraitStaticFields.kt");
+        }
+        
+        @TestMetadata("ClassObjectPropertyInClass.kt")
+        public void testClassObjectPropertyInClass() throws Exception {
+            doTest("compiler/testData/loadKotlin/classObject/ClassObjectPropertyInClass.kt");
+        }
+        
+        @TestMetadata("InnerClassInClassObject.kt")
+        public void testInnerClassInClassObject() throws Exception {
+            doTest("compiler/testData/loadKotlin/classObject/InnerClassInClassObject.kt");
         }
         
         @TestMetadata("SimpleClassObject.kt")
@@ -412,6 +442,16 @@ public class DescriptorSerializationTestGenerated extends AbstractDescriptorSeri
     public static class Fun extends AbstractDescriptorSerializationTest {
         public void testAllFilesPresentInFun() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.GenerateTests", new File("compiler/testData/loadKotlin/fun"), Pattern.compile("^(.+)\\.kt$"), true);
+        }
+        
+        @TestMetadata("NoSamAdapter.kt")
+        public void testNoSamAdapter() throws Exception {
+            doTest("compiler/testData/loadKotlin/fun/NoSamAdapter.kt");
+        }
+        
+        @TestMetadata("NoSamConstructor.kt")
+        public void testNoSamConstructor() throws Exception {
+            doTest("compiler/testData/loadKotlin/fun/NoSamConstructor.kt");
         }
         
         @TestMetadata("PropagateDeepSubclass.kt")
