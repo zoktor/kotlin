@@ -25,7 +25,7 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.ResolveResult;
 import com.intellij.testFramework.LightCodeInsightTestCase;
 import junit.framework.Assert;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.InTextDirectivesUtils;
 import org.jetbrains.jet.plugin.PluginTestCaseBase;
 import org.jetbrains.jet.testing.ReferenceUtils;
 
@@ -43,24 +43,39 @@ public class ResolveBaseTest extends LightCodeInsightTestCase {
     }
 
     public void testResolveClass() throws Exception {
-        doSingleResolveTest("(<root>).Test");
+        doSingleResolveTest();
+    }
+
+    public void testClassReferenceInImport() throws Exception {
+        doSingleResolveTest();
     }
 
     public void testResolvePackageInProperty() throws Exception {
-        doSingleResolveTest("test1");
+        doSingleResolveTest();
+    }
+
+    public void testPackageReferenceInImport() throws Exception {
+        doSingleResolveTest();
     }
 
     public void testSamConstructor() throws Exception {
-        doSingleResolveTest("(java.util).Comparator");
+        doSingleResolveTest();
+    }
+
+    public void testClassInTypeConstraint() throws Exception {
+        doSingleResolveTest();
     }
 
     public void testSeveralOverrides() throws Exception {
         doMultiResolveTest();
     }
 
-    protected void doSingleResolveTest(@Nullable String referenceToString) throws Exception {
+    protected void doSingleResolveTest() throws Exception {
         String testName = getTestName(false);
         configureByFile(testName + ".kt");
+
+        String referenceToString = InTextDirectivesUtils.findStringWithPrefixes(getFile().getText(), "REF:");
+        Assert.assertNotNull("Test data wasn't found, use \"// REF: \" directive", referenceToString);
 
         int offset = getEditor().getCaretModel().getOffset();
         PsiReference psiReference = getFile().findReferenceAt(offset);
@@ -68,8 +83,8 @@ public class ResolveBaseTest extends LightCodeInsightTestCase {
             PsiElement resolvedTo = psiReference.resolve();
             if (resolvedTo != null) {
                 String resolvedToElementStr = ReferenceUtils.renderAsGotoImplementation(resolvedTo);
-                String notEqualMessage = String.format("Found reference to '%s', but '%s' was expected", resolvedToElementStr,
-                                              referenceToString != null ? referenceToString : "<null>");
+                String notEqualMessage = String.format("Found reference to '%s', but '%s' was expected",
+                                                       resolvedToElementStr, referenceToString);
                 assertEquals(notEqualMessage, referenceToString, resolvedToElementStr);
             }
             else {
