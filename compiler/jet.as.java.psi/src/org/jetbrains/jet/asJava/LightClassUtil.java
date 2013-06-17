@@ -48,7 +48,7 @@ import java.util.*;
 
 public class LightClassUtil {
     private static final Logger LOG = Logger.getInstance(LightClassUtil.class);
-    private static final String DEFINITION_OF_ANY = "Any.jet";
+    private static final String DEFINITION_OF_ANY = "Any.kotlin_class";
 
     /**
      * Checks whether the given file is loaded from the location where Kotlin's built-in classes are defined.
