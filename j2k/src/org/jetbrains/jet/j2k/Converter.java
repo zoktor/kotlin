@@ -29,7 +29,6 @@ import org.jetbrains.jet.j2k.util.AstUtil;
 import org.jetbrains.jet.j2k.visitors.*;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
-import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 
 import java.util.*;
 
@@ -59,7 +58,6 @@ public class Converter {
     private final Set<J2KConverterFlags> flags = Sets.newHashSet();
 
     public Converter(@NotNull Project project) {
-        KotlinBuiltIns.initialize();
     }
 
     public boolean addFlag(@NotNull J2KConverterFlags flag) {

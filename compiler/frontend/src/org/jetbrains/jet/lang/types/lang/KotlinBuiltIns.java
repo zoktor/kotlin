@@ -59,9 +59,7 @@ public class KotlinBuiltIns {
     private static volatile boolean initializing;
     private static Throwable initializationFailed;
 
-    // This method must be called at least once per application run, on any project
-    // before any type checking is run
-    public static synchronized void initialize() {
+    private static synchronized void initialize() {
         if (instance == null) {
             if (initializationFailed != null) {
                 throw new RuntimeException(
@@ -85,7 +83,7 @@ public class KotlinBuiltIns {
         }
     }
 
-    @NotNull // This asserts that initialize() is called before any resolution happens
+    @NotNull
     public static KotlinBuiltIns getInstance() {
         if (initializing) {
             synchronized (KotlinBuiltIns.class) {
@@ -94,7 +92,7 @@ public class KotlinBuiltIns {
             }
         }
         if (instance == null) {
-            throw new IllegalStateException("Initialize standard library first");
+            initialize();
         }
         return instance;
     }
