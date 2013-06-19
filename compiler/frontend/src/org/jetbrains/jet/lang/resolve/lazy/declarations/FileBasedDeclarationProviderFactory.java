@@ -88,16 +88,16 @@ public class FileBasedDeclarationProviderFactory implements DeclarationProviderF
             }
 
             FqName packageFqName = new FqName(header.getQualifiedName());
-            addMeAndParentPackages(index, packageFqName, file);
+            addMeAndParentPackages(index, packageFqName);
             index.filesByPackage.put(packageFqName, file);
         }
         return index;
     }
 
-    private static void addMeAndParentPackages(@NotNull Index index, @NotNull FqName name, JetFile file) {
+    private static void addMeAndParentPackages(@NotNull Index index, @NotNull FqName name) {
         index.declaredPackages.add(name);
         if (!name.isRoot()) {
-            addMeAndParentPackages(index, name.parent(), file);
+            addMeAndParentPackages(index, name.parent());
         }
     }
 
@@ -129,7 +129,7 @@ public class FileBasedDeclarationProviderFactory implements DeclarationProviderF
                         return Iterables.getFirst(index.compute().filesByPackage.get(fqName), null);
                     }
 
-                    JetFile firstFile = Iterables.getFirst(index.compute().filesByPackage.get(fqName), null);
+                    JetFile firstFile = Iterables.getFirst(index.compute().filesByPackage.get(declaredFqName), null);
 
                     if (firstFile != null) {
                         JetNamespaceHeader header = firstFile.getNamespaceHeader();
