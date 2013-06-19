@@ -29,6 +29,7 @@ import org.jetbrains.jet.lang.descriptors.impl.NamespaceDescriptorImpl;
 import org.jetbrains.jet.lang.descriptors.impl.ValueParameterDescriptorImpl;
 import org.jetbrains.jet.lang.psi.JetPsiUtil;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
+import org.jetbrains.jet.lang.resolve.lazy.storage.LockBasedStorageManager;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.resolve.scopes.JetScope;
@@ -170,7 +171,7 @@ public class KotlinBuiltIns {
 
         module.setRootNamespace(rootNamespace);
 
-        rootNamespace.getMemberScope().addNamespace(new BuiltinsNamespaceDescriptorImpl(rootNamespace));
+        rootNamespace.getMemberScope().addNamespace(new BuiltinsNamespaceDescriptorImpl(new LockBasedStorageManager(), rootNamespace));
         rootNamespace.getMemberScope().changeLockLevel(WritableScope.LockLevel.READING);
     }
 
