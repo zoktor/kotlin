@@ -124,7 +124,7 @@ public class FileBasedDeclarationProviderFactory implements DeclarationProviderF
         return ContainerUtil.mapNotNull(index.compute().declaredPackages, new Function<FqName, NavigatablePsiElement>() {
             @Override
             public NavigatablePsiElement fun(FqName declaredFqName) {
-                if (declaredFqName.asString().startsWith(fqName.asString())) {
+                if (QualifiedNamesUtil.isSubpackageOf(declaredFqName, fqName)) {
                     if (fqName.isRoot()) {
                         return Iterables.getFirst(index.compute().filesByPackage.get(fqName), null);
                     }
