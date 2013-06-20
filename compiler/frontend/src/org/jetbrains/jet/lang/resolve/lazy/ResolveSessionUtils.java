@@ -28,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.di.InjectorForBodyResolve;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.descriptors.annotations.Annotated;
-import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.jet.lang.descriptors.impl.ClassDescriptorBase;
 import org.jetbrains.jet.lang.descriptors.impl.MutableClassDescriptor;
 import org.jetbrains.jet.lang.psi.*;
@@ -164,15 +163,14 @@ public class ResolveSessionUtils {
         }
 
         JetDeclaration declaration = PsiTreeUtil.getParentOfType(jetElement, JetDeclaration.class);
-        DeclarationDescriptor descriptor = resolveSession.resolveToDescriptor(declaration);
-        if (descriptor instanceof LazyTypeParameterDescriptor) {
-            ((LazyTypeParameterDescriptor) descriptor).getLowerBounds();
-            ((LazyTypeParameterDescriptor) descriptor).getUpperBounds();
+        if (declaration != null) {
+            DeclarationDescriptor descriptor = resolveSession.resolveToDescriptor(declaration);
+            if (descriptor instanceof LazyTypeParameterDescriptor) {
+                ((LazyTypeParameterDescriptor) descriptor).getLowerBounds();
+                ((LazyTypeParameterDescriptor) descriptor).getUpperBounds();
 
-            return resolveSession.getBindingContext();
-        }
-        if (descriptor instanceof AnnotationDescriptor) {
-
+                return resolveSession.getBindingContext();
+            }
         }
 
         DelegatingBindingTrace trace = new DelegatingBindingTrace(
