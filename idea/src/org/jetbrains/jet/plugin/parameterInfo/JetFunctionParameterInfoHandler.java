@@ -251,7 +251,7 @@ public class JetFunctionParameterInfoHandler implements
             PsiElement owner = context.getParameterOwner();
 
             JetCallExpression callExpression = PsiTreeUtil.getParentOfType(owner, JetCallExpression.class, false);
-            bindingContext = ResolveSessionUtils.resolveToExpression(resolveSession, (JetElement) owner);
+            bindingContext = ResolveSessionUtils.resolveToElement(resolveSession, (JetElement) owner);
         }
 
         for (int i = 0; i < valueParameters.size(); ++i) {
@@ -402,7 +402,7 @@ public class JetFunctionParameterInfoHandler implements
 
         ResolveSession resolveSession = WholeProjectAnalyzerFacade.getLazyResolveSessionForFile(
                 (JetFile) callNameExpression.getContainingFile());
-        BindingContext bindingContext = ResolveSessionUtils.resolveToExpression(resolveSession, callNameExpression);
+        BindingContext bindingContext = ResolveSessionUtils.resolveToElement(resolveSession, callNameExpression);
 
         JetScope scope = bindingContext.get(BindingContext.RESOLUTION_SCOPE, callNameExpression);
         DeclarationDescriptor placeDescriptor = null;

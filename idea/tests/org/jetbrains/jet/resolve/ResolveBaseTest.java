@@ -38,6 +38,10 @@ public class ResolveBaseTest extends LightCodeInsightTestCase {
         ((StartupManagerImpl) StartupManager.getInstance(getProject())).runPostStartupActivities();
     }
 
+    public void testAnnotationForClass() throws Exception {
+        doSingleResolveTest();
+    }
+
     public void testMultiResolve() throws Exception {
         doMultiResolveTest();
     }

@@ -30,7 +30,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.plugin.codeInsight.TipsManager;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
@@ -39,6 +38,7 @@ import org.jetbrains.jet.lang.resolve.lazy.ResolveSessionUtils;
 import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.jet.plugin.caches.JetShortNamesCache;
+import org.jetbrains.jet.plugin.codeInsight.TipsManager;
 import org.jetbrains.jet.plugin.completion.weigher.JetCompletionSorting;
 import org.jetbrains.jet.plugin.project.WholeProjectAnalyzerFacade;
 import org.jetbrains.jet.plugin.references.JetSimpleNameReference;
@@ -131,7 +131,7 @@ public class JetCompletionContributor extends CompletionContributor {
             this.customInvocationCount = customInvocationCount;
 
             ResolveSession resolveSession = WholeProjectAnalyzerFacade.getLazyResolveSessionForFile((JetFile) position.getContainingFile());
-            BindingContext expressionBindingContext = ResolveSessionUtils.resolveToExpression(resolveSession, jetReference.getExpression());
+            BindingContext expressionBindingContext = ResolveSessionUtils.resolveToElement(resolveSession, jetReference.getExpression());
             JetScope scope = expressionBindingContext.get(BindingContext.RESOLUTION_SCOPE, jetReference.getExpression());
 
             inDescriptor = scope != null ? scope.getContainingDeclaration() : null;

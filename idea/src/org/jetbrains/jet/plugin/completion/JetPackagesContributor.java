@@ -24,12 +24,12 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.plugin.codeInsight.TipsManager;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetNamespaceHeader;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.lazy.ResolveSession;
 import org.jetbrains.jet.lang.resolve.lazy.ResolveSessionUtils;
+import org.jetbrains.jet.plugin.codeInsight.TipsManager;
 import org.jetbrains.jet.plugin.project.WholeProjectAnalyzerFacade;
 import org.jetbrains.jet.plugin.references.JetSimpleNameReference;
 
@@ -73,7 +73,7 @@ public class JetPackagesContributor extends CompletionContributor {
 
                            ResolveSession resolveSession = WholeProjectAnalyzerFacade.getLazyResolveSessionForFile(
                                    (JetFile) simpleNameReference.getExpression().getContainingFile());
-                           BindingContext bindingContext = ResolveSessionUtils.resolveToExpression(
+                           BindingContext bindingContext = ResolveSessionUtils.resolveToElement(
                                    resolveSession, simpleNameReference.getExpression());
 
                            for (LookupElement variant : DescriptorLookupConverter.collectLookupElements(
