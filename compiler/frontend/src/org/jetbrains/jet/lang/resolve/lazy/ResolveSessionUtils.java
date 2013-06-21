@@ -192,8 +192,10 @@ public class ResolveSessionUtils {
 
     private static void annotationAdditionalResolve(KotlinCodeAnalyzer analyzer, JetAnnotationEntry jetAnnotationEntry) {
         JetDeclaration declaration = PsiTreeUtil.getParentOfType(jetAnnotationEntry, JetDeclaration.class);
-        Annotated descriptor = analyzer.resolveToDescriptor(declaration);
-        descriptor.getAnnotations();
+        if (declaration != null) {
+            Annotated descriptor = analyzer.resolveToDescriptor(declaration);
+            descriptor.getAnnotations();
+        }
     }
 
     private static void delegationSpecifierAdditionalResolve(
