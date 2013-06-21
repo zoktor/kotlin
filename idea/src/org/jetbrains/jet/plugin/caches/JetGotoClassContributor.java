@@ -54,17 +54,22 @@ public class JetGotoClassContributor implements GotoClassContributor {
     @NotNull
     @Override
     public String[] getNames(Project project, boolean includeNonProjectItems) {
-        return JetShortNamesCache.getKotlinInstance(project).getAllClassNames();
+        return ArrayUtil.toObjectArray(JetShortClassNameIndex.getInstance().getAllKeys(project), String.class);
     }
 
     @NotNull
     @Override
     public NavigationItem[] getItemsByName(String name, String pattern, Project project, boolean includeNonProjectItems) {
         GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+        Collection<JetClassOrObject> classesOrObjects = JetShortClassNameIndex.getInstance().get(name, project, scope);
+
+        if (classesOrObjects.isEmpty()) {
+            return NavigationItem.EMPTY_NAVIGATION_ITEM_ARRAY;
+        }
+
         PsiClass[] classes = JetShortNamesCache.getKotlinInstance(project).getClassesByName(name, scope);
 
         Collection<String> javaQualifiedNames = new HashSet<String>();
-
         for (PsiClass aClass : classes) {
             String qualifiedName = aClass.getQualifiedName();
             if (qualifiedName != null) {
@@ -73,23 +78,15 @@ public class JetGotoClassContributor implements GotoClassContributor {
         }
 
         List<NavigationItem> items = new ArrayList<NavigationItem>();
-        Collection<JetClassOrObject> classesOrObjects = JetShortClassNameIndex.getInstance().get(name, project, scope);
-
         for (JetClassOrObject classOrObject : classesOrObjects) {
             FqName fqName = JetPsiUtil.getFQName(classOrObject);
             if (fqName == null || javaQualifiedNames.contains(fqName.toString())) {
+                // Elements will be added by Java class contributor
                 continue;
             }
 
-            if (classOrObject instanceof JetObjectDeclaration) {
-                // items.add((JetObjectDeclaration) classOrObject);
-            }
-            else if (classOrObject instanceof JetClass) {
-                items.add(classOrObject);
-            }
-            else {
-                assert false;
-            }
+            assert classOrObject instanceof JetClass || classesOrObjects instanceof JetObjectDeclaration;
+            items.add(classOrObject);
         }
 
         return ArrayUtil.toObjectArray(items, NavigationItem.class);
