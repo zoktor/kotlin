@@ -16,7 +16,14 @@
 
 package org.jetbrains.jet.plugin.project;
 
+import com.intellij.openapi.util.Key;
+import com.intellij.psi.util.CachedValue;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.util.containers.SLRUCache;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetFile;
@@ -36,8 +43,30 @@ public final class WholeProjectAnalyzerFacade {
 
     @NotNull
     public static ResolveSession getLazyResolveSessionForFile(@NotNull JetFile file) {
-        return AnalyzerFacadeWithCache.getLazyResolveSession(file);
+        return CachedValuesManager.getManager(file.getProject()).getCachedValue(
+                file.getProject(),
+                LAZY_SESSION,
+                new CachedValueProvider<SLRUCache<JetFile, ResolveSession>>() {
+                    @Nullable
+                    @Override
+                    public Result<SLRUCache<JetFile, ResolveSession>> compute() {
+                        SLRUCache<JetFile, ResolveSession> cache = new SLRUCache<JetFile, ResolveSession>(3, 8) {
+                            @NotNull
+                            @Override
+                            public ResolveSession createValue(JetFile file) {
+                                System.out.println("Recreate");
+                                return AnalyzerFacadeWithCache.getLazyResolveSession(file);
+                            }
+                        };
+                        return Result.create(cache, PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT);
+                    }
+                },
+                false
+        ).get(file);
+
     }
+
+    private final static Key<CachedValue<SLRUCache<JetFile, ResolveSession>>> LAZY_SESSION = Key.create("LAZY_SESSION");
 
     public static BindingContext getContextForExpression(@NotNull JetExpression jetExpression) {
         ResolveSession resolveSession = getLazyResolveSessionForFile((JetFile) jetExpression.getContainingFile());

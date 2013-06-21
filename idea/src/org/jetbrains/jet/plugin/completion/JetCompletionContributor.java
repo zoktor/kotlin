@@ -42,6 +42,7 @@ import org.jetbrains.jet.plugin.codeInsight.TipsManager;
 import org.jetbrains.jet.plugin.completion.weigher.JetCompletionSorting;
 import org.jetbrains.jet.plugin.project.WholeProjectAnalyzerFacade;
 import org.jetbrains.jet.plugin.references.JetSimpleNameReference;
+import org.jetbrains.jet.utils.Profiler;
 
 import java.util.Collection;
 
@@ -55,29 +56,37 @@ public class JetCompletionContributor extends CompletionContributor {
                            ProcessingContext context,
                            @NotNull CompletionResultSet result
                    ) {
-
                        PsiElement position = parameters.getPosition();
                        if (!(position.getContainingFile() instanceof JetFile)) {
                            return;
                        }
 
                        JetSimpleNameReference jetReference = getJetReference(parameters);
-                       if (jetReference != null) {
-                           result.restartCompletionWhenNothingMatches();
-                           CompletionSession session = new CompletionSession(parameters, result, jetReference, position);
 
-                           session.completeForReference();
+                       Profiler completion = Profiler.create("Completion: " + jetReference);
+                       try {
+                           completion.start();
 
-                           if (!session.getJetResult().isSomethingAdded() && session.getCustomInvocationCount() == 0) {
-                               // Rerun completion if nothing was found
-                               session = new CompletionSession(parameters, result, jetReference, position, 1);
+                           if (jetReference != null) {
+                               result.restartCompletionWhenNothingMatches();
+                               CompletionSession session = new CompletionSession(parameters, result, jetReference, position);
 
                                session.completeForReference();
-                           }
-                       }
 
-                       // Prevent from adding reference variants from standard reference contributor
-                       result.stopHere();
+                               if (!session.getJetResult().isSomethingAdded() && session.getCustomInvocationCount() == 0) {
+                                   // Rerun completion if nothing was found
+                                   session = new CompletionSession(parameters, result, jetReference, position, 1);
+
+                                   session.completeForReference();
+                               }
+                           }
+
+                           // Prevent from adding reference variants from standard reference contributor
+                           result.stopHere();
+                       }
+                       finally {
+                           completion.end();
+                       }
                    }
                });
     }
