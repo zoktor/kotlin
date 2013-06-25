@@ -48,7 +48,8 @@ import java.util.*;
 
 public class LightClassUtil {
     private static final Logger LOG = Logger.getInstance(LightClassUtil.class);
-    private static final String DEFINITION_OF_ANY = "Any.kotlin_class";
+    // marker file name used to determine resource path
+    private static final String DEFINITION_OF_ANY = "Any.jet";
 
     /**
      * Checks whether the given file is loaded from the location where Kotlin's built-in classes are defined.
@@ -57,8 +58,12 @@ public class LightClassUtil {
      * Used to skip JetLightClass creation for built-ins, because built-in classes have no Java counterparts
      */
     public static boolean belongsToKotlinBuiltIns(@NotNull JetFile file) {
+        URL url = getBuiltInsDirResourceUrl();
+        if (url == null) {
+            return false;
+        }
         try {
-            String jetVfsPathUrl = KotlinVfsUtil.convertFromUrl(getBuiltInsDirResourceUrl());
+            String jetVfsPathUrl = KotlinVfsUtil.convertFromUrl(url);
             VirtualFile virtualFile = file.getVirtualFile();
             if (virtualFile != null) {
                 VirtualFile parent = virtualFile.getParent();
@@ -78,17 +83,21 @@ public class LightClassUtil {
         return false;
     }
 
-    @NotNull
+    @Nullable
     public static URL getBuiltInsDirResourceUrl() {
         String pathToAny = "/" + KotlinBuiltIns.BUILT_INS_PACKAGE_NAME_STRING + "/" + DEFINITION_OF_ANY;
-        URL url = KotlinBuiltIns.class.getResource(pathToAny);
+        URL url = LightClassUtil.class.getResource(pathToAny);
+        // NOTE: if there is no resource on classpath, it means we are in CLI
+        // this method makes sense only for IDE, where we can navigate to built-in class sources
+        // this whole utility should be removed as soon as we get rid of physical representation of built-in class sources (*.jet files)
         if (url == null) {
-            throw new IllegalStateException("Built-ins not found in the classpath: " + pathToAny);
+            return null;
         }
         return url;
     }
 
-    /*package*/ static void logErrorWithOSInfo(@Nullable Throwable cause, @NotNull FqName fqName, @Nullable VirtualFile virtualFile) {
+    /*package*/
+    static void logErrorWithOSInfo(@Nullable Throwable cause, @NotNull FqName fqName, @Nullable VirtualFile virtualFile) {
         String path = virtualFile == null ? "<null>" : virtualFile.getPath();
         LOG.error(
                 "Could not generate LightClass for " + fqName + " declared in " + path + "\n" +
@@ -100,7 +109,7 @@ public class LightClassUtil {
     @Nullable
     /*package*/ static PsiClass findClass(@NotNull FqName fqn, @NotNull StubElement<?> stub) {
         if (stub instanceof PsiClassStub && Comparing.equal(fqn.asString(), ((PsiClassStub) stub).getQualifiedName())) {
-            return (PsiClass)stub.getPsi();
+            return (PsiClass) stub.getPsi();
         }
 
         if (stub instanceof PsiClassStub || stub instanceof PsiFileStub) {
@@ -236,8 +245,8 @@ public class LightClassUtil {
 
     private static PropertyAccessorsPsiMethods extractPropertyAccessors(
             @NotNull JetDeclaration jetDeclaration,
-            @Nullable PsiMethod specialGetter, @Nullable PsiMethod specialSetter)
-    {
+            @Nullable PsiMethod specialGetter, @Nullable PsiMethod specialSetter
+    ) {
         PsiMethod getterWrapper = specialGetter;
         PsiMethod setterWrapper = specialSetter;
 
@@ -300,5 +309,6 @@ public class LightClassUtil {
         }
     }
 
-    private LightClassUtil() {}
+    private LightClassUtil() {
+    }
 }
