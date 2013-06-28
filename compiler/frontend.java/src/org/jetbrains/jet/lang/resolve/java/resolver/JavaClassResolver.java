@@ -85,6 +85,7 @@ public final class JavaClassResolver {
     private JavaClassObjectResolver classObjectResolver;
     private JavaSupertypeResolver supertypesResolver;
     private JavaFunctionResolver functionResolver;
+    private DeserializedDescriptorResolver kotlinDescriptorResolver;
 
     public JavaClassResolver() {
     }
@@ -92,6 +93,11 @@ public final class JavaClassResolver {
     @Inject
     public void setTrace(BindingTrace trace) {
         this.trace = trace;
+    }
+
+    @Inject
+    public void setKotlinDescriptorResolver(DeserializedDescriptorResolver kotlinDescriptorResolver) {
+        this.kotlinDescriptorResolver = kotlinDescriptorResolver;
     }
 
     @Inject
@@ -223,9 +229,15 @@ public final class JavaClassResolver {
 
         assert (!unresolvedCache.contains(fqName)) : "We can resolve the class, so it can't be 'unresolved' during parent resolution";
 
+        ClassDescriptor deserializedDescriptor = kotlinDescriptorResolver.resolveClass(fqName, psiClass, containingDeclaration);
+        if (deserializedDescriptor != null) {
+            //TODO: class object and psi class
+            cache(javaClassToKotlinFqName(fqName), deserializedDescriptor);
+            return deserializedDescriptor;
+        }
+
         return doCreateClassDescriptor(fqName, psiClass, taskList, containingDeclaration);
     }
-
     @NotNull
     private ClassDescriptorFromJvmBytecode doCreateClassDescriptor(
             @NotNull FqName fqName,
