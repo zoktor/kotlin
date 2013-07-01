@@ -9,7 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.JetTestUtils;
 import org.jetbrains.jet.cli.jvm.compiler.JetCoreEnvironment;
 import org.jetbrains.jet.config.CompilerConfiguration;
-import org.jetbrains.jet.descriptors.serialization.*;
+import org.jetbrains.jet.descriptors.serialization.ClassSerializationUtil;
+import org.jetbrains.jet.descriptors.serialization.DescriptorSerializer;
+import org.jetbrains.jet.descriptors.serialization.NameSerializationUtil;
+import org.jetbrains.jet.descriptors.serialization.ProtoBuf;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
@@ -29,10 +32,13 @@ import java.util.regex.Pattern;
 
 public class BuiltInsSerializer {
     private static final String BUILT_INS_SRC_DIR = "idea/builtinsSrc";
-    private static final String DEST_DIR = "compiler/frontend/" + BuiltInsSerializationUtil.BUILT_INS_DIR;
+    private static final String DEST_DIR = "compiler/frontend/builtins";
 
     private static int totalSize = 0;
     private static int totalFiles = 0;
+
+    private BuiltInsSerializer() {
+    }
 
     public static void main(String[] args) throws IOException {
         List<File> sourceFiles = FileUtil.findFilesByMask(Pattern.compile(".*\\.jet"), new File(BUILT_INS_SRC_DIR));
@@ -59,7 +65,7 @@ public class BuiltInsSerializer {
             System.err.println("Could not make directories: " + destDir);
         }
 
-        final DescriptorSerializer serializer = new DescriptorSerializer(BuiltInsSerializationUtil.BUILTINS_NAMER, new Predicate<ClassDescriptor>() {
+        final DescriptorSerializer serializer = new DescriptorSerializer(new Predicate<ClassDescriptor>() {
             private final ImmutableSet<String> set = ImmutableSet.of("Any", "Nothing");
 
             @Override

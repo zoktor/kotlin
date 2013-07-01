@@ -273,7 +273,7 @@ public class DeserializedClassDescriptor extends ClassDescriptorBase implements 
             return classObject;
         }
 
-        return nestedClassResolver.resolveClassObject(this);
+        return nestedClassResolver.resolveNestedClass(this, getClassObjectName(getName()));
     }
 
     @NotNull
